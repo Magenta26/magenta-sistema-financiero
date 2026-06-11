@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Tema oscuro ciruela/negro con acentos magenta (continuidad con el dashboard previo de Magenta Farms) */
+@theme {
+  --color-ciruela-950: #120713;
+  --color-ciruela-900: #1c0e1f;
+  --color-ciruela-800: #2a1530;
+  --color-ciruela-700: #3c1f45;
+  --color-ciruela-600: #532b5e;
+  --color-ciruela-400: #9a6daa;
+  --color-ciruela-300: #bb97c7;
+  --color-ciruela-200: #d9c3e0;
+
+  --color-magenta-600: #c2107a;
+  --color-magenta-500: #e3219b;
+  --color-magenta-400: #ef4db4;
+  --color-magenta-300: #f783cb;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ciruela-950 text-ciruela-200 antialiased;
+}
