@@ -15,6 +15,18 @@ export function entero(valor: number): string {
   return formatoEntero.format(valor)
 }
 
+/** Moneda compacta para tarjetas: $180,4 M / $53,5 M / $980 mil. */
+export function monedaCompacta(valor: number): string {
+  const absoluto = Math.abs(valor)
+  const signo = valor < 0 ? '−' : ''
+  const num = (v: number, dec: number) =>
+    new Intl.NumberFormat('es-CO', { maximumFractionDigits: dec, minimumFractionDigits: 0 }).format(v)
+  if (absoluto >= 1e9) return `${signo}$${num(absoluto / 1e9, 2)} mil M`
+  if (absoluto >= 1e6) return `${signo}$${num(absoluto / 1e6, 1)} M`
+  if (absoluto >= 1e3) return `${signo}$${num(absoluto / 1e3, 0)} mil`
+  return `${signo}$${num(absoluto, 0)}`
+}
+
 /** Formato contable es-CO: negativos entre paréntesis. Ej.: -1234.5 -> "(1.234,50)" */
 export function contable(valor: number): string {
   const absoluto = formatoMoneda.format(Math.abs(valor))

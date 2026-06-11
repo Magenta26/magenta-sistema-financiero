@@ -45,7 +45,7 @@ export function useMovimientosTransaccionales() {
       for (let desde = 0; ; desde += TAMANO_PAGINA) {
         const { data, error } = await supabase
           .from('movimientos')
-          .select('cuenta, anio, mes, saldo_inicial, mov_debito, mov_credito, saldo_final')
+          .select('cuenta, nombre_cuenta, anio, mes, saldo_inicial, mov_debito, mov_credito, saldo_final')
           .eq('transaccional', true)
           .order('id', { ascending: true })
           .range(desde, desde + TAMANO_PAGINA - 1)

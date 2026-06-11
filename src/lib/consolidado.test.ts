@@ -4,6 +4,7 @@ import type { CuentaCatalogo, MovimientoResumen } from '../types/catalogo'
 
 function mov(parcial: Partial<MovimientoResumen> & { cuenta: string }): MovimientoResumen {
   return {
+    nombre_cuenta: parcial.cuenta,
     anio: 2026,
     mes: 1,
     saldo_inicial: 0,

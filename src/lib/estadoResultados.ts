@@ -13,6 +13,7 @@ import type { ErChequeoFila, ErDetalleFila, ErRubroFila, ModoEr } from '../types
 export interface LineaCuenta {
   cuenta: string
   nombre: string
+  naturaleza: 'CR' | 'DB'
   /** mes -> valor absoluto */
   valores: Map<number, number>
   totalAnio: number
@@ -92,7 +93,13 @@ export function construirModeloEr(
     for (const d of detalleAnio.filter((d) => d.rubro_codigo === rubro.codigo)) {
       let linea = cuentasMap.get(d.cuenta)
       if (!linea) {
-        linea = { cuenta: d.cuenta, nombre: d.nombre, valores: new Map(), totalAnio: 0 }
+        linea = {
+          cuenta: d.cuenta,
+          nombre: d.nombre,
+          naturaleza: d.naturaleza,
+          valores: new Map(),
+          totalAnio: 0,
+        }
         cuentasMap.set(d.cuenta, linea)
       }
       linea.valores.set(d.mes, (linea.valores.get(d.mes) ?? 0) + d.valor)

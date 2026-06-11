@@ -22,6 +22,7 @@ export interface RubroEr {
 /** Movimiento transaccional reducido a lo necesario para consolidado/detalle. */
 export interface MovimientoResumen {
   cuenta: string
+  nombre_cuenta: string
   anio: number
   mes: number
   saldo_inicial: number
