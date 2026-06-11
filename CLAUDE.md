@@ -15,3 +15,4 @@ React + Vite + TypeScript + Tailwind CSS v4 · Supabase (Postgres + Auth + Stora
 ## Fases completadas
 
 - **Fase 0** (2026-06-11): scaffold del proyecto, configuración de Supabase, login con email/contraseña, rutas protegidas, layout con navegación lateral a las 5 secciones (placeholders) y tema oscuro ciruela/magenta.
+- **Fase 1** (2026-06-11): migraciones SQL en `supabase/migrations/` (tablas e índices, RLS con función `rol_usuario_actual()`, vistas `v_er_detalle`/`v_er_rubros`/`v_bg`/`v_er_chequeos`, RPC `procesar_carga`, seeds de rubros + 98 cuentas + config + perfil admin), `supabase/aplicar_todo.sql` para aplicar de una vez, y `/consolidado` consulta `catalogo_cuentas` como verificación de lectura con RLS.
