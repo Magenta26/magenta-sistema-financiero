@@ -14,7 +14,7 @@ export default function DetalleCuenta({ cuenta, movimientos }: DetalleCuentaProp
 
   if (detalle.length === 0) {
     return (
-      <p className="px-4 py-3 text-sm text-ciruela-400">
+      <p className="px-4 py-3 text-sm text-tinta-suave">
         Sin movimientos transaccionales para el prefijo {cuenta}.
       </p>
     )
@@ -23,7 +23,7 @@ export default function DetalleCuenta({ cuenta, movimientos }: DetalleCuentaProp
   return (
     <div className="px-4 py-3">
       <table className="w-full text-xs">
-        <thead className="text-left text-ciruela-400">
+        <thead className="text-left text-tinta-suave">
           <tr>
             <th className="py-1.5 pr-3 font-medium">Mes</th>
             <th className="py-1.5 pr-3 text-right font-medium">Auxiliares</th>
@@ -33,17 +33,19 @@ export default function DetalleCuenta({ cuenta, movimientos }: DetalleCuentaProp
             <th className="py-1.5 text-right font-medium">Saldo final</th>
           </tr>
         </thead>
-        <tbody className="font-mono">
+        <tbody className="tabular-nums">
           {detalle.map((d) => (
-            <tr key={`${d.anio}-${d.mes}`} className="border-t border-ciruela-800/50">
-              <td className="py-1.5 pr-3 font-sans text-ciruela-200">
+            <tr key={`${d.anio}-${d.mes}`} className="border-t border-borde">
+              <td className="py-1.5 pr-3 text-tinta">
                 {nombreMes(d.mes)} {d.anio}
               </td>
-              <td className="py-1.5 pr-3 text-right text-ciruela-400">{d.auxiliares}</td>
-              <td className="py-1.5 pr-3 text-right text-ciruela-300">{moneda(d.saldo_inicial)}</td>
-              <td className="py-1.5 pr-3 text-right text-ciruela-300">{moneda(d.mov_debito)}</td>
-              <td className="py-1.5 pr-3 text-right text-ciruela-300">{moneda(d.mov_credito)}</td>
-              <td className="py-1.5 text-right text-white">{moneda(d.saldo_final)}</td>
+              <td className="py-1.5 pr-3 text-right text-tinta-suave">{d.auxiliares}</td>
+              <td className="py-1.5 pr-3 text-right text-tinta-suave">{moneda(d.saldo_inicial)}</td>
+              <td className="py-1.5 pr-3 text-right text-tinta-suave">{moneda(d.mov_debito)}</td>
+              <td className="py-1.5 pr-3 text-right text-tinta-suave">{moneda(d.mov_credito)}</td>
+              <td className={`py-1.5 text-right font-medium ${d.saldo_final < 0 ? 'text-red-600' : 'text-tinta'}`}>
+                {moneda(d.saldo_final)}
+              </td>
             </tr>
           ))}
         </tbody>

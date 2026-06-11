@@ -15,8 +15,8 @@ import { TooltipPorcentaje } from './graficos'
 /** Evolución de los márgenes bruto, operacional y neto (% de ingresos). */
 export default function GraficoMargenes({ series }: { series: SerieMensual[] }) {
   return (
-    <div className="rounded-2xl border border-ciruela-800 bg-ciruela-900/60 p-4">
-      <h2 className="mb-3 text-sm font-semibold text-white">Evolución de márgenes</h2>
+    <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
+      <h2 className="mb-3 text-sm font-semibold text-brand-900">Evolución de márgenes</h2>
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={series} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={COLORES.grilla} strokeDasharray="3 3" vertical={false} />
@@ -30,9 +30,9 @@ export default function GraficoMargenes({ series }: { series: SerieMensual[] }) 
           />
           <Tooltip content={<TooltipPorcentaje />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Line name="Margen bruto" dataKey="margenBruto" stroke={COLORES.magentaClaro} strokeWidth={2} dot={{ r: 2.5 }} type="monotone" />
-          <Line name="Margen operacional" dataKey="margenOperacional" stroke={COLORES.violeta} strokeWidth={2} dot={{ r: 2.5 }} type="monotone" />
-          <Line name="Margen neto" dataKey="margenNeto" stroke={COLORES.teal} strokeWidth={2.5} dot={{ r: 3 }} type="monotone" />
+          <Line name="Margen bruto" dataKey="margenBruto" stroke={COLORES.medio} strokeWidth={2} dot={{ r: 2.5 }} type="monotone" />
+          <Line name="Margen operacional" dataKey="margenOperacional" stroke={COLORES.suave} strokeWidth={2} dot={{ r: 2.5 }} type="monotone" />
+          <Line name="Margen neto" dataKey="margenNeto" stroke={COLORES.principal} strokeWidth={2.5} dot={{ r: 3 }} type="monotone" />
         </LineChart>
       </ResponsiveContainer>
     </div>

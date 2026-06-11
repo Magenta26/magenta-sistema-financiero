@@ -13,26 +13,29 @@ interface SeccionBalanceProps {
 export default function SeccionBalance({ seccion, meses, resultadoEjercicio }: SeccionBalanceProps) {
   return (
     <Fragment>
-      <tr className="border-t border-ciruela-800 bg-ciruela-900/80">
+      <tr className="border-t border-borde bg-gray-50">
         <td
           colSpan={meses.length + 1}
-          className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-magenta-300"
+          className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-brand-700"
         >
           {seccion.titulo}
         </td>
       </tr>
       {seccion.grupos.map((grupo) => (
-        <tr key={grupo.grupo} className="border-t border-ciruela-800/40 bg-ciruela-950/30">
-          <td className="py-1.5 pl-7 pr-3 text-xs text-ciruela-200">
-            <span className="font-mono text-ciruela-400">{grupo.grupo}</span> {grupo.nombre}
+        <tr
+          key={grupo.grupo}
+          className="border-t border-borde transition-colors duration-150 even:bg-gray-50/60 hover:bg-brand-50"
+        >
+          <td className="py-1.5 pl-7 pr-3 text-xs text-tinta">
+            <span className="font-mono text-tinta-suave">{grupo.grupo}</span> {grupo.nombre}
           </td>
           {meses.map((mes) => (
             <CeldaValor key={mes} valor={grupo.valores.get(mes) ?? 0} modo="absolutos" />
           ))}
         </tr>
       ))}
-      <tr className="border-t border-ciruela-700 bg-ciruela-950/70">
-        <td className="px-3 py-2 text-xs font-bold text-white">
+      <tr className="border-t border-brand-200 bg-brand-50">
+        <td className="px-3 py-2 text-xs font-bold text-brand-900">
           TOTAL {seccion.titulo.toUpperCase()}
         </td>
         {meses.map((mes) => (
@@ -40,8 +43,8 @@ export default function SeccionBalance({ seccion, meses, resultadoEjercicio }: S
         ))}
       </tr>
       {resultadoEjercicio && (
-        <tr className="border-t border-ciruela-800/40 bg-magenta-600/10">
-          <td className="py-1.5 pl-7 pr-3 text-xs font-semibold text-ciruela-100">
+        <tr className="border-t border-borde bg-brand-50/60">
+          <td className="py-1.5 pl-7 pr-3 text-xs font-semibold text-tinta">
             Resultado del ejercicio (utilidad acumulada del año)
           </td>
           {meses.map((mes) => (

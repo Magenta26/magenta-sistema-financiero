@@ -75,18 +75,18 @@ export default function Analisis() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Análisis financiero {anio}</h1>
-          <p className="mt-1 text-sm text-ciruela-300">
+          <h1 className="text-2xl font-bold text-brand-900">Análisis financiero {anio}</h1>
+          <p className="mt-1 text-sm text-tinta-suave">
             Resultados del mes y tendencias del año, directo de las cargas.
           </p>
         </div>
         {modelo && mes && (
-          <label className="flex items-center gap-2 text-sm text-ciruela-300">
+          <label className="flex items-center gap-2 text-sm text-tinta">
             Mes:
             <select
               value={mes}
               onChange={(e) => setMesElegido(parseInt(e.target.value, 10))}
-              className="rounded-lg border border-ciruela-700 bg-ciruela-950 px-3 py-2 text-white focus:border-magenta-500 focus:outline-none"
+              className="rounded-lg border border-borde bg-white px-3 py-2 text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             >
               {modelo.mesesConDatos.map((m) => (
                 <option key={m} value={m}>
@@ -99,14 +99,14 @@ export default function Analisis() {
       </div>
 
       {error && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Error consultando la base: {error.message}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-ciruela-400">Calculando análisis…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando análisis…</p>}
 
       {modelo && mes === null && !cargando && (
-        <p className="mt-6 rounded-xl border border-dashed border-ciruela-700 bg-ciruela-900/40 p-6 text-center text-sm text-ciruela-400">
+        <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
           No hay datos cargados para {anio}. Sube balances en la sección Cargas.
         </p>
       )}
@@ -134,13 +134,13 @@ export default function Analisis() {
 
           {/* Lectura del mes */}
           {frases.length > 0 && (
-            <div className="mt-5 rounded-2xl border border-magenta-600/40 bg-magenta-600/5 p-5">
-              <h2 className="text-sm font-semibold text-magenta-300">
+            <div className="mt-5 rounded-2xl border border-brand-200 bg-brand-50 p-5">
+              <h2 className="text-sm font-semibold text-brand-700">
                 Lectura de {nombreMes(mes)}
               </h2>
               <ul className="mt-2 space-y-1.5">
                 {frases.map((frase, i) => (
-                  <li key={i} className="text-sm leading-relaxed text-ciruela-200">
+                  <li key={i} className="text-sm leading-relaxed text-tinta">
                     • {frase}
                   </li>
                 ))}
@@ -169,8 +169,8 @@ export default function Analisis() {
 
           {/* Drill-down */}
           <div className="mt-6">
-            <h2 className="mb-1 text-lg font-semibold text-white">Explorar el detalle</h2>
-            <p className="mb-3 text-sm text-ciruela-300">
+            <h2 className="mb-1 text-lg font-semibold text-brand-900">Explorar el detalle</h2>
+            <p className="mb-3 text-sm text-tinta-suave">
               Rubro → cuenta → auxiliar, con valores de {nombreMes(mes)} y acumulado del año.
             </p>
             <DrillDown modelo={modelo} movimientos={movimientos.data ?? []} mes={mes} />

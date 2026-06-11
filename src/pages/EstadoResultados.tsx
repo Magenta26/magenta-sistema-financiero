@@ -28,8 +28,8 @@ const DERIVADAS_TRAS_RUBRO: Record<string, string[]> = {
 
 function FilaDerivada({ linea, modelo, modo }: { linea: LineaDerivada; modelo: ModeloEr; modo: ModoEr }) {
   return (
-    <tr className="border-t border-magenta-600/40 bg-magenta-600/10">
-      <td className="px-3 py-2 text-xs font-bold text-white">{linea.etiqueta}</td>
+    <tr className="border-t border-brand-200 bg-brand-50">
+      <td className="px-3 py-2 text-xs font-bold text-brand-900">{linea.etiqueta}</td>
       {MESES_ES.map((_, i) => {
         const mes = i + 1
         const sinDatos = !modelo.mesesConDatos.includes(mes)
@@ -84,22 +84,22 @@ export default function EstadoResultados() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Estado de Resultados {anio}</h1>
-          <p className="mt-1 text-sm text-ciruela-300">
+          <h1 className="text-2xl font-bold text-brand-900">Estado de Resultados {anio}</h1>
+          <p className="mt-1 text-sm text-tinta-suave">
             Cuentas del catálogo incluidas en ER, agrupadas por rubro. ▸ expande el detalle.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-lg border border-ciruela-700 p-0.5">
+          <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {MODOS.map((m) => (
               <button
                 key={m.valor}
                 type="button"
                 onClick={() => setModo(m.valor)}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-150 ${
                   modo === m.valor
-                    ? 'bg-magenta-600 text-white'
-                    : 'text-ciruela-300 hover:text-white'
+                    ? 'bg-brand-700 text-white'
+                    : 'text-tinta-suave hover:text-brand-900'
                 }`}
               >
                 {m.etiqueta}
@@ -110,7 +110,7 @@ export default function EstadoResultados() {
             type="button"
             disabled={!modelo}
             onClick={() => modelo && exportarEr(modelo, modo)}
-            className="rounded-lg border border-ciruela-700 px-3 py-1.5 text-xs font-semibold text-ciruela-200 transition-colors hover:border-magenta-500 hover:text-magenta-300 disabled:opacity-50"
+            className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
             Exportar a Excel
           </button>
@@ -118,29 +118,29 @@ export default function EstadoResultados() {
       </div>
 
       {error && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Error consultando las vistas: {error.message}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-ciruela-400">Calculando el Estado de Resultados…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando el Estado de Resultados…</p>}
 
       {modelo && modelo.mesesConDatos.length === 0 && (
-        <p className="mt-6 rounded-xl border border-dashed border-ciruela-700 bg-ciruela-900/40 p-6 text-center text-sm text-ciruela-400">
+        <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
           No hay datos cargados para {anio}. Sube balances en la sección Cargas.
         </p>
       )}
 
       {modelo && modelo.mesesConDatos.length > 0 && (
-        <div className="mt-6 overflow-x-auto rounded-xl border border-ciruela-800">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
           <table className="w-full">
-            <thead className="bg-ciruela-900 text-ciruela-400">
+            <thead className="sticky top-0 bg-gray-50 text-brand-900">
               <tr>
-                <th className="min-w-64 px-3 py-2.5 text-left text-xs font-medium">Línea</th>
+                <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">Línea</th>
                 {MESES_ES.map((nombre, i) => (
                   <th
                     key={nombre}
-                    className={`px-3 py-2.5 text-right text-xs font-medium ${
-                      modelo.mesesConDatos.includes(i + 1) ? '' : 'text-ciruela-600'
+                    className={`px-3 py-2.5 text-right text-xs font-semibold ${
+                      modelo.mesesConDatos.includes(i + 1) ? '' : 'text-gray-400'
                     }`}
                   >
                     {nombre}
@@ -156,15 +156,15 @@ export default function EstadoResultados() {
                   <Fragment key={bloque.codigo}>
                     {/* Subtotal del rubro (clic para expandir cuentas) */}
                     <tr
-                      className="cursor-pointer border-t border-ciruela-800 bg-ciruela-950/60 hover:bg-ciruela-900/70"
+                      className="cursor-pointer border-t border-borde bg-white transition-colors duration-150 hover:bg-brand-50"
                       onClick={() => alternarRubro(bloque.codigo)}
                     >
-                      <td className="px-3 py-2 text-xs font-semibold text-ciruela-100">
-                        <span className="mr-1.5 inline-block w-3 text-ciruela-400">
+                      <td className="px-3 py-2 text-xs font-semibold text-tinta">
+                        <span className="mr-1.5 inline-block w-3 text-tinta-suave">
                           {abierto ? '▾' : '▸'}
                         </span>
                         {bloque.nombre}
-                        <span className="ml-1.5 text-ciruela-500">({bloque.cuentas.length})</span>
+                        <span className="ml-1.5 text-gray-400">({bloque.cuentas.length})</span>
                       </td>
                       {MESES_ES.map((_, i) => {
                         const mes = i + 1
@@ -184,9 +184,12 @@ export default function EstadoResultados() {
                     {/* Cuentas del rubro (expandibles) */}
                     {abierto &&
                       bloque.cuentas.map((cuenta) => (
-                        <tr key={cuenta.cuenta} className="border-t border-ciruela-800/40 bg-ciruela-950/20">
-                          <td className="py-1.5 pl-10 pr-3 text-xs text-ciruela-300">
-                            <span className="font-mono text-ciruela-400">{cuenta.cuenta}</span>{' '}
+                        <tr
+                          key={cuenta.cuenta}
+                          className="border-t border-borde bg-gray-50/50 transition-colors duration-150 hover:bg-brand-50"
+                        >
+                          <td className="py-1.5 pl-10 pr-3 text-xs text-tinta-suave">
+                            <span className="font-mono text-gray-400">{cuenta.cuenta}</span>{' '}
                             {cuenta.nombre}
                           </td>
                           {MESES_ES.map((_, i) => {
@@ -219,16 +222,16 @@ export default function EstadoResultados() {
 
       {/* Chequeos por grupo */}
       {modelo && modelo.chequeos.length > 0 && (
-        <div className="mt-5 rounded-xl border border-amber-700 bg-amber-950/30 p-4">
-          <p className="text-sm font-semibold text-amber-200">
+        <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800">
             ⚠️ Chequeos con diferencia (total crudo del grupo vs clasificado en el ER)
           </p>
-          <p className="mt-1 text-xs text-amber-200/70">
+          <p className="mt-1 text-xs text-amber-700">
             Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.
           </p>
           <ul className="mt-2 space-y-1">
             {modelo.chequeos.map((ch) => (
-              <li key={ch.grupo} className="text-xs text-amber-100">
+              <li key={ch.grupo} className="text-xs text-amber-800">
                 <span className="font-bold">Grupo {ch.grupo}:</span>{' '}
                 {[...ch.diferencias.entries()]
                   .sort((a, b) => a[0] - b[0])
@@ -240,7 +243,7 @@ export default function EstadoResultados() {
         </div>
       )}
       {modelo && modelo.mesesConDatos.length > 0 && modelo.chequeos.length === 0 && (
-        <p className="mt-5 text-xs text-emerald-300">
+        <p className="mt-5 text-xs font-medium text-exito">
           ✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).
         </p>
       )}

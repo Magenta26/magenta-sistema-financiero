@@ -134,8 +134,8 @@ export default function Cargas() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white">Cargas</h1>
-      <p className="mt-2 max-w-2xl text-sm text-ciruela-300">
+      <h1 className="text-2xl font-bold text-brand-900">Cargas</h1>
+      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">
         Sube el balance de prueba mensual exportado de SIIGO. Revisa la previsualización y las
         validaciones antes de confirmar.
       </p>
@@ -145,7 +145,7 @@ export default function Cargas() {
       </div>
 
       {errorParseo && (
-        <p role="alert" className="mt-4 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorParseo}
         </p>
       )}
@@ -167,12 +167,12 @@ export default function Cargas() {
               type="button"
               onClick={() => confirmar.mutate()}
               disabled={hayBloqueantes || confirmar.isPending}
-              className="rounded-lg bg-magenta-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-magenta-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-brand-700 px-5 py-2.5 font-semibold text-white transition-colors duration-150 hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {confirmar.isPending ? 'Procesando…' : 'Confirmar carga'}
             </button>
             {hayBloqueantes && (
-              <p className="text-sm text-red-300">Corrige los bloqueantes ⛔ para continuar.</p>
+              <p className="text-sm text-red-700">Corrige los bloqueantes ⛔ para continuar.</p>
             )}
             <button
               type="button"
@@ -182,7 +182,7 @@ export default function Cargas() {
                 setPeriodoManual(null)
               }}
               disabled={confirmar.isPending}
-              className="text-sm text-ciruela-400 underline-offset-2 hover:text-ciruela-200 hover:underline"
+              className="text-sm text-tinta-suave underline-offset-2 transition-colors duration-150 hover:text-brand-700 hover:underline"
             >
               Cancelar
             </button>
@@ -191,20 +191,20 @@ export default function Cargas() {
       )}
 
       {confirmar.isPending && (
-        <p className="mt-4 text-sm text-ciruela-300">
-          <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-magenta-500 border-t-transparent align-middle" />
+        <p className="mt-4 text-sm text-tinta-suave">
+          <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-700 border-t-transparent align-middle" />
           Subiendo archivo y procesando movimientos…
         </p>
       )}
 
       {confirmar.isError && (
-        <p role="alert" className="mt-4 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {confirmar.error.message}
         </p>
       )}
 
       {resultado && (
-        <div className="mt-4 rounded-lg border border-emerald-800 bg-emerald-950/40 px-4 py-3 text-sm text-emerald-200">
+        <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           ✅ Carga procesada: <span className="font-bold">{entero(resultado.filas_importadas)}</span>{' '}
           filas insertadas
           {resultado.cuentas_nuevas > 0 ? (

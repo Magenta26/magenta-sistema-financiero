@@ -48,26 +48,26 @@ export default function Previsualizacion({
   })
 
   return (
-    <div className="mt-6 rounded-2xl border border-ciruela-700 bg-ciruela-900 p-6">
-      <p className="text-sm text-ciruela-400">
-        Archivo: <span className="font-mono text-ciruela-200">{nombreArchivo}</span>
+    <div className="mt-6 rounded-2xl border border-borde bg-white p-6 shadow-sm">
+      <p className="text-sm text-tinta-suave">
+        Archivo: <span className="font-mono text-tinta">{nombreArchivo}</span>
       </p>
 
       {/* Período en grande + selector manual */}
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
         {periodoDetectado ? (
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-brand-900">
             Detecté:{' '}
-            <span className="text-magenta-400">
+            <span className="text-brand-700">
               {nombreMes(periodoDetectado.mes)} {periodoDetectado.anio}
             </span>
           </p>
         ) : (
-          <p className="text-2xl font-bold text-amber-300">Período no detectado</p>
+          <p className="text-2xl font-bold text-amber-600">Período no detectado</p>
         )}
 
         <div className="flex items-center gap-2 text-sm">
-          <label htmlFor="mes-manual" className="text-ciruela-400">
+          <label htmlFor="mes-manual" className="text-tinta-suave">
             {periodoDetectado ? 'Corregir:' : 'Selecciónalo:'}
           </label>
           <select
@@ -79,7 +79,7 @@ export default function Previsualizacion({
                 anio: periodoEfectivo?.anio ?? new Date().getFullYear(),
               })
             }
-            className="rounded-lg border border-ciruela-700 bg-ciruela-950 px-2 py-1.5 text-white focus:border-magenta-500 focus:outline-none"
+            className="rounded-lg border border-borde bg-white px-2 py-1.5 text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
           >
             <option value="" disabled>
               Mes…
@@ -100,14 +100,14 @@ export default function Previsualizacion({
                 anio: parseInt(e.target.value, 10) || new Date().getFullYear(),
               })
             }
-            className="w-24 rounded-lg border border-ciruela-700 bg-ciruela-950 px-2 py-1.5 text-white focus:border-magenta-500 focus:outline-none"
+            className="w-24 rounded-lg border border-borde bg-white px-2 py-1.5 text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Aviso de reemplazo */}
       {cargaExistente && periodoEfectivo && (
-        <p className="mt-4 rounded-lg border border-amber-700 bg-amber-950/50 px-4 py-3 text-sm font-medium text-amber-300">
+        <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
           ⚠️ {nombreMes(periodoEfectivo.mes)} {periodoEfectivo.anio} ya fue cargado el{' '}
           {fechaHora(cargaExistente.creada_en)}. Esta carga lo{' '}
           <span className="font-bold">REEMPLAZARÁ</span>.
@@ -116,25 +116,26 @@ export default function Previsualizacion({
 
       {/* Conteos y totales por clase */}
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-ciruela-800 bg-ciruela-950/60 p-4">
-          <p className="text-sm text-ciruela-400">Filas</p>
-          <p className="mt-1 text-white">
-            <span className="text-xl font-bold">{entero(filas.length)}</span> totales ·{' '}
-            <span className="text-xl font-bold text-magenta-400">{entero(transaccionales.length)}</span>{' '}
+        <div className="rounded-xl border border-borde bg-fondo p-4">
+          <p className="text-sm text-tinta-suave">Filas</p>
+          <p className="mt-1 text-tinta">
+            <span className="text-xl font-bold text-brand-900">{entero(filas.length)}</span>{' '}
+            totales ·{' '}
+            <span className="text-xl font-bold text-brand-700">{entero(transaccionales.length)}</span>{' '}
             transaccionales
           </p>
         </div>
-        <div className="rounded-xl border border-ciruela-800 bg-ciruela-950/60 p-4">
-          <p className="mb-2 text-sm text-ciruela-400">Saldos finales por clase (transaccionales)</p>
+        <div className="rounded-xl border border-borde bg-fondo p-4">
+          <p className="mb-2 text-sm text-tinta-suave">Saldos finales por clase (transaccionales)</p>
           <table className="w-full text-sm">
             <tbody>
               {totalesPorClase.map((t) => (
-                <tr key={t.clase} className="border-t border-ciruela-800/60 first:border-t-0">
-                  <td className="py-1 pr-2 text-ciruela-300">
+                <tr key={t.clase} className="border-t border-borde first:border-t-0">
+                  <td className="py-1 pr-2 text-tinta">
                     {t.clase} · {t.nombre}
                   </td>
-                  <td className="py-1 pr-2 text-right text-ciruela-400">{t.cuentas} ctas.</td>
-                  <td className="py-1 text-right font-mono text-white">{moneda(t.saldoFinal)}</td>
+                  <td className="py-1 pr-2 text-right text-tinta-suave">{t.cuentas} ctas.</td>
+                  <td className="py-1 text-right tabular-nums text-tinta">{moneda(t.saldoFinal)}</td>
                 </tr>
               ))}
             </tbody>
@@ -144,17 +145,17 @@ export default function Previsualizacion({
 
       {/* Validaciones */}
       <div className="mt-5">
-        <p className="mb-2 text-sm font-semibold text-ciruela-300">Validaciones</p>
+        <p className="mb-2 text-sm font-semibold text-brand-900">Validaciones</p>
         <ul className="space-y-2">
           {validaciones.map((v, i) => (
             <li
               key={i}
               className={`rounded-lg border px-3 py-2 text-sm ${
                 v.tipo === 'bloqueante'
-                  ? 'border-red-800 bg-red-950/50 text-red-200'
+                  ? 'border-red-200 bg-red-50 text-red-700'
                   : v.tipo === 'advertencia'
-                    ? 'border-amber-700 bg-amber-950/40 text-amber-200'
-                    : 'border-ciruela-700 bg-ciruela-950/60 text-ciruela-200'
+                    ? 'border-amber-300 bg-amber-50 text-amber-800'
+                    : 'border-borde bg-fondo text-tinta'
               }`}
             >
               <span className="mr-1.5">{ICONO_VALIDACION[v.tipo]}</span>

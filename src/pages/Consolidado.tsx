@@ -115,32 +115,32 @@ export default function Consolidado() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white">Consolidado</h1>
-      <p className="mt-2 max-w-2xl text-sm text-ciruela-300">
+      <h1 className="text-2xl font-bold text-brand-900">Consolidado</h1>
+      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">
         Clasifica cada cuenta del catálogo: su rubro del Estado de Resultados y si entra al ER y/o
         al Balance General. Los cambios se guardan al instante.
       </p>
 
       {errorCarga && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Error consultando la base: {errorCarga.message}
         </p>
       )}
 
-      {cargando && <p className="mt-6 text-sm text-ciruela-400">Cargando catálogo y movimientos…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">Cargando catálogo y movimientos…</p>}
 
       {!cargando && !errorCarga && catalogo.data && (
         <>
           {/* Banner de pendientes */}
           {pendientes.length > 0 && !soloPendientes && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-700 bg-amber-950/40 px-4 py-3">
-              <p className="text-sm font-medium text-amber-200">
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+              <p className="text-sm font-medium text-amber-800">
                 ⚠️ Hay {pendientes.length} cuenta(s) nueva(s) sin clasificar.
               </p>
               <button
                 type="button"
                 onClick={() => setSoloPendientes(true)}
-                className="rounded-lg bg-amber-700/60 px-3 py-1.5 text-xs font-semibold text-amber-100 hover:bg-amber-700"
+                className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-amber-700"
               >
                 Ver pendientes
               </button>
@@ -155,9 +155,9 @@ export default function Consolidado() {
               { etiqueta: 'Incluidas en BG', valor: totalBg },
               { etiqueta: 'Pendientes de clasificar', valor: pendientes.length },
             ].map((kpi) => (
-              <div key={kpi.etiqueta} className="rounded-xl border border-ciruela-800 bg-ciruela-900/60 px-4 py-3">
-                <p className="text-xs text-ciruela-400">{kpi.etiqueta}</p>
-                <p className="mt-1 text-2xl font-bold text-white">{entero(kpi.valor)}</p>
+              <div key={kpi.etiqueta} className="rounded-xl border border-borde bg-white px-4 py-3 shadow-sm">
+                <p className="text-xs text-tinta-suave">{kpi.etiqueta}</p>
+                <p className="mt-1 text-2xl font-bold text-brand-900">{entero(kpi.valor)}</p>
               </div>
             ))}
           </div>
@@ -169,13 +169,13 @@ export default function Consolidado() {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar por cuenta o nombre…"
-              className="w-72 rounded-lg border border-ciruela-700 bg-ciruela-950 px-3 py-2 text-sm text-white placeholder-ciruela-600 focus:border-magenta-500 focus:outline-none"
+              className="w-72 rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta placeholder-gray-400 transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             />
             <select
               aria-label="Filtrar por clase"
               value={filtroClase}
               onChange={(e) => setFiltroClase(e.target.value)}
-              className="rounded-lg border border-ciruela-700 bg-ciruela-950 px-3 py-2 text-sm text-white focus:border-magenta-500 focus:outline-none"
+              className="rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             >
               <option value="todas">Todas las clases</option>
               <option value="1">1 · Activo</option>
@@ -186,16 +186,16 @@ export default function Consolidado() {
               <option value="6">6 · Costos</option>
               <option value="7">7 · Costos de producción</option>
             </select>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-ciruela-300">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-tinta">
               <input
                 type="checkbox"
                 checked={soloPendientes}
                 onChange={(e) => setSoloPendientes(e.target.checked)}
-                className="h-4 w-4 accent-magenta-500"
+                className="h-4 w-4 accent-brand-700"
               />
               Solo pendientes de clasificar
             </label>
-            <p className="ml-auto text-xs text-ciruela-400">
+            <p className="ml-auto text-xs text-tinta-suave">
               Mostrando {entero(visibles.length)} de {entero(catalogo.data.length)}
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function Consolidado() {
             />
           </div>
 
-          <p className="mt-3 text-xs text-ciruela-500">
+          <p className="mt-3 text-xs text-tinta-suave">
             Valor: clases 4-7 acumulado del año con signo según naturaleza; clases 1-3 saldo final
             del último mes cargado. ▸ expande el detalle mes a mes.
           </p>

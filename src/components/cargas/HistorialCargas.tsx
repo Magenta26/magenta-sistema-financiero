@@ -61,71 +61,74 @@ export default function HistorialCargas() {
 
   return (
     <section className="mt-10">
-      <h2 className="text-lg font-semibold text-white">Historial de cargas</h2>
+      <h2 className="text-lg font-semibold text-brand-900">Historial de cargas</h2>
 
-      {isLoading && <p className="mt-3 text-sm text-ciruela-400">Cargando historial…</p>}
+      {isLoading && <p className="mt-3 text-sm text-tinta-suave">Cargando historial…</p>}
       {error && (
-        <p role="alert" className="mt-3 rounded-lg border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-300">
+        <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           No se pudo consultar el historial: {error.message}
         </p>
       )}
       {errorDescarga && (
-        <p role="alert" className="mt-3 rounded-lg border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-300">
+        <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {errorDescarga}
         </p>
       )}
 
       {cargas && cargas.length === 0 && (
-        <p className="mt-3 rounded-xl border border-dashed border-ciruela-700 bg-ciruela-900/40 p-6 text-center text-sm text-ciruela-400">
+        <p className="mt-3 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
           Aún no hay cargas. Sube el primer balance arriba.
         </p>
       )}
 
       {cargas && cargas.length > 0 && (
-        <div className="mt-3 overflow-x-auto rounded-xl border border-ciruela-800">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-ciruela-900 text-left text-ciruela-400">
+            <thead className="sticky top-0 bg-gray-50 text-left text-brand-900">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Período</th>
-                <th className="px-4 py-2.5 font-medium">Archivo</th>
-                <th className="px-4 py-2.5 font-medium">Fecha</th>
-                <th className="px-4 py-2.5 font-medium">Usuario</th>
-                <th className="px-4 py-2.5 font-medium">Estado</th>
-                <th className="px-4 py-2.5 font-medium">Filas</th>
-                <th className="px-4 py-2.5 font-medium">Validaciones</th>
-                <th className="px-4 py-2.5 font-medium"></th>
+                <th className="px-4 py-2.5 font-semibold">Período</th>
+                <th className="px-4 py-2.5 font-semibold">Archivo</th>
+                <th className="px-4 py-2.5 font-semibold">Fecha</th>
+                <th className="px-4 py-2.5 font-semibold">Usuario</th>
+                <th className="px-4 py-2.5 font-semibold">Estado</th>
+                <th className="px-4 py-2.5 font-semibold">Filas</th>
+                <th className="px-4 py-2.5 font-semibold">Validaciones</th>
+                <th className="px-4 py-2.5 font-semibold"></th>
               </tr>
             </thead>
             <tbody>
               {cargas.map((c) => (
-                <tr key={c.id} className="border-t border-ciruela-800/70 bg-ciruela-950/40">
-                  <td className="px-4 py-2.5 font-medium text-white">
+                <tr
+                  key={c.id}
+                  className="border-t border-borde transition-colors duration-150 even:bg-gray-50/60 hover:bg-brand-50"
+                >
+                  <td className="px-4 py-2.5 font-medium text-brand-900">
                     {nombreMes(c.mes)} {c.anio}
                   </td>
-                  <td className="max-w-56 truncate px-4 py-2.5 font-mono text-xs text-ciruela-300" title={c.nombre_archivo}>
+                  <td className="max-w-56 truncate px-4 py-2.5 font-mono text-xs text-tinta-suave" title={c.nombre_archivo}>
                     {c.nombre_archivo}
                   </td>
-                  <td className="px-4 py-2.5 text-ciruela-300">{fechaHora(c.creada_en)}</td>
-                  <td className="px-4 py-2.5 text-ciruela-300">{c.usuario_email ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-tinta-suave">{fechaHora(c.creada_en)}</td>
+                  <td className="px-4 py-2.5 text-tinta-suave">{c.usuario_email ?? '—'}</td>
                   <td className="px-4 py-2.5">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                         c.estado === 'activa'
-                          ? 'bg-emerald-900/60 text-emerald-300'
-                          : 'bg-ciruela-800 text-ciruela-400'
+                          ? 'bg-green-100 text-exito'
+                          : 'bg-gray-100 text-gray-500'
                       }`}
                     >
                       {c.estado}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-right text-ciruela-300">{c.filas_importadas ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-ciruela-300">{resumenValidaciones(c.validaciones)}</td>
+                  <td className="px-4 py-2.5 text-right tabular-nums text-tinta">{c.filas_importadas ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-tinta-suave">{resumenValidaciones(c.validaciones)}</td>
                   <td className="px-4 py-2.5 text-right">
                     <button
                       type="button"
                       onClick={() => descargar(c)}
                       disabled={descargando === c.id}
-                      className="rounded-lg border border-ciruela-700 px-2.5 py-1 text-xs text-ciruela-300 transition-colors hover:border-magenta-500 hover:text-magenta-300 disabled:opacity-50"
+                      className="rounded-lg border border-borde bg-white px-2.5 py-1 text-xs text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
                     >
                       {descargando === c.id ? 'Generando…' : 'Descargar .xlsx'}
                     </button>

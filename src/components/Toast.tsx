@@ -9,10 +9,10 @@ export default function Toast({ toast }: { toast: DatosToast | null }) {
   return (
     <div
       role="status"
-      className={`fixed bottom-6 right-6 z-50 max-w-md rounded-xl border px-4 py-3 text-sm shadow-xl shadow-black/50 ${
+      className={`fixed bottom-6 right-6 z-50 max-w-md rounded-xl border px-4 py-3 text-sm shadow-lg ${
         toast.tipo === 'exito'
-          ? 'border-emerald-700 bg-emerald-950 text-emerald-200'
-          : 'border-red-800 bg-red-950 text-red-200'
+          ? 'border-green-200 bg-green-50 text-exito'
+          : 'border-red-200 bg-red-50 text-red-700'
       }`}
     >
       {toast.tipo === 'exito' ? '✅ ' : '⛔ '}

@@ -17,13 +17,13 @@ interface FilaDrill {
 function BarraParticipacion({ porcentaje: pct }: { porcentaje: number }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-ciruela-800">
+      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-200">
         <div
-          className="h-full rounded-full bg-magenta-500"
+          className="h-full rounded-full bg-brand-700"
           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
         />
       </div>
-      <span className="w-12 text-right font-mono text-xs text-ciruela-400">
+      <span className="w-12 text-right text-xs tabular-nums text-tinta-suave">
         {pct.toFixed(1).replace('.', ',')} %
       </span>
     </div>
@@ -134,14 +134,14 @@ export default function DrillDown({ modelo, movimientos, mes }: DrillDownProps) 
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-ciruela-800 bg-ciruela-900/40">
+    <div className="overflow-x-auto rounded-2xl border border-borde bg-white shadow-sm">
       <table className="w-full text-sm">
-        <thead className="bg-ciruela-900 text-left text-xs text-ciruela-400">
+        <thead className="sticky top-0 bg-gray-50 text-left text-xs text-brand-900">
           <tr>
-            <th className="px-4 py-2.5 font-medium">Rubro / cuenta / auxiliar</th>
-            <th className="px-4 py-2.5 text-right font-medium">Mes</th>
-            <th className="px-4 py-2.5 text-right font-medium">Acumulado año</th>
-            <th className="px-4 py-2.5 font-medium">Participación</th>
+            <th className="px-4 py-2.5 font-semibold">Rubro / cuenta / auxiliar</th>
+            <th className="px-4 py-2.5 text-right font-semibold">Mes</th>
+            <th className="px-4 py-2.5 text-right font-semibold">Acumulado año</th>
+            <th className="px-4 py-2.5 font-semibold">Participación</th>
           </tr>
         </thead>
         <tbody>
@@ -152,36 +152,36 @@ export default function DrillDown({ modelo, movimientos, mes }: DrillDownProps) 
               <Fragment key={fila.clave}>
                 <tr
                   onClick={() => alClic(fila)}
-                  className={`border-t border-ciruela-800/50 ${
+                  className={`border-t border-borde transition-colors duration-150 ${
                     fila.nivel === 0
-                      ? 'cursor-pointer bg-ciruela-950/70 font-semibold hover:bg-ciruela-900'
+                      ? 'cursor-pointer bg-white font-semibold hover:bg-brand-50'
                       : fila.nivel === 1
-                        ? `bg-ciruela-950/30 ${fila.expandible ? 'cursor-pointer hover:bg-ciruela-900/60' : ''}`
-                        : 'bg-ciruela-950/10'
+                        ? `bg-gray-50/60 ${fila.expandible ? 'cursor-pointer hover:bg-brand-50' : ''}`
+                        : 'bg-white'
                   }`}
                 >
                   <td
                     className={`py-2 pr-3 text-xs ${
-                      fila.nivel === 0 ? 'pl-4 text-white' : fila.nivel === 1 ? 'pl-9 text-ciruela-200' : 'pl-14 text-ciruela-300'
+                      fila.nivel === 0 ? 'pl-4 text-brand-900' : fila.nivel === 1 ? 'pl-9 text-tinta' : 'pl-14 text-tinta-suave'
                     }`}
                   >
                     {fila.expandible && (
-                      <span className="mr-1.5 inline-block w-3 text-ciruela-400">
+                      <span className="mr-1.5 inline-block w-3 text-tinta-suave">
                         {abierta ? '▾' : '▸'}
                       </span>
                     )}
                     {fila.etiqueta}
                   </td>
                   <td
-                    className={`whitespace-nowrap px-4 py-2 text-right font-mono text-xs ${
-                      fila.valorMes < 0 ? 'text-red-400' : 'text-ciruela-100'
+                    className={`whitespace-nowrap px-4 py-2 text-right text-xs tabular-nums ${
+                      fila.valorMes < 0 ? 'text-red-600' : 'text-tinta'
                     }`}
                   >
                     {moneda(fila.valorMes)}
                   </td>
                   <td
-                    className={`whitespace-nowrap px-4 py-2 text-right font-mono text-xs ${
-                      fila.acumulado < 0 ? 'text-red-400' : 'text-ciruela-300'
+                    className={`whitespace-nowrap px-4 py-2 text-right text-xs tabular-nums ${
+                      fila.acumulado < 0 ? 'text-red-600' : 'text-tinta-suave'
                     }`}
                   >
                     {moneda(fila.acumulado)}

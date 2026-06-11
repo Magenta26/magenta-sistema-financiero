@@ -5,7 +5,7 @@ import type { ModeloEr } from './estadoResultados'
 import { transformarTotalAnio, transformarValor } from './estadoResultados'
 import type { ModeloBg } from './balanceGeneral'
 
-const EMPRESA = 'MAGENTA FARMS S.A.S — NIT 901.479.899-9'
+const EMPRESA = 'Magenta Farms S.A.S. — NIT 901.479.899-9'
 
 const NOMBRE_MODO: Record<ModoEr, string> = {
   absolutos: 'Absolutos',

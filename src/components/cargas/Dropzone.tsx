@@ -45,14 +45,16 @@ export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
         }}
         onDragLeave={() => setArrastrando(false)}
         onDrop={alSoltar}
-        className={`cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-colors ${
+        className={`cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-colors duration-150 ${
           arrastrando
-            ? 'border-magenta-500 bg-magenta-600/10'
-            : 'border-ciruela-700 bg-ciruela-900/50 hover:border-magenta-500/60'
+            ? 'border-brand-700 bg-brand-50'
+            : 'border-gray-300 bg-white hover:border-brand-500'
         } ${deshabilitado ? 'pointer-events-none opacity-50' : ''}`}
       >
-        <p className="text-lg text-white">Arrastra aquí el balance de prueba de SIIGO</p>
-        <p className="mt-1 text-sm text-ciruela-400">
+        <p className="text-lg font-medium text-brand-900">
+          Arrastra aquí el balance de prueba de SIIGO
+        </p>
+        <p className="mt-1 text-sm text-tinta-suave">
           o haz clic para seleccionarlo — solo archivos <span className="font-mono">.xlsx</span>
         </p>
       </div>
@@ -67,7 +69,7 @@ export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
         }}
       />
       {errorTipo && (
-        <p role="alert" className="mt-3 rounded-lg border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-300">
+        <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {errorTipo}
         </p>
       )}

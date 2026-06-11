@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
-/* Tema oscuro ciruela/negro con acentos magenta (continuidad con el dashboard previo de Magenta Farms) */
+/*
+ * Tema claro con identidad Magenta Farms (decisión de diseño — ver CLAUDE.md).
+ * Tokens de marca tomados del logo: ciruela profundo, magenta principal,
+ * rosado del colibrí y verde de la hoja para los estados de éxito.
+ */
 @theme {
-  --color-ciruela-950: #120713;
-  --color-ciruela-900: #1c0e1f;
-  --color-ciruela-800: #2a1530;
-  --color-ciruela-700: #3c1f45;
-  --color-ciruela-600: #532b5e;
-  --color-ciruela-400: #9a6daa;
-  --color-ciruela-300: #bb97c7;
-  --color-ciruela-200: #d9c3e0;
+  /* Marca */
+  --color-brand-900: #501040; /* ciruela profundo: títulos, alta jerarquía */
+  --color-brand-700: #7a1b5c; /* magenta principal: botones, links, activos, focos */
+  --color-brand-500: #a03080; /* magenta medio: hovers, acentos, gráficos */
+  --color-brand-200: #d090b0; /* rosado colibrí: badges, fills suaves, seleccionados */
+  --color-brand-50: #faf2f7; /* rosado casi blanco: hover de filas, paneles destacados */
 
-  --color-magenta-600: #c2107a;
-  --color-magenta-500: #e3219b;
-  --color-magenta-400: #ef4db4;
-  --color-magenta-300: #f783cb;
+  /* Neutros */
+  --color-fondo: #f6f7f9; /* fondo general de la app */
+  --color-borde: #e5e7eb;
+  --color-tinta: #1f2430; /* texto principal */
+  --color-tinta-suave: #6b7280; /* texto secundario */
+
+  /* Semánticos (solo validaciones y badges) */
+  --color-exito: #2e8b57; /* verde hoja del logo */
 }
 
 html,
@@ -24,5 +30,5 @@ body,
 }
 
 body {
-  @apply bg-ciruela-950 text-ciruela-200 antialiased;
+  @apply bg-fondo text-tinta antialiased;
 }

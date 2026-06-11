@@ -32,8 +32,8 @@ export default function BalanceGeneral() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Balance General {anio}</h1>
-          <p className="mt-1 text-sm text-ciruela-300">
+          <h1 className="text-2xl font-bold text-brand-900">Balance General {anio}</h1>
+          <p className="mt-1 text-sm text-tinta-suave">
             Por grupo (2 dígitos), saldo final de cada mes. Pasivo y patrimonio en positivo.
           </p>
         </div>
@@ -41,34 +41,34 @@ export default function BalanceGeneral() {
           type="button"
           disabled={!modelo}
           onClick={() => modelo && exportarBg(modelo)}
-          className="rounded-lg border border-ciruela-700 px-3 py-1.5 text-xs font-semibold text-ciruela-200 transition-colors hover:border-magenta-500 hover:text-magenta-300 disabled:opacity-50"
+          className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
         >
           Exportar a Excel
         </button>
       </div>
 
       {error && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Error consultando las vistas: {error.message}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-ciruela-400">Calculando el Balance General…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando el Balance General…</p>}
 
       {modelo && meses.length === 0 && (
-        <p className="mt-6 rounded-xl border border-dashed border-ciruela-700 bg-ciruela-900/40 p-6 text-center text-sm text-ciruela-400">
+        <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
           No hay datos cargados para {anio}. Sube balances en la sección Cargas.
         </p>
       )}
 
       {modelo && meses.length > 0 && (
         <>
-          <div className="mt-6 overflow-x-auto rounded-xl border border-ciruela-800">
+          <div className="mt-6 overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
             <table className="w-full">
-              <thead className="bg-ciruela-900 text-ciruela-400">
+              <thead className="sticky top-0 bg-gray-50 text-brand-900">
                 <tr>
-                  <th className="min-w-64 px-3 py-2.5 text-left text-xs font-medium">Línea</th>
+                  <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">Línea</th>
                   {meses.map((mes) => (
-                    <th key={mes} className="px-3 py-2.5 text-right text-xs font-medium">
+                    <th key={mes} className="px-3 py-2.5 text-right text-xs font-semibold">
                       {nombreMes(mes)}
                     </th>
                   ))}
@@ -84,8 +84,8 @@ export default function BalanceGeneral() {
                 />
 
                 {/* Cuadre */}
-                <tr className="border-t-2 border-ciruela-700 bg-ciruela-900">
-                  <td className="px-3 py-2.5 text-xs font-bold text-white">
+                <tr className="border-t-2 border-brand-200 bg-gray-50">
+                  <td className="px-3 py-2.5 text-xs font-bold text-brand-900">
                     Cuadre: Activo − (Pasivo + Patrimonio + Resultado)
                   </td>
                   {meses.map((mes) => {
@@ -94,12 +94,12 @@ export default function BalanceGeneral() {
                     return (
                       <td key={mes} className="px-3 py-2.5 text-right">
                         {cuadra ? (
-                          <span className="rounded-full bg-emerald-900/60 px-2 py-0.5 text-xs font-semibold text-emerald-300">
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-exito">
                             ✓ cuadra
                           </span>
                         ) : (
                           <span
-                            className="rounded-full bg-red-900/70 px-2 py-0.5 font-mono text-xs font-semibold text-red-200"
+                            className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-red-700"
                             title={`Diferencia: ${contable(dif)}`}
                           >
                             {contable(dif)}
@@ -112,7 +112,7 @@ export default function BalanceGeneral() {
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-ciruela-500">
+          <p className="mt-3 text-xs text-tinta-suave">
             El cuadre se considera correcto con diferencia ≤ $1 (redondeos). El resultado del
             ejercicio es la utilidad neta acumulada calculada desde el Estado de Resultados.
           </p>

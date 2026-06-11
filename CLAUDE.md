@@ -8,6 +8,15 @@
 4. **Nunca poner llaves/secretos en el código fuente.** Las credenciales de Supabase viven en `.env.local` (ignorado por git) y se leen vía `import.meta.env`.
 5. Al completar una fase, **registrarla al final de este archivo** en la sección "Fases completadas".
 
+## Decisión de diseño: tema claro con identidad Magenta (2026-06-11)
+
+Paleta clara tipo SaaS financiero con los colores reales de la marca (tokens en `@theme` de `src/index.css` — usarlos siempre, nada de colores sueltos):
+
+- `brand-900` #501040 (ciruela profundo: títulos, alta jerarquía) · `brand-700` #7A1B5C (magenta principal: botones primarios, links, activos, focos) · `brand-500` #A03080 (hovers, acentos, gráficos) · `brand-200` #D090B0 (badges, fills suaves, seleccionados) · `brand-50` #FAF2F7 (hover de filas, paneles destacados)
+- Neutros: `fondo` #F6F7F9 (fondo de la app), blanco para tarjetas, `borde` #E5E7EB, `tinta` #1F2430 (texto), `tinta-suave` #6B7280 (texto secundario)
+- Semánticos (solo validaciones/badges): `exito` #2E8B57 (verde hoja del logo), ámbar y rojo de Tailwind
+- Logo en `src/assets/Logo.png` (login, sidebar) y `public/favicon.png`. Negativos en rojo entre paréntesis, números con `tabular-nums`, transiciones de 150 ms.
+
 ## Stack
 
 React + Vite + TypeScript + Tailwind CSS v4 · Supabase (Postgres + Auth + Storage + RLS) · TanStack Query · React Router · SheetJS (xlsx) · Recharts.
@@ -20,3 +29,4 @@ React + Vite + TypeScript + Tailwind CSS v4 · Supabase (Postgres + Auth + Stora
 - **Fase 3** (2026-06-11): consolidado interactivo. Tabla del catálogo con valor YTD por prefijo (clases 1-3: saldo final del último mes), rubro editable y checks ER/BG con optimistic update + toast (toda edición pasa `origen` a `manual`), invariante anti-doble-conteo validada en cliente (`conflictoEr`), filtros (texto/clase/pendientes), banner y contadores, detalle expandible mes a mes, orden por cuenta o valor. Lógica en `src/lib/consolidado.ts` con tests.
 - **Fase 4** (2026-06-11): Estado de Resultados y Balance General. `/estado-resultados`: matriz Ene–Dic + total año, rubros colapsables, derivadas (TOTAL INGRESOS/COSTO, UTILIDADES BRUTA/OPERACIONAL/NETA), modos Absolutos/Vertical/Horizontal, chequeos por grupo desde `v_er_chequeos`, export Excel. `/balance-general`: secciones por grupo, resultado del ejercicio acumulado, fila de cuadre con tolerancia $1, export Excel. Lógica pura en `src/lib/estadoResultados.ts` y `balanceGeneral.ts` con tests. Verificación contra PLAN.md sección 8: local exacta al centavo (Ene–Abr con catálogo semilla, `scripts/verificar_seccion8_local.ts`) y script contra la base (`scripts/verificar_fase4.ts`, requiere VERIF_EMAIL/VERIF_PASSWORD).
 - **Fase 5** (2026-06-11): análisis financiero en `/analisis`. KPIs del período de trabajo con selector de mes (ingresos, utilidades bruta/operacional/neta con margen, variación vs mes anterior y vs promedio, acumulado del año), panel determinístico "Lectura del mes", gráficos Recharts (tendencia mensual con barras+línea, evolución de márgenes, donuts de costo y gastos con top cuentas en tooltip, top 10 variaciones en barras divergentes magenta/teal), drill-down rubro → cuenta → auxiliar con barras de participación, responsive. Lógica pura en `src/lib/analisis.ts` con tests.
+- **Rediseño visual** (2026-06-11): tema claro con identidad Magenta y logo (ver "Decisión de diseño" arriba). Solo estilos; cero cambios funcionales.

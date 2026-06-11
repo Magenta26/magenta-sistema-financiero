@@ -8,16 +8,16 @@ interface VariacionProps {
 function Variacion({ etiqueta, valor }: VariacionProps) {
   if (valor === null) {
     return (
-      <p className="text-xs text-ciruela-500">
+      <p className="text-xs text-gray-400">
         {etiqueta}: <span>—</span>
       </p>
     )
   }
   const positiva = valor >= 0
   return (
-    <p className="text-xs text-ciruela-400">
+    <p className="text-xs text-tinta-suave">
       {etiqueta}:{' '}
-      <span className={positiva ? 'font-semibold text-emerald-400' : 'font-semibold text-red-400'}>
+      <span className={positiva ? 'font-semibold text-exito' : 'font-semibold text-red-600'}>
         {positiva ? '▲' : '▼'} {porcentaje(Math.abs(valor))}
       </span>
     </p>
@@ -44,21 +44,19 @@ export default function TarjetaKpi({
 }: TarjetaKpiProps) {
   return (
     <div
-      className={`rounded-2xl border p-4 ${
-        destacada
-          ? 'border-magenta-600/60 bg-magenta-600/10'
-          : 'border-ciruela-800 bg-ciruela-900/60'
+      className={`rounded-2xl border p-4 shadow-sm ${
+        destacada ? 'border-brand-200 bg-brand-50' : 'border-borde bg-white'
       }`}
     >
-      <p className="text-xs text-ciruela-400">{etiqueta}</p>
+      <p className="text-xs text-tinta-suave">{etiqueta}</p>
       <p
-        className={`mt-1 text-2xl font-bold ${valor < 0 ? 'text-red-400' : 'text-white'}`}
+        className={`mt-1 text-2xl font-bold tabular-nums ${valor < 0 ? 'text-red-600' : 'text-brand-900'}`}
         title={`$${moneda(valor).slice(1)}`}
       >
         {monedaCompacta(valor)}
       </p>
       {margen !== undefined && margen !== null && (
-        <p className="mt-0.5 text-xs font-semibold text-magenta-300">
+        <p className="mt-0.5 text-xs font-semibold text-brand-700">
           margen {porcentaje(margen)}
         </p>
       )}

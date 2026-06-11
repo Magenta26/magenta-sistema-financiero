@@ -1,20 +1,19 @@
-/** Paleta de los gráficos del análisis (tema ciruela/magenta). */
+/** Paleta de los gráficos del análisis (tema claro con identidad Magenta). */
 export const COLORES = {
-  magenta: '#e3219b',
-  magentaClaro: '#f783cb',
-  teal: '#14b8a6',
-  ciruelaBarra: '#6d3a7d',
-  ejes: '#9a6daa',
-  grilla: '#3c1f45',
-  blanco: '#ffffff',
-  ambar: '#f59e0b',
-  violeta: '#a78bfa',
+  principal: '#7a1b5c', // brand-700: serie principal
+  medio: '#a03080', // brand-500: series secundarias
+  suave: '#d090b0', // brand-200: fills suaves
+  profundo: '#501040', // brand-900
+  exito: '#2e8b57', // verde hoja: utilidad / disminuciones
+  ambar: '#d97706',
+  ejes: '#6b7280',
+  grilla: '#e5e7eb',
 }
 
 export const PALETA_DONUT = [
-  COLORES.magenta,
-  COLORES.violeta,
-  COLORES.teal,
+  COLORES.principal,
+  COLORES.medio,
+  COLORES.suave,
   COLORES.ambar,
-  COLORES.magentaClaro,
+  COLORES.profundo,
 ]

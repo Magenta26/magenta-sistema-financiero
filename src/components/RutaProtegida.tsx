@@ -8,7 +8,7 @@ export default function RutaProtegida() {
   if (cargando) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-ciruela-400">Cargando…</p>
+        <p className="text-tinta-suave">Cargando…</p>
       </div>
     )
   }

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import logo from '../assets/Logo.png'
 
 /** Traduce los errores de Supabase Auth a mensajes claros en español. */
 function traducirError(mensaje: string): string {
@@ -62,24 +63,26 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ciruela-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-fondo px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white">
-            Magenta <span className="text-magenta-500">Farms</span>
-          </h1>
-          <p className="mt-2 text-sm text-ciruela-400">
+          <img
+            src={logo}
+            alt="Magenta Farms"
+            className="mx-auto h-36 w-auto object-contain"
+          />
+          <p className="mt-3 text-sm text-tinta-suave">
             Sistema Financiero · Magenta Farms S.A.S.
           </p>
         </div>
 
         <form
           onSubmit={manejarEnvio}
-          className="rounded-2xl border border-ciruela-700 bg-ciruela-900 p-8 shadow-xl shadow-black/40"
+          className="rounded-2xl border border-borde bg-white p-8 shadow-md shadow-brand-900/5"
         >
-          <h2 className="mb-6 text-lg font-semibold text-white">Iniciar sesión</h2>
+          <h2 className="mb-6 text-lg font-semibold text-brand-900">Iniciar sesión</h2>
 
-          <label className="mb-1 block text-sm text-ciruela-300" htmlFor="correo">
+          <label className="mb-1 block text-sm text-tinta-suave" htmlFor="correo">
             Correo electrónico
           </label>
           <input
@@ -89,10 +92,10 @@ export default function Login() {
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
             placeholder="nombre@empresa.com"
-            className="mb-4 w-full rounded-lg border border-ciruela-700 bg-ciruela-950 px-3 py-2 text-white placeholder-ciruela-600 outline-none focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500"
+            className="mb-4 w-full rounded-lg border border-borde bg-white px-3 py-2 text-tinta placeholder-gray-400 outline-none transition-colors duration-150 focus:border-brand-700 focus:ring-1 focus:ring-brand-700"
           />
 
-          <label className="mb-1 block text-sm text-ciruela-300" htmlFor="contrasena">
+          <label className="mb-1 block text-sm text-tinta-suave" htmlFor="contrasena">
             Contraseña
           </label>
           <input
@@ -102,13 +105,13 @@ export default function Login() {
             value={contrasena}
             onChange={(e) => setContrasena(e.target.value)}
             placeholder="••••••••"
-            className="mb-6 w-full rounded-lg border border-ciruela-700 bg-ciruela-950 px-3 py-2 text-white placeholder-ciruela-600 outline-none focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500"
+            className="mb-6 w-full rounded-lg border border-borde bg-white px-3 py-2 text-tinta placeholder-gray-400 outline-none transition-colors duration-150 focus:border-brand-700 focus:ring-1 focus:ring-brand-700"
           />
 
           {error && (
             <p
               role="alert"
-              className="mb-4 rounded-lg border border-red-800 bg-red-950/60 px-3 py-2 text-sm text-red-300"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
               {error}
             </p>
@@ -117,12 +120,12 @@ export default function Login() {
           <button
             type="submit"
             disabled={enviando}
-            className="w-full rounded-lg bg-magenta-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-magenta-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-brand-700 px-4 py-2.5 font-semibold text-white transition-colors duration-150 hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {enviando ? 'Ingresando…' : 'Ingresar'}
           </button>
 
-          <p className="mt-5 text-center text-xs text-ciruela-400">
+          <p className="mt-5 text-center text-xs text-tinta-suave">
             ¿No tienes cuenta? El administrador crea los usuarios en Supabase.
           </p>
         </form>
