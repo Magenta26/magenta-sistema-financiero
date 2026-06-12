@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { fechaHora } from '../../lib/formato'
 import { nombreMes } from '../../types/balance'
 import type { Validacion } from '../../types/balance'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface CargaHistorial {
   id: string
@@ -30,6 +31,7 @@ function resumenValidaciones(validaciones: Validacion[] | null): string {
 }
 
 export default function HistorialCargas() {
+  const { t } = useTranslation()
   const [descargando, setDescargando] = useState<string | null>(null)
   const [errorDescarga, setErrorDescarga] = useState<string | null>(null)
 
@@ -53,7 +55,7 @@ export default function HistorialCargas() {
       .createSignedUrl(carga.storage_path, 60)
     setDescargando(null)
     if (error || !data?.signedUrl) {
-      setErrorDescarga(`No se pudo descargar "${carga.nombre_archivo}": ${error?.message ?? 'sin URL'}`)
+      setErrorDescarga(t.cargas.errorDescarga(carga.nombre_archivo, error?.message ?? t.cargas.sinUrl))
       return
     }
     window.open(data.signedUrl, '_blank')
@@ -61,12 +63,12 @@ export default function HistorialCargas() {
 
   return (
     <section className="mt-10">
-      <h2 className="text-lg font-semibold text-brand-900">Historial de cargas</h2>
+      <h2 className="text-lg font-semibold text-brand-900">{t.cargas.historial}</h2>
 
-      {isLoading && <p className="mt-3 text-sm text-tinta-suave">Cargando historial…</p>}
+      {isLoading && <p className="mt-3 text-sm text-tinta-suave">{t.cargas.cargandoHistorial}</p>}
       {error && (
         <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          No se pudo consultar el historial: {error.message}
+          {t.cargas.errorHistorial(error.message)}
         </p>
       )}
       {errorDescarga && (
@@ -77,7 +79,7 @@ export default function HistorialCargas() {
 
       {cargas && cargas.length === 0 && (
         <p className="mt-3 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
-          Aún no hay cargas. Sube el primer balance arriba.
+          {t.cargas.sinCargas}
         </p>
       )}
 
@@ -86,13 +88,13 @@ export default function HistorialCargas() {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-gray-50 text-left text-brand-900">
               <tr>
-                <th className="px-4 py-2.5 font-semibold">Período</th>
-                <th className="px-4 py-2.5 font-semibold">Archivo</th>
-                <th className="px-4 py-2.5 font-semibold">Fecha</th>
-                <th className="px-4 py-2.5 font-semibold">Usuario</th>
-                <th className="px-4 py-2.5 font-semibold">Estado</th>
-                <th className="px-4 py-2.5 font-semibold">Filas</th>
-                <th className="px-4 py-2.5 font-semibold">Validaciones</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.periodo}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.archivo}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.fecha}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.usuario}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.estado}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.filas}</th>
+                <th className="px-4 py-2.5 font-semibold">{t.cargas.encabezados.validaciones}</th>
                 <th className="px-4 py-2.5 font-semibold"></th>
               </tr>
             </thead>
@@ -118,7 +120,7 @@ export default function HistorialCargas() {
                           : 'bg-gray-100 text-gray-500'
                       }`}
                     >
-                      {c.estado}
+                      {t.cargas.estados[c.estado] ?? c.estado}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-right tabular-nums text-tinta">{c.filas_importadas ?? '—'}</td>
@@ -130,7 +132,7 @@ export default function HistorialCargas() {
                       disabled={descargando === c.id}
                       className="rounded-lg border border-borde bg-white px-2.5 py-1 text-xs text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
                     >
-                      {descargando === c.id ? 'Generando…' : 'Descargar .xlsx'}
+                      {descargando === c.id ? t.cargas.generando : t.cargas.descargar}
                     </button>
                   </td>
                 </tr>

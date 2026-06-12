@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import type { SeccionBg } from '../../lib/balanceGeneral'
 import type { ModoBg } from '../../types/informes'
 import CeldaValor from './CeldaValor'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface SeccionBalanceProps {
   seccion: SeccionBg
@@ -21,11 +22,13 @@ export default function SeccionBalance({
   resultadoEjercicio,
   utilidadNetaMensual,
 }: SeccionBalanceProps) {
+  const { t } = useTranslation()
   const esVariacion = modo === 'variacion'
   const columnas = meses.length + 1 + (esVariacion ? 1 : 0)
   const valoresDe = (grupo: SeccionBg['grupos'][number]) =>
     esVariacion ? grupo.variaciones : grupo.valores
   const totales = esVariacion ? seccion.totalesVariacion : seccion.totales
+  const titulo = t.bg.secciones[seccion.clase] ?? seccion.titulo
 
   return (
     <Fragment>
@@ -34,7 +37,7 @@ export default function SeccionBalance({
           colSpan={columnas}
           className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-brand-700"
         >
-          {seccion.titulo}
+          {titulo}
         </td>
       </tr>
       {seccion.grupos.map((grupo) => (
@@ -52,9 +55,7 @@ export default function SeccionBalance({
         </tr>
       ))}
       <tr className="border-t border-brand-200 bg-brand-50">
-        <td className="px-3 py-2 text-xs font-bold text-brand-900">
-          TOTAL {seccion.titulo.toUpperCase()}
-        </td>
+        <td className="px-3 py-2 text-xs font-bold text-brand-900">{t.bg.totalSeccion(titulo)}</td>
         {meses.map((mes) => (
           <CeldaValor key={mes} valor={totales.get(mes) ?? 0} modo="absolutos" negrilla />
         ))}
@@ -63,7 +64,7 @@ export default function SeccionBalance({
       {!esVariacion && resultadoEjercicio && (
         <tr className="border-t border-borde bg-brand-50/60">
           <td className="py-1.5 pl-7 pr-3 text-xs font-semibold text-tinta">
-            Resultado del ejercicio (utilidad acumulada del año)
+            {t.bg.resultadoEjercicio}
           </td>
           {meses.map((mes) => (
             <CeldaValor key={mes} valor={resultadoEjercicio.get(mes) ?? 0} modo="absolutos" />
@@ -72,9 +73,7 @@ export default function SeccionBalance({
       )}
       {esVariacion && utilidadNetaMensual && (
         <tr className="border-t border-borde bg-brand-50/60">
-          <td className="py-1.5 pl-7 pr-3 text-xs font-semibold text-tinta">
-            Utilidad neta del mes (desde el ER)
-          </td>
+          <td className="py-1.5 pl-7 pr-3 text-xs font-semibold text-tinta">{t.bg.utilidadMes}</td>
           {meses.map((mes) => (
             <CeldaValor key={mes} valor={utilidadNetaMensual.get(mes) ?? 0} modo="absolutos" />
           ))}

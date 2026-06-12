@@ -1,3 +1,5 @@
+import { idiomaGlobal } from '../i18n/idioma'
+
 /** Una fila del balance de prueba de SIIGO, ya parseada. */
 export interface FilaBalance {
   nivel: string // Clase | Grupo | Cuenta | Subcuenta | Auxiliar
@@ -48,6 +50,23 @@ export const MESES_ES = [
   'Diciembre',
 ] as const
 
+export const MESES_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+] as const
+
+/** Nombre del mes en el idioma activo. */
 export function nombreMes(mes: number): string {
-  return MESES_ES[mes - 1] ?? `Mes ${mes}`
+  const meses = idiomaGlobal() === 'en' ? MESES_EN : MESES_ES
+  return meses[mes - 1] ?? `${idiomaGlobal() === 'en' ? 'Month' : 'Mes'} ${mes}`
 }

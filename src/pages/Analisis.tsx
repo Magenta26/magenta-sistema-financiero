@@ -18,27 +18,17 @@ import GraficoTopVariaciones from '../components/analisis/GraficoTopVariaciones'
 import DonutComposicion from '../components/analisis/DonutComposicion'
 import type { PorcionDonut } from '../components/analisis/DonutComposicion'
 import DrillDown from '../components/analisis/DrillDown'
+import { useTranslation } from '../hooks/useTranslation'
 
-const VISTAS: { valor: VistaPeriodo; etiqueta: string }[] = [
-  { valor: 'mensual', etiqueta: 'Mensual' },
-  { valor: 'trimestral', etiqueta: 'Trimestral' },
-  { valor: 'anual', etiqueta: 'Anual' },
-]
-
-const SUSTANTIVO: Record<VistaPeriodo, string> = {
-  mensual: 'mes',
-  trimestral: 'trimestre',
-  anual: 'año',
-}
-
-const TITULO_TENDENCIA: Record<VistaPeriodo, string> = {
-  mensual: 'Tendencia mensual',
-  trimestral: 'Tendencia trimestral',
-  anual: 'Comparación anual',
-}
+const VISTAS: VistaPeriodo[] = ['mensual', 'trimestral', 'anual']
 
 /** Porciones del donut para un conjunto de rubros, con top 3 cuentas del período. */
-function porcionesRubros(modelo: ModeloAnalisis, clave: string, codigos: string[]): PorcionDonut[] {
+function porcionesRubros(
+  modelo: ModeloAnalisis,
+  clave: string,
+  codigos: string[],
+  nombresRubros: Record<string, string>
+): PorcionDonut[] {
   const vp = modelo.valores.get(clave)
   return codigos.flatMap((codigo) => {
     const valor = vp?.rubros.get(codigo) ?? 0
@@ -49,7 +39,13 @@ function porcionesRubros(modelo: ModeloAnalisis, clave: string, codigos: string[
       .filter((c) => Math.abs(c.valor) > 0.005)
       .sort((a, b) => Math.abs(b.valor) - Math.abs(a.valor))
       .slice(0, 3)
-    return [{ nombre: modelo.rubroInfo.get(codigo)?.nombre ?? codigo, valor, topCuentas }]
+    return [
+      {
+        nombre: nombresRubros[codigo] ?? modelo.rubroInfo.get(codigo)?.nombre ?? codigo,
+        valor,
+        topCuentas,
+      },
+    ]
   })
 }
 
@@ -71,6 +67,7 @@ function porcionesVentas(modelo: ModeloAnalisis, clave: string): PorcionDonut[] 
 }
 
 export default function Analisis() {
+  const { t, idioma } = useTranslation()
   const detalle = useErDetalle()
   const rubros = useErRubros()
   const periodoActual = usePeriodoActual()
@@ -84,7 +81,8 @@ export default function Analisis() {
       detalle.data && rubros.data
         ? construirModeloAnalisis(detalle.data, rubros.data, vista)
         : null,
-    [detalle.data, rubros.data, vista]
+    // idioma: las etiquetas de los períodos usan los meses del idioma activo
+    [detalle.data, rubros.data, vista, idioma] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const dya = useMemo(
@@ -114,61 +112,56 @@ export default function Analisis() {
     [modelo, clave]
   )
   const frases = useMemo(
-    () => (modelo && clave ? lecturaDelPeriodo(modelo, clave, dya) : []),
-    [modelo, clave, dya]
+    () =>
+      modelo && clave
+        ? lecturaDelPeriodo(modelo, clave, dya, { lectura: t.analisis.lectura, rubros: t.rubros })
+        : [],
+    [modelo, clave, dya, t]
   )
 
   const cargando = detalle.isLoading || rubros.isLoading || movimientos.isLoading
   const error = detalle.error ?? rubros.error ?? movimientos.error
 
-  const sustantivo = SUSTANTIVO[vista]
-  const etiquetaAnterior = `vs ${sustantivo} anterior`
+  const sustantivo = t.analisis.lectura.sustantivo[vista]
+  const etiquetaAnterior = t.analisis.vsAnterior(sustantivo)
   const sinHistorico = vista !== 'mensual' && (modelo?.aniosConDatos.length ?? 0) < 2
 
   const tooltipEbitda =
     dya.size > 0
       ? [
-          'EBITDA = Utilidad operacional + depreciaciones y amortizaciones.',
-          'Cuentas incluidas (por prefijo PUC 5160/5165/5260/5265/7360 o nombre):',
+          ...t.analisis.tooltipEbitdaCon,
           ...[...dya.entries()].map(([cuenta, nombre]) => `• ${cuenta} ${nombre}`),
         ]
-      : [
-          'No hay cuentas de depreciación/amortización identificadas en el catálogo (prefijos PUC 5160/5165/5260/5265/7360 o nombre con "depreciación"/"amortización" en clases 5 y 7).',
-          'Por ahora EBITDA = Utilidad operacional.',
-        ]
+      : t.analisis.tooltipEbitdaSin
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-900">Análisis financiero</h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Resultados por {sustantivo} y tendencias, directo de las cargas.
-          </p>
+          <h1 className="text-2xl font-bold text-brand-900">{t.analisis.titulo}</h1>
+          <p className="mt-1 text-sm text-tinta-suave">{t.analisis.descripcion(sustantivo)}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {VISTAS.map((v) => (
               <button
-                key={v.valor}
+                key={v}
                 type="button"
                 onClick={() => {
-                  setVista(v.valor)
+                  setVista(v)
                   setClaveElegida(null)
                 }}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-150 ${
-                  vista === v.valor
-                    ? 'bg-brand-700 text-white'
-                    : 'text-tinta-suave hover:text-brand-900'
+                  vista === v ? 'bg-brand-700 text-white' : 'text-tinta-suave hover:text-brand-900'
                 }`}
               >
-                {v.etiqueta}
+                {t.analisis.vistas[v]}
               </button>
             ))}
           </div>
           {modelo && clave && (
             <label className="flex items-center gap-2 text-sm text-tinta">
-              {sustantivo === 'mes' ? 'Mes' : sustantivo === 'trimestre' ? 'Trimestre' : 'Año'}:
+              {t.analisis.selector[vista]}:
               <select
                 value={clave}
                 onChange={(e) => setClaveElegida(e.target.value)}
@@ -177,7 +170,7 @@ export default function Analisis() {
                 {modelo.periodos.map((p) => (
                   <option key={p.clave} value={p.clave}>
                     {p.etiqueta}
-                    {p.parcial ? ' (parcial)' : ''}
+                    {p.parcial ? t.analisis.parcialSelector : ''}
                   </option>
                 ))}
               </select>
@@ -188,21 +181,20 @@ export default function Analisis() {
 
       {error && (
         <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Error consultando la base: {error.message}
+          {t.comun.errorConsultando(error.message)}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando análisis…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">{t.analisis.calculando}</p>}
 
       {modelo && !clave && !cargando && (
         <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
-          No hay datos cargados. Sube balances en la sección Cargas.
+          {t.comun.sinDatosCargados}
         </p>
       )}
 
       {sinHistorico && (
         <p className="mt-6 rounded-xl border border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-sm text-tinta">
-          Por ahora solo hay datos de {modelo?.aniosConDatos.join(', ')}. Carga balances de años
-          anteriores para habilitar esta comparación completa.
+          {t.analisis.sinHistorico(modelo?.aniosConDatos.join(', ') ?? '')}
         </p>
       )}
 
@@ -210,8 +202,7 @@ export default function Analisis() {
         <>
           {periodoSeleccionado.parcial && (
             <p className="mt-4 text-xs font-medium text-amber-700">
-              * {periodoSeleccionado.etiqueta} es un período parcial: agrega solo los meses
-              cargados ({periodoSeleccionado.meses.length}).
+              {t.analisis.notaParcial(periodoSeleccionado.etiqueta, periodoSeleccionado.meses.length)}
             </p>
           )}
 
@@ -220,10 +211,10 @@ export default function Analisis() {
             {kpis.map((kpi) => (
               <TarjetaKpi
                 key={kpi.clave}
-                etiqueta={`${kpi.etiqueta} · ${periodoSeleccionado.etiqueta}`}
+                etiqueta={`${t.analisis.kpis[kpi.clave] ?? kpi.etiqueta} · ${periodoSeleccionado.etiqueta}`}
                 valor={kpi.valor}
                 porcentaje={kpi.porcentaje}
-                etiquetaPorcentaje={kpi.etiquetaPorcentaje}
+                etiquetaPorcentaje={t.analisis.kpiPorcentaje[kpi.clave] ?? kpi.etiquetaPorcentaje}
                 varAnterior={kpi.varAnterior}
                 varPromedio={kpi.varPromedio}
                 etiquetaAnterior={etiquetaAnterior}
@@ -237,7 +228,7 @@ export default function Analisis() {
           {frases.length > 0 && (
             <div className="mt-5 rounded-2xl border border-brand-200 bg-brand-50 p-5">
               <h2 className="text-sm font-semibold text-brand-700">
-                Lectura de {periodoSeleccionado.etiqueta}
+                {t.analisis.lecturaTitulo(periodoSeleccionado.etiqueta)}
               </h2>
               <ul className="mt-2 space-y-1.5">
                 {frases.map((frase, i) => (
@@ -251,41 +242,42 @@ export default function Analisis() {
 
           {/* Gráficos */}
           <div className="mt-5 grid gap-4">
-            <GraficoTendencia series={series} titulo={TITULO_TENDENCIA[vista]} />
+            <GraficoTendencia series={series} titulo={t.analisis.tendencia[vista]} />
             <div className="grid gap-4 lg:grid-cols-2">
               <GraficoMargenes series={series} />
               <GraficoTopVariaciones variaciones={variaciones} sustantivoPeriodo={sustantivo} />
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               <DonutComposicion
-                titulo={`Composición de las ventas · ${periodoSeleccionado.etiqueta}`}
+                titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}
                 porciones={porcionesVentas(modelo, clave)}
-                nota="Las contra-cuentas (ej. devoluciones) no se grafican."
+                nota={t.analisis.donaNotaVentas}
               />
               <DonutComposicion
-                titulo={`Composición del costo · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'])}
+                titulo={`${t.analisis.donaCosto} · ${periodoSeleccionado.etiqueta}`}
+                porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'], t.rubros)}
               />
               <DonutComposicion
-                titulo={`Composición de gastos · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'])}
+                titulo={`${t.analisis.donaGastos} · ${periodoSeleccionado.etiqueta}`}
+                porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros)}
               />
             </div>
           </div>
 
           {/* Drill-down */}
           <div className="mt-6">
-            <h2 className="mb-1 text-lg font-semibold text-brand-900">Explorar el detalle</h2>
+            <h2 className="mb-1 text-lg font-semibold text-brand-900">{t.analisis.drillTitulo}</h2>
             <p className="mb-3 text-sm text-tinta-suave">
-              Rubro → cuenta → auxiliar, con valores de {periodoSeleccionado.etiqueta} y el total
-              del rango visible.
+              {t.analisis.drillDescripcion(periodoSeleccionado.etiqueta)}
             </p>
             <DrillDown
               modelo={modelo}
               movimientos={movimientos.data ?? []}
               clave={clave}
               etiquetaPeriodo={periodoSeleccionado.etiqueta}
-              etiquetaTotal={vista === 'mensual' ? 'Acumulado año' : 'Total del rango'}
+              etiquetaTotal={
+                vista === 'mensual' ? t.analisis.drillTotalMensual : t.analisis.drillTotalRango
+              }
             />
           </div>
         </>

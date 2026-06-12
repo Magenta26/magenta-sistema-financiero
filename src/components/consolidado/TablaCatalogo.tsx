@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react'
 import { moneda } from '../../lib/formato'
 import type { CuentaCatalogo, MovimientoResumen, RubroEr } from '../../types/catalogo'
 import DetalleCuenta from './DetalleCuenta'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export type CampoOrden = 'cuenta' | 'valor'
 
@@ -37,6 +38,7 @@ export default function TablaCatalogo({
   onCambiar,
   guardando,
 }: TablaCatalogoProps) {
+  const { t } = useTranslation()
   const [expandida, setExpandida] = useState<string | null>(null)
 
   const flecha = (campo: CampoOrden) =>
@@ -54,13 +56,14 @@ export default function TablaCatalogo({
                 onClick={() => onOrdenar('cuenta')}
                 className="transition-colors duration-150 hover:text-brand-700"
               >
-                Cuenta{flecha('cuenta')}
+                {t.consolidado.encabezados.cuenta}
+                {flecha('cuenta')}
               </button>
             </th>
-            <th className="px-3 py-2.5 font-semibold">Nombre</th>
-            <th className="px-3 py-2.5 text-center font-semibold">Clase</th>
-            <th className="px-3 py-2.5 text-center font-semibold">Nat.</th>
-            <th className="px-3 py-2.5 font-semibold">Rubro</th>
+            <th className="px-3 py-2.5 font-semibold">{t.consolidado.encabezados.nombre}</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{t.consolidado.encabezados.clase}</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{t.consolidado.encabezados.naturaleza}</th>
+            <th className="px-3 py-2.5 font-semibold">{t.consolidado.encabezados.rubro}</th>
             <th className="px-3 py-2.5 text-center font-semibold">ER</th>
             <th className="px-3 py-2.5 text-center font-semibold">BG</th>
             <th className="px-3 py-2.5 text-right font-semibold">
@@ -69,10 +72,11 @@ export default function TablaCatalogo({
                 onClick={() => onOrdenar('valor')}
                 className="transition-colors duration-150 hover:text-brand-700"
               >
-                Valor{flecha('valor')}
+                {t.consolidado.encabezados.valor}
+                {flecha('valor')}
               </button>
             </th>
-            <th className="px-3 py-2.5 text-center font-semibold">Origen</th>
+            <th className="px-3 py-2.5 text-center font-semibold">{t.consolidado.encabezados.origen}</th>
           </tr>
         </thead>
         <tbody>
@@ -88,7 +92,7 @@ export default function TablaCatalogo({
                   <td className="px-2 py-2">
                     <button
                       type="button"
-                      aria-label={abierta ? 'Cerrar detalle' : 'Ver detalle mes a mes'}
+                      aria-label={abierta ? t.consolidado.cerrarDetalle : t.consolidado.abrirDetalle}
                       onClick={() => setExpandida(abierta ? null : c.cuenta)}
                       className="text-tinta-suave transition-colors duration-150 hover:text-brand-700"
                     >
@@ -112,7 +116,7 @@ export default function TablaCatalogo({
                   <td className="px-3 py-2 text-center text-tinta-suave">{c.naturaleza}</td>
                   <td className="px-3 py-2">
                     <select
-                      aria-label={`Rubro de ${c.cuenta}`}
+                      aria-label={t.consolidado.rubroAria(c.cuenta)}
                       value={c.rubro_codigo ?? ''}
                       disabled={guardando}
                       onChange={(e) =>
@@ -123,10 +127,10 @@ export default function TablaCatalogo({
                       }
                       className="w-full max-w-56 rounded-lg border border-borde bg-white px-2 py-1 text-xs text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none disabled:opacity-60"
                     >
-                      <option value="">Sin rubro</option>
+                      <option value="">{t.consolidado.sinRubro}</option>
                       {rubros.map((r) => (
                         <option key={r.codigo} value={r.codigo}>
-                          {r.nombre}
+                          {t.rubros[r.codigo] ?? r.nombre}
                         </option>
                       ))}
                     </select>
@@ -134,7 +138,7 @@ export default function TablaCatalogo({
                   <td className="px-3 py-2 text-center">
                     <input
                       type="checkbox"
-                      aria-label={`Incluir ${c.cuenta} en el Estado de Resultados`}
+                      aria-label={t.consolidado.incluirErAria(c.cuenta)}
                       checked={c.incluir_er}
                       disabled={guardando}
                       onChange={(e) =>
@@ -146,7 +150,7 @@ export default function TablaCatalogo({
                   <td className="px-3 py-2 text-center">
                     <input
                       type="checkbox"
-                      aria-label={`Incluir ${c.cuenta} en el Balance General`}
+                      aria-label={t.consolidado.incluirBgAria(c.cuenta)}
                       checked={c.incluir_bg}
                       disabled={guardando}
                       onChange={(e) =>
@@ -184,7 +188,7 @@ export default function TablaCatalogo({
       </table>
       {cuentas.length === 0 && (
         <p className="px-4 py-6 text-center text-sm text-tinta-suave">
-          Ninguna cuenta coincide con los filtros.
+          {t.consolidado.sinCoincidencias}
         </p>
       )}
     </div>

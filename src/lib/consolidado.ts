@@ -40,25 +40,22 @@ export function calcularValores(
 /**
  * Invariante anti-doble-conteo (PLAN.md sección 4): ningún código con incluir_er
  * puede ser prefijo de otro código con incluir_er.
- * Devuelve la cuenta en conflicto si activar `cuenta` violaría la invariante.
+ * Devuelve la cuenta en conflicto y el tipo de relación; el mensaje
+ * para el usuario lo redacta la UI con el diccionario activo.
  */
 export function conflictoEr(
   cuenta: string,
   cuentas: CuentaCatalogo[]
-): { conflicto: CuentaCatalogo; razon: string } | null {
+): { conflicto: CuentaCatalogo; tipo: 'la-contiene' | 'es-contenida' } | null {
   for (const otra of cuentas) {
     if (otra.cuenta === cuenta || !otra.incluir_er) continue
+    // la cuenta incluida es prefijo de la nueva: la contiene
     if (cuenta.startsWith(otra.cuenta)) {
-      return {
-        conflicto: otra,
-        razon: `${otra.cuenta} ya está incluida en el ER y contiene a ${cuenta} — incluir ambas duplicaría el valor.`,
-      }
+      return { conflicto: otra, tipo: 'la-contiene' }
     }
+    // la nueva es prefijo de la incluida: la nueva la contendría
     if (otra.cuenta.startsWith(cuenta)) {
-      return {
-        conflicto: otra,
-        razon: `${otra.cuenta} ya está incluida en el ER y ${cuenta} la contiene — incluir ambas duplicaría el valor.`,
-      }
+      return { conflicto: otra, tipo: 'es-contenida' }
     }
   }
   return null

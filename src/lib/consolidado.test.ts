@@ -67,12 +67,13 @@ describe('conflictoEr', () => {
   it('detecta extensión de un código ya incluido', () => {
     const r = conflictoEr('72058405', catalogo)
     expect(r?.conflicto.cuenta).toBe('720584')
-    expect(r?.razon).toContain('duplicaría')
+    expect(r?.tipo).toBe('la-contiene')
   })
 
   it('detecta prefijo de un código ya incluido', () => {
     const r = conflictoEr('72', catalogo)
     expect(r?.conflicto.cuenta).toBe('720584')
+    expect(r?.tipo).toBe('es-contenida')
   })
 
   it('ignora cuentas no incluidas en ER y códigos sin relación', () => {

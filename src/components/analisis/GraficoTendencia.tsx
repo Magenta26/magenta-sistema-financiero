@@ -13,6 +13,7 @@ import type { SeriePunto } from '../../lib/analisis'
 import { monedaCompacta } from '../../lib/formato'
 import { COLORES } from './colores'
 import { TooltipPesos } from './graficos'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface GraficoTendenciaProps {
   series: SeriePunto[]
@@ -21,6 +22,7 @@ interface GraficoTendenciaProps {
 
 /** Barras de ingresos y costos+gastos con la utilidad neta superpuesta. */
 export default function GraficoTendencia({ series, titulo }: GraficoTendenciaProps) {
+  const { t } = useTranslation()
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold text-brand-900">{titulo}</h2>
@@ -37,10 +39,10 @@ export default function GraficoTendencia({ series, titulo }: GraficoTendenciaPro
           />
           <Tooltip content={<TooltipPesos />} cursor={{ fill: 'rgba(122,27,92,0.05)' }} />
           <Legend wrapperStyle={{ fontSize: 11, color: COLORES.ejes }} />
-          <Bar name="Ingresos" dataKey="ingresos" fill={COLORES.principal} radius={[4, 4, 0, 0]} />
-          <Bar name="Costos y gastos" dataKey="costosGastos" fill={COLORES.suave} radius={[4, 4, 0, 0]} />
+          <Bar name={t.analisis.graficoIngresos} dataKey="ingresos" fill={COLORES.principal} radius={[4, 4, 0, 0]} />
+          <Bar name={t.analisis.graficoCostosGastos} dataKey="costosGastos" fill={COLORES.suave} radius={[4, 4, 0, 0]} />
           <Line
-            name="Utilidad neta"
+            name={t.analisis.graficoUtilidadNeta}
             dataKey="utilidadNeta"
             stroke={COLORES.exito}
             strokeWidth={2.5}

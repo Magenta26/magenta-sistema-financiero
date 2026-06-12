@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from '../hooks/useTranslation'
+import type { Diccionario } from '../i18n/es'
+import type { Idioma } from '../i18n/idioma'
 import logo from '../assets/Logo.png'
+
+const CLAVE_SIDEBAR = 'magenta-sidebar-abiertos'
 
 interface ItemNav {
   ruta: string
-  etiqueta: string
+  etiqueta: (t: Diccionario) => string
   icono: string
   /** Ítem visible pero no navegable (módulos en construcción). */
   deshabilitado?: boolean
@@ -13,12 +18,12 @@ interface ItemNav {
 
 interface GrupoNav {
   clave: string
-  etiqueta: string
+  etiqueta: (t: Diccionario) => string
   icono: string
   /** Prefijo de rutas del grupo (para auto-expandir al navegar por URL). */
   prefijo: string
   abiertoPorDefecto: boolean
-  badge?: string
+  badge?: (t: Diccionario) => string
   items: ItemNav[]
 }
 
@@ -29,39 +34,70 @@ interface GrupoNav {
 const GRUPOS: GrupoNav[] = [
   {
     clave: 'finanzas',
-    etiqueta: 'Finanzas',
+    etiqueta: (t) => t.nav.finanzas,
     icono: '🏦',
     prefijo: '/finanzas',
     abiertoPorDefecto: true,
     items: [
-      { ruta: '/finanzas/cargas', etiqueta: 'Cargas', icono: '⬆' },
-      { ruta: '/finanzas/consolidado', etiqueta: 'Consolidado', icono: '▤' },
-      { ruta: '/finanzas/estado-resultados', etiqueta: 'Estado de Resultados', icono: '∑' },
-      { ruta: '/finanzas/balance-general', etiqueta: 'Balance General', icono: '⚖' },
-      { ruta: '/finanzas/analisis', etiqueta: 'Análisis', icono: '◔' },
+      { ruta: '/finanzas/cargas', etiqueta: (t) => t.nav.cargas, icono: '⬆' },
+      { ruta: '/finanzas/consolidado', etiqueta: (t) => t.nav.consolidado, icono: '▤' },
+      { ruta: '/finanzas/estado-resultados', etiqueta: (t) => t.nav.estadoResultados, icono: '∑' },
+      { ruta: '/finanzas/balance-general', etiqueta: (t) => t.nav.balanceGeneral, icono: '⚖' },
+      { ruta: '/finanzas/analisis', etiqueta: (t) => t.nav.analisis, icono: '◔' },
     ],
   },
   {
     clave: 'nomina',
-    etiqueta: 'Nómina',
+    etiqueta: (t) => t.nav.nomina,
     icono: '👥',
     prefijo: '/nomina',
     abiertoPorDefecto: false,
-    badge: 'Próximamente',
-    items: [{ ruta: '/nomina', etiqueta: 'Módulo en construcción', icono: '🚧', deshabilitado: true }],
+    badge: (t) => t.nav.proximamente,
+    items: [
+      { ruta: '/nomina', etiqueta: (t) => t.nav.enConstruccion, icono: '🚧', deshabilitado: true },
+    ],
   },
 ]
 
+function abiertosGuardados(): string[] | null {
+  try {
+    const crudo = localStorage.getItem(CLAVE_SIDEBAR)
+    if (!crudo) return null
+    const lista = JSON.parse(crudo)
+    return Array.isArray(lista) ? lista.filter((x) => typeof x === 'string') : null
+  } catch {
+    return null
+  }
+}
+
+function guardarAbiertos(claves: Set<string>): void {
+  try {
+    localStorage.setItem(CLAVE_SIDEBAR, JSON.stringify([...claves]))
+  } catch {
+    // sin persistencia, el estado vive solo en la sesión
+  }
+}
+
 export default function Layout() {
   const { sesion, cerrarSesion } = useAuth()
+  const { t, idioma, cambiarIdioma } = useTranslation()
   const location = useLocation()
+
   const [abiertos, setAbiertos] = useState<Set<string>>(() => {
-    const iniciales = new Set(GRUPOS.filter((g) => g.abiertoPorDefecto).map((g) => g.clave))
+    const guardado = abiertosGuardados()
+    const iniciales = guardado
+      ? new Set(guardado)
+      : new Set(GRUPOS.filter((g) => g.abiertoPorDefecto).map((g) => g.clave))
     // Si se entra directo por URL a un grupo colapsado, arranca expandido.
     const grupoActivo = GRUPOS.find((g) => location.pathname.startsWith(g.prefijo))
     if (grupoActivo) iniciales.add(grupoActivo.clave)
     return iniciales
   })
+
+  const actualizarAbiertos = (nuevos: Set<string>) => {
+    setAbiertos(nuevos)
+    guardarAbiertos(nuevos)
+  }
 
   // Al navegar (incluso directo por URL), el grupo de la ruta activa se expande solo.
   // Patrón "ajustar estado durante el render" (https://react.dev/learn/you-might-not-need-an-effect).
@@ -70,17 +106,16 @@ export default function Layout() {
     setRutaPrevia(location.pathname)
     const grupoActivo = GRUPOS.find((g) => location.pathname.startsWith(g.prefijo))
     if (grupoActivo && !abiertos.has(grupoActivo.clave)) {
-      setAbiertos(new Set([...abiertos, grupoActivo.clave]))
+      actualizarAbiertos(new Set([...abiertos, grupoActivo.clave]))
     }
   }
 
-  const alternarGrupo = (clave: string) =>
-    setAbiertos((previos) => {
-      const nuevos = new Set(previos)
-      if (nuevos.has(clave)) nuevos.delete(clave)
-      else nuevos.add(clave)
-      return nuevos
-    })
+  const alternarGrupo = (clave: string) => {
+    const nuevos = new Set(abiertos)
+    if (nuevos.has(clave)) nuevos.delete(clave)
+    else nuevos.add(clave)
+    actualizarAbiertos(nuevos)
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -89,7 +124,7 @@ export default function Layout() {
           <img src={logo} alt="Magenta Farms" className="h-11 w-11 object-contain" />
           <div>
             <h1 className="text-sm font-bold leading-tight text-brand-900">Magenta Farms</h1>
-            <p className="text-xs text-tinta-suave">Sistema de gestión</p>
+            <p className="text-xs text-tinta-suave">{t.nav.sistema}</p>
           </div>
         </div>
 
@@ -108,11 +143,11 @@ export default function Layout() {
                     {grupo.icono}
                   </span>
                   <span className="flex-1 text-xs font-bold uppercase tracking-wider text-brand-900">
-                    {grupo.etiqueta}
+                    {grupo.etiqueta(t)}
                   </span>
                   {grupo.badge && (
                     <span className="rounded-full bg-brand-200/40 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
-                      {grupo.badge}
+                      {grupo.badge(t)}
                     </span>
                   )}
                   <span
@@ -136,7 +171,7 @@ export default function Layout() {
                           <span aria-hidden="true" className="w-5 text-center">
                             {item.icono}
                           </span>
-                          {item.etiqueta}
+                          {item.etiqueta(t)}
                         </span>
                       ) : (
                         <NavLink
@@ -153,7 +188,7 @@ export default function Layout() {
                           <span aria-hidden="true" className="w-5 text-center">
                             {item.icono}
                           </span>
-                          {item.etiqueta}
+                          {item.etiqueta(t)}
                         </NavLink>
                       )
                     )}
@@ -164,16 +199,38 @@ export default function Layout() {
           })}
         </nav>
 
-        <div className="border-t border-borde px-4 py-4">
-          <p className="mb-3 truncate text-xs text-tinta-suave" title={sesion?.user.email ?? ''}>
-            {sesion?.user.email}
-          </p>
+        <div className="space-y-3 border-t border-borde px-4 py-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="min-w-0 truncate text-xs text-tinta-suave" title={sesion?.user.email ?? ''}>
+              {sesion?.user.email}
+            </p>
+            <div
+              className="flex shrink-0 rounded-lg border border-borde p-0.5"
+              role="group"
+              aria-label={t.nav.idioma}
+            >
+              {(['es', 'en'] as Idioma[]).map((opcion) => (
+                <button
+                  key={opcion}
+                  type="button"
+                  onClick={() => cambiarIdioma(opcion)}
+                  className={`rounded-md px-2 py-1 text-[10px] font-bold uppercase transition-colors duration-150 ${
+                    idioma === opcion
+                      ? 'bg-brand-700 text-white'
+                      : 'text-tinta-suave hover:text-brand-900'
+                  }`}
+                >
+                  {opcion}
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             type="button"
             onClick={cerrarSesion}
             className="w-full rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700"
           >
-            Cerrar sesión
+            {t.nav.cerrarSesion}
           </button>
         </div>
       </aside>

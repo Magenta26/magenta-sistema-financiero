@@ -1,0 +1,383 @@
+/**
+ * Diccionario maestro (español). `en.ts` implementa exactamente esta forma.
+ * Las frases con datos son funciones — así el inglés puede redactarse natural,
+ * no palabra a palabra.
+ */
+export const es = {
+  comun: {
+    cargando: 'Cargando…',
+    exportarExcel: 'Exportar a Excel',
+    cancelar: 'Cancelar',
+    totalAnio: 'Total año',
+    linea: 'Línea',
+    cifrasEnCop: 'Cifras en pesos colombianos (COP).',
+    sinDatosCargados: 'No hay datos cargados. Sube balances en la sección Cargas.',
+    errorConsultando: (detalle: string) => `Error consultando la base: ${detalle}`,
+  },
+
+  nav: {
+    sistema: 'Sistema de gestión',
+    finanzas: 'Finanzas',
+    nomina: 'Nómina',
+    proximamente: 'Próximamente',
+    enConstruccion: 'Módulo en construcción',
+    cargas: 'Cargas',
+    consolidado: 'Consolidado',
+    estadoResultados: 'Estado de Resultados',
+    balanceGeneral: 'Balance General',
+    analisis: 'Análisis',
+    cerrarSesion: 'Cerrar sesión',
+    idioma: 'Idioma',
+  },
+
+  login: {
+    subtitulo: 'Sistema Financiero · Magenta Farms S.A.S.',
+    iniciarSesion: 'Iniciar sesión',
+    correo: 'Correo electrónico',
+    correoPlaceholder: 'nombre@empresa.com',
+    contrasena: 'Contraseña',
+    ingresar: 'Ingresar',
+    ingresando: 'Ingresando…',
+    sinCuenta: '¿No tienes cuenta? El administrador crea los usuarios en Supabase.',
+    errores: {
+      credenciales: 'Correo o contraseña incorrectos.',
+      noConfirmado: 'El correo aún no ha sido confirmado. Contacta al administrador.',
+      faltanDatos: 'Ingresa tu correo y contraseña.',
+      demasiadosIntentos: 'Demasiados intentos. Espera un momento e inténtalo de nuevo.',
+      sinConexion: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
+      generico: 'Ocurrió un error al iniciar sesión. Inténtalo de nuevo.',
+    },
+  },
+
+  meses: [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+  ],
+
+  rubros: {
+    ING_OP: 'Ingresos operacionales',
+    COSTO_MP: 'Costo: materias primas e insumos',
+    COSTO_PER: 'Costo: personal de producción',
+    COSTO_SER: 'Costo: servicios y otros',
+    GASTO_ADM: 'Gastos de administración',
+    GASTO_VTA: 'Gastos de ventas',
+    ING_NOOP: 'Ingresos no operacionales',
+    GASTO_NOOP: 'Gastos no operacionales',
+  } as Record<string, string>,
+
+  derivadas: {
+    TOTAL_INGRESOS: 'TOTAL INGRESOS',
+    TOTAL_COSTO: 'TOTAL COSTO',
+    UTILIDAD_BRUTA: 'UTILIDAD BRUTA',
+    UTILIDAD_OPERACIONAL: 'UTILIDAD OPERACIONAL',
+    UTILIDAD_NETA: 'UTILIDAD NETA',
+  } as Record<string, string>,
+
+  clases: {
+    '1': 'Activo',
+    '2': 'Pasivo',
+    '3': 'Patrimonio',
+    '4': 'Ingresos',
+    '5': 'Gastos',
+    '6': 'Costos',
+    '7': 'Costos de producción',
+  } as Record<string, string>,
+
+  cargas: {
+    titulo: 'Cargas',
+    descripcion:
+      'Sube el balance de prueba mensual exportado de SIIGO. Revisa la previsualización y las validaciones antes de confirmar.',
+    dropzoneTitulo: 'Arrastra aquí el balance de prueba de SIIGO',
+    dropzoneSubtitulo: 'o haz clic para seleccionarlo — solo archivos',
+    dropzoneAria: 'Subir balance de prueba .xlsx',
+    archivoNoXlsx: (nombre: string) => `"${nombre}" no es un archivo .xlsx.`,
+    archivo: 'Archivo:',
+    detecte: 'Detecté:',
+    periodoNoDetectado: 'Período no detectado',
+    corregir: 'Corregir:',
+    seleccionalo: 'Selecciónalo:',
+    mesPlaceholder: 'Mes…',
+    anioAria: 'Año',
+    avisoReemplazo: (periodo: string, fecha: string) =>
+      `${periodo} ya fue cargado el ${fecha}. Esta carga lo `,
+    reemplazara: 'REEMPLAZARÁ',
+    filas: 'Filas',
+    totales: 'totales',
+    transaccionales: 'transaccionales',
+    saldosPorClase: 'Saldos finales por clase (transaccionales)',
+    cuentasAbrev: 'ctas.',
+    validaciones: 'Validaciones',
+    confirmarCarga: 'Confirmar carga',
+    procesando: 'Procesando…',
+    corrigeBloqueantes: 'Corrige los bloqueantes ⛔ para continuar.',
+    subiendo: 'Subiendo archivo y procesando movimientos…',
+    errorLectura: (detalle: string) => `No se pudo leer el archivo: ${detalle}`,
+    errorSubida: (detalle: string) => `Error subiendo el archivo a Storage: ${detalle}`,
+    errorProceso: (detalle: string) => `Error procesando la carga: ${detalle}`,
+    sinCargaLista: 'No hay carga lista para confirmar.',
+    resultado: (filas: string) => `✅ Carga procesada: ${filas} filas insertadas`,
+    cuentasNuevas: (n: number) =>
+      ` · ${n} cuenta(s) nueva(s) agregada(s) al catálogo (revísalas en Consolidado)`,
+    sinCuentasNuevas: ' · sin cuentas nuevas',
+    datosConsolidados: '. Los datos quedaron consolidados en la base.',
+    historial: 'Historial de cargas',
+    cargandoHistorial: 'Cargando historial…',
+    errorHistorial: (detalle: string) => `No se pudo consultar el historial: ${detalle}`,
+    errorDescarga: (nombre: string, detalle: string) =>
+      `No se pudo descargar "${nombre}": ${detalle}`,
+    sinUrl: 'sin URL',
+    sinCargas: 'Aún no hay cargas. Sube el primer balance arriba.',
+    encabezados: {
+      periodo: 'Período',
+      archivo: 'Archivo',
+      fecha: 'Fecha',
+      usuario: 'Usuario',
+      estado: 'Estado',
+      filas: 'Filas',
+      validaciones: 'Validaciones',
+    },
+    estados: { activa: 'activa', reemplazada: 'reemplazada' } as Record<string, string>,
+    descargar: 'Descargar .xlsx',
+    generando: 'Generando…',
+  },
+
+  validaciones: {
+    faltanEncabezados: 'No se encontraron todos los encabezados requeridos.',
+    faltanEncabezadosDetalle: (lista: string) =>
+      `Faltan: ${lista}. ¿Es un balance de prueba exportado de SIIGO?`,
+    periodoNoDetectado: 'Período no detectado.',
+    periodoNoDetectadoDetalle: 'Selecciona el mes y el año manualmente para continuar.',
+    periodoInfo: (periodo: string) => `Período: ${periodo}.`,
+    sinTransaccionales: 'El archivo no contiene filas transaccionales.',
+    sinTransaccionalesDetalle: 'No hay movimientos que importar.',
+    clasesDescuadradas: 'La suma de auxiliares no cuadra con el total de alguna clase.',
+    claseDescuadradaDetalle: (clase: string, nombre: string, auxiliares: string, total: string, dif: string) =>
+      `Clase ${clase} (${nombre}): auxiliares ${auxiliares} vs clase ${total} (dif. ${dif})`,
+    clasesOk: 'Suma de auxiliares = total de cada clase ✓',
+    ecuacionDescuadrada: 'La ecuación contable no cuadra.',
+    ecuacionDetalle: (activo: string, pasivo: string, patrimonio: string, resultado: string, dif: string) =>
+      `Activo ${activo} vs Pasivo ${pasivo} + Patrimonio ${patrimonio} + Resultado ${resultado} → diferencia ${dif}`,
+    ecuacionOk: 'Ecuación contable Activo = Pasivo + Patrimonio + Resultado ✓',
+    cuentasNuevas: (n: number) => `${n} cuenta(s) nueva(s) que no están en el catálogo.`,
+    cuentasNuevasDetalleExtra: (n: number) => ` · … y ${n} más`,
+    cuentasNuevasDetalleFin:
+      '. Se agregarán automáticamente al confirmar (quedan pendientes de clasificar).',
+  },
+
+  consolidado: {
+    titulo: 'Consolidado',
+    descripcion:
+      'Clasifica cada cuenta del catálogo: su rubro del Estado de Resultados y si entra al ER y/o al Balance General. Los cambios se guardan al instante.',
+    cargando: 'Cargando catálogo y movimientos…',
+    pendientesBanner: (n: number) => `⚠️ Hay ${n} cuenta(s) nueva(s) sin clasificar.`,
+    verPendientes: 'Ver pendientes',
+    kpiTotal: 'Cuentas en el catálogo',
+    kpiEr: 'Incluidas en ER',
+    kpiBg: 'Incluidas en BG',
+    kpiPendientes: 'Pendientes de clasificar',
+    buscar: 'Buscar por cuenta o nombre…',
+    filtroClaseAria: 'Filtrar por clase',
+    todasLasClases: 'Todas las clases',
+    soloPendientes: 'Solo pendientes de clasificar',
+    mostrando: (visibles: string, total: string) => `Mostrando ${visibles} de ${total}`,
+    notaPie:
+      'Valor: clases 4-7 acumulado del año con signo según naturaleza; clases 1-3 saldo final del último mes cargado. ▸ expande el detalle mes a mes. Cifras en COP.',
+    guardada: (cuenta: string) => `${cuenta} guardada.`,
+    errorGuardar: (detalle: string) => `No se pudo guardar: ${detalle}. Se revirtió el cambio.`,
+    conflictoContiene: (incluida: string, nueva: string) =>
+      `${incluida} ya está incluida en el ER y contiene a ${nueva} — incluir ambas duplicaría el valor.`,
+    conflictoContenida: (incluida: string, nueva: string) =>
+      `${incluida} ya está incluida en el ER y ${nueva} la contiene — incluir ambas duplicaría el valor.`,
+    encabezados: {
+      cuenta: 'Cuenta',
+      nombre: 'Nombre',
+      clase: 'Clase',
+      naturaleza: 'Nat.',
+      rubro: 'Rubro',
+      valor: 'Valor',
+      origen: 'Origen',
+    },
+    sinRubro: 'Sin rubro',
+    abrirDetalle: 'Ver detalle mes a mes',
+    cerrarDetalle: 'Cerrar detalle',
+    incluirErAria: (cuenta: string) => `Incluir ${cuenta} en el Estado de Resultados`,
+    incluirBgAria: (cuenta: string) => `Incluir ${cuenta} en el Balance General`,
+    rubroAria: (cuenta: string) => `Rubro de ${cuenta}`,
+    sinCoincidencias: 'Ninguna cuenta coincide con los filtros.',
+    detalle: {
+      sinMovimientos: (cuenta: string) => `Sin movimientos transaccionales para el prefijo ${cuenta}.`,
+      mes: 'Mes',
+      auxiliares: 'Auxiliares',
+      saldoInicial: 'Saldo inicial',
+      debitos: 'Débitos',
+      creditos: 'Créditos',
+      saldoFinal: 'Saldo final',
+    },
+  },
+
+  er: {
+    titulo: (anio: number) => `Estado de Resultados ${anio}`,
+    descripcion: 'Cuentas del catálogo incluidas en ER, agrupadas por rubro. ▸ expande el detalle.',
+    calculando: 'Calculando el Estado de Resultados…',
+    sinDatos: (anio: number) => `No hay datos cargados para ${anio}. Sube balances en la sección Cargas.`,
+    errorVistas: (detalle: string) => `Error consultando las vistas: ${detalle}`,
+    modos: { absolutos: 'Absolutos', vertical: 'Vertical %', horizontal: 'Horizontal %' },
+    chequeosTitulo: '⚠️ Chequeos con diferencia (total crudo del grupo vs clasificado en el ER)',
+    chequeosNota:
+      'Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.',
+    chequeoGrupo: (grupo: string) => `Grupo ${grupo}:`,
+    chequeosOk: '✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).',
+  },
+
+  bg: {
+    titulo: (anio: number) => `Balance General ${anio}`,
+    descripcionSaldos:
+      'Por grupo (2 dígitos), saldo final de cada mes. Pasivo y patrimonio en positivo.',
+    descripcionVariacion:
+      'Variación del mes por grupo: saldo final − saldo inicial (impacto neto del período).',
+    calculando: 'Calculando el Balance General…',
+    modos: { saldos: 'Saldos', variacion: 'Variación del mes' },
+    secciones: { '1': 'Activo', '2': 'Pasivo', '3': 'Patrimonio' } as Record<string, string>,
+    totalSeccion: (titulo: string) => `TOTAL ${titulo.toUpperCase()}`,
+    resultadoEjercicio: 'Resultado del ejercicio (utilidad acumulada del año)',
+    utilidadMes: 'Utilidad neta del mes (desde el ER)',
+    cuadreSaldos: 'Cuadre: Activo − (Pasivo + Patrimonio + Resultado)',
+    cuadreVariacion: 'Cuadre: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)',
+    cuadra: '✓ cuadra',
+    diferencia: (monto: string) => `Diferencia: ${monto}`,
+    notaSaldos:
+      'El cuadre se considera correcto con diferencia ≤ $1 (redondeos). El resultado del ejercicio es la utilidad neta acumulada calculada desde el Estado de Resultados. Cifras en COP.',
+    notaVariacion:
+      'Variación = saldo final − saldo inicial del mes, con el signo del efecto en la posición (un aumento de pasivo se muestra como aumento). Total año = suma de variaciones, que equivale al saldo final del último mes menos el saldo inicial de enero. Cifras en COP.',
+  },
+
+  analisis: {
+    titulo: 'Análisis financiero',
+    descripcion: (sustantivo: string) =>
+      `Resultados por ${sustantivo} y tendencias, directo de las cargas.`,
+    calculando: 'Calculando análisis…',
+    vistas: { mensual: 'Mensual', trimestral: 'Trimestral', anual: 'Anual' },
+    selector: { mensual: 'Mes', trimestral: 'Trimestre', anual: 'Año' },
+    parcialSelector: ' (parcial)',
+    sinHistorico: (anios: string) =>
+      `Por ahora solo hay datos de ${anios}. Carga balances de años anteriores para habilitar esta comparación completa.`,
+    notaParcial: (etiqueta: string, meses: number) =>
+      `* ${etiqueta} es un período parcial: agrega solo los meses cargados (${meses}).`,
+    kpis: {
+      INGRESOS: 'Ingresos',
+      UTILIDAD_BRUTA: 'Utilidad bruta',
+      TOTAL_GASTOS: 'Total gastos',
+      UTILIDAD_NETA: 'Utilidad neta',
+      EBITDA: 'EBITDA',
+    } as Record<string, string>,
+    kpiPorcentaje: {
+      UTILIDAD_BRUTA: 'margen',
+      TOTAL_GASTOS: 'de los ingresos',
+      UTILIDAD_NETA: 'margen',
+      EBITDA: 'margen EBITDA',
+    } as Record<string, string>,
+    vsAnterior: (sustantivo: string) => `vs ${sustantivo} anterior`,
+    vsPromedio: 'vs promedio',
+    tooltipEbitdaCon: [
+      'EBITDA = Utilidad operacional + depreciaciones y amortizaciones.',
+      'Cuentas incluidas (por prefijo PUC 5160/5165/5260/5265/7360 o nombre):',
+    ],
+    tooltipEbitdaSin: [
+      'No hay cuentas de depreciación/amortización identificadas en el catálogo (prefijos PUC 5160/5165/5260/5265/7360 o nombre con "depreciación"/"amortización" en clases 5 y 7).',
+      'Por ahora EBITDA = Utilidad operacional.',
+    ],
+    detalleKpiAria: (etiqueta: string) => `Detalle de ${etiqueta}`,
+    lecturaTitulo: (etiqueta: string) => `Lectura de ${etiqueta}`,
+    tendencia: { mensual: 'Tendencia mensual', trimestral: 'Tendencia trimestral', anual: 'Comparación anual' },
+    graficoIngresos: 'Ingresos',
+    graficoCostosGastos: 'Costos y gastos',
+    graficoUtilidadNeta: 'Utilidad neta',
+    margenes: 'Evolución de márgenes',
+    margenBruto: 'Margen bruto',
+    margenOperacional: 'Margen operacional',
+    margenNeto: 'Margen neto',
+    topTitulo: (sustantivo: string) => `¿Qué movió el resultado este ${sustantivo}?`,
+    topSubtitulo: (n: number, sustantivo: string) =>
+      `Top ${n} cuentas por variación absoluta vs el ${sustantivo} anterior — `,
+    aumentos: 'aumentos',
+    disminuciones: 'disminuciones',
+    sinAnterior: (sustantivo: string) => `No hay ${sustantivo} anterior para comparar.`,
+    topAnterior: 'Anterior:',
+    topActual: 'Actual:',
+    topVariacion: 'Variación:',
+    donaVentas: 'Composición de las ventas',
+    donaCosto: 'Composición del costo',
+    donaGastos: 'Composición de gastos',
+    donaNotaVentas: 'Las contra-cuentas (ej. devoluciones) no se grafican.',
+    donaSinDatos: 'Sin datos para el período seleccionado.',
+    donaTotal: 'Total:',
+    donaPrincipales: 'Principales cuentas:',
+    drillTitulo: 'Explorar el detalle',
+    drillDescripcion: (etiqueta: string) =>
+      `Rubro → cuenta → auxiliar, con valores de ${etiqueta} y el total del rango visible. Cifras en COP.`,
+    drillEncabezado: 'Rubro / cuenta / auxiliar',
+    drillTotalMensual: 'Acumulado año',
+    drillTotalRango: 'Total del rango',
+    drillParticipacion: 'Participación',
+    lectura: {
+      sustantivo: { mensual: 'mes', trimestral: 'trimestre', anual: 'año' },
+      sustantivoPlural: { mensual: 'meses', trimestral: 'trimestres', anual: 'años' },
+      ambitoMensual: 'del año',
+      ambitoRango: 'del rango comparado',
+      notaParcial: ' (período parcial)',
+      mejor: (etiqueta: string, sustantivo: string, ambito: string, monto: string, nota: string) =>
+        `${etiqueta} es el mejor ${sustantivo} ${ambito} en ingresos (${monto})${nota}.`,
+      masBajo: (etiqueta: string, sustantivo: string, ambito: string, monto: string, nota: string) =>
+        `${etiqueta} es el ${sustantivo} más bajo ${ambito} en ingresos (${monto})${nota}.`,
+      puesto: (etiqueta: string, pos: number, total: number, plural: string, ambito: string, monto: string, nota: string) =>
+        `${etiqueta} ocupa el puesto ${pos} de ${total} ${plural} ${ambito} en ingresos (${monto})${nota}.`,
+      margen: (subio: boolean, de: string, a: string, puntos: string, anterior: string) =>
+        `El margen neto ${subio ? 'subió' : 'bajó'} de ${de} % a ${a} % (${puntos} puntos) frente a ${anterior}.`,
+      rubroCrecio: (rubro: string, delta: string, anterior: string) =>
+        `El rubro que más creció frente a ${anterior} fue ${rubro.toLowerCase()}: +${delta}.`,
+      cuentaFuerte: (cuenta: string, nombre: string, rubro: string, aumento: boolean, delta: string, anterior: string) =>
+        `La cuenta con la variación más fuerte fue ${cuenta} ${nombre} (${rubro.toLowerCase()}): ${aumento ? 'aumentó' : 'disminuyó'} ${delta} frente a ${anterior}.`,
+      vsPromedio: (sustantivo: string, monto: string, encima: boolean, ambito: string, promedio: string) =>
+        `La utilidad neta del ${sustantivo} (${monto}) está ${encima ? 'por encima' : 'por debajo'} del promedio ${ambito} (${promedio}).`,
+    },
+  },
+
+  exportar: {
+    empresa: 'Magenta Farms S.A.S. — NIT 901.479.899-9',
+    generado: (fecha: string) => `Generado: ${fecha}`,
+    unidades: 'Cifras en pesos colombianos (COP).',
+    erTitulo: (anio: number) => `Estado de Resultados ${anio}`,
+    erHoja: (anio: number) => `ER ${anio}`,
+    erArchivo: (anio: number, modo: string) => `Estado_Resultados_${anio}_${modo}.xlsx`,
+    modoEr: {
+      absolutos: 'Absolutos',
+      vertical: 'Vertical (% sobre ingresos)',
+      horizontal: 'Horizontal (variación % vs período anterior)',
+    } as Record<string, string>,
+    modo: (nombre: string) => `Modo: ${nombre}`,
+    chequeosTitulo: 'CHEQUEOS POR GRUPO (diferencia crudo vs clasificado)',
+    chequeoGrupo: (grupo: string) => `Chequeo grupo ${grupo}`,
+    bgTitulo: (anio: number) => `Balance General ${anio}`,
+    bgHoja: (anio: number) => `BG ${anio}`,
+    bgArchivo: (anio: number, modo: string) => `Balance_General_${anio}_${modo}.xlsx`,
+    modoBg: {
+      saldos: 'Saldos (saldo final por mes)',
+      variacion: 'Variación del mes (saldo final − saldo inicial)',
+    } as Record<string, string>,
+    bgResultado: 'Resultado del ejercicio (utilidad acumulada)',
+    bgUtilidadMes: 'Utilidad neta del mes (desde el ER)',
+    bgCuadreSaldos: 'CUADRE: Activo − (Pasivo + Patrimonio + Resultado)',
+    bgCuadreVariacion: 'CUADRE: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)',
+  },
+
+  nomina: {
+    titulo: 'Nómina',
+    descripcion: 'Gestión de nómina y personal de Magenta Farms.',
+    enConstruccion: 'Módulo en construcción',
+    detalle:
+      'Este módulo está en preparación. Cuando esté disponible, aquí se gestionarán las liquidaciones, los aportes y los reportes de personal.',
+    proximamente: 'Próximamente',
+  },
+}
+
+export type Diccionario = typeof es

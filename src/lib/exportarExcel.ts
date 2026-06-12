@@ -4,29 +4,26 @@ import type { ModoBg, ModoEr } from '../types/informes'
 import type { ModeloEr } from './estadoResultados'
 import { transformarTotalAnio, transformarValor } from './estadoResultados'
 import type { ModeloBg } from './balanceGeneral'
+import { localeActual } from '../i18n/idioma'
+import type { Diccionario } from '../i18n/es'
 
-const EMPRESA = 'Magenta Farms S.A.S. — NIT 901.479.899-9'
+/** Exports a Excel en el idioma activo: encabezados y nombres de línea del diccionario. */
 
-const NOMBRE_MODO: Record<ModoEr, string> = {
-  absolutos: 'Absolutos',
-  vertical: 'Vertical (% sobre ingresos)',
-  horizontal: 'Horizontal (variación % vs mes anterior)',
-}
-
-function encabezado(titulo: string, subtitulo: string): unknown[][] {
+function encabezado(t: Diccionario, titulo: string, subtitulo: string): unknown[][] {
   return [
-    [EMPRESA],
+    [t.exportar.empresa],
     [titulo],
     [subtitulo],
-    [`Generado: ${new Date().toLocaleString('es-CO')}`],
+    [t.exportar.unidades],
+    [t.exportar.generado(new Date().toLocaleString(localeActual()))],
     [],
   ]
 }
 
 /** Exporta el ER del modo activo a un .xlsx (descarga en el navegador). */
-export function exportarEr(modelo: ModeloEr, modo: ModoEr): void {
+export function exportarEr(modelo: ModeloEr, modo: ModoEr, t: Diccionario): void {
   const meses = modelo.mesesConDatos
-  const cabecera = ['Línea', ...meses.map((m) => nombreMes(m)), 'Total año']
+  const cabecera = [t.comun.linea, ...meses.map((m) => nombreMes(m)), t.comun.totalAnio]
 
   const filaDe = (etiqueta: string, valores: Map<number, number>, totalAnio: number): unknown[] => [
     etiqueta,
@@ -34,12 +31,18 @@ export function exportarEr(modelo: ModeloEr, modo: ModoEr): void {
     transformarTotalAnio(modo, totalAnio, modelo),
   ]
 
+  const filaDerivada = (clave: string): unknown[] => {
+    const linea = modelo.derivadas.get(clave)!
+    return filaDe(t.derivadas[clave] ?? linea.etiqueta, linea.valores, linea.totalAnio)
+  }
+
   const filas: unknown[][] = [cabecera]
   for (const bloque of modelo.rubros) {
     for (const cuenta of bloque.cuentas) {
       filas.push(filaDe(`    ${cuenta.cuenta} ${cuenta.nombre}`, cuenta.valores, cuenta.totalAnio))
     }
-    filas.push(filaDe(bloque.nombre.toUpperCase(), bloque.valores, bloque.totalAnio))
+    const nombreRubro = t.rubros[bloque.codigo] ?? bloque.nombre
+    filas.push(filaDe(nombreRubro.toUpperCase(), bloque.valores, bloque.totalAnio))
 
     if (bloque.codigo === 'ING_OP') filas.push(filaDerivada('TOTAL_INGRESOS'))
     if (bloque.codigo === 'COSTO_SER') {
@@ -49,17 +52,12 @@ export function exportarEr(modelo: ModeloEr, modo: ModoEr): void {
     if (bloque.codigo === 'GASTO_NOOP') filas.push(filaDerivada('UTILIDAD_NETA'))
   }
 
-  function filaDerivada(clave: string): unknown[] {
-    const linea = modelo.derivadas.get(clave)!
-    return filaDe(linea.etiqueta, linea.valores, linea.totalAnio)
-  }
-
   if (modelo.chequeos.length > 0) {
     filas.push([])
-    filas.push(['CHEQUEOS POR GRUPO (diferencia crudo vs clasificado)'])
+    filas.push([t.exportar.chequeosTitulo])
     for (const ch of modelo.chequeos) {
       filas.push([
-        `Chequeo grupo ${ch.grupo}`,
+        t.exportar.chequeoGrupo(ch.grupo),
         ...meses.map((mes) => ch.diferencias.get(mes) ?? 0),
         [...ch.diferencias.values()].reduce((a, b) => a + b, 0),
       ])
@@ -67,33 +65,29 @@ export function exportarEr(modelo: ModeloEr, modo: ModoEr): void {
   }
 
   const hoja = utils.aoa_to_sheet([
-    ...encabezado(`Estado de Resultados ${modelo.anio}`, `Modo: ${NOMBRE_MODO[modo]}`),
+    ...encabezado(t, t.exportar.erTitulo(modelo.anio), t.exportar.modo(t.exportar.modoEr[modo])),
     ...filas,
   ])
   hoja['!cols'] = [{ wch: 45 }, ...meses.map(() => ({ wch: 16 })), { wch: 18 }]
   const libro = utils.book_new()
-  utils.book_append_sheet(libro, hoja, `ER ${modelo.anio}`)
-  writeFileXLSX(libro, `Estado_Resultados_${modelo.anio}_${modo}.xlsx`)
-}
-
-const NOMBRE_MODO_BG: Record<ModoBg, string> = {
-  saldos: 'Saldos (saldo final por mes)',
-  variacion: 'Variación del mes (saldo final − saldo inicial)',
+  utils.book_append_sheet(libro, hoja, t.exportar.erHoja(modelo.anio))
+  writeFileXLSX(libro, t.exportar.erArchivo(modelo.anio, modo))
 }
 
 /** Exporta el BG del modo activo a un .xlsx (descarga en el navegador). */
-export function exportarBg(modelo: ModeloBg, modo: ModoBg = 'saldos'): void {
+export function exportarBg(modelo: ModeloBg, modo: ModoBg, t: Diccionario): void {
   const meses = modelo.mesesConDatos
   const esVariacion = modo === 'variacion'
   const cabecera = [
-    'Línea',
+    t.comun.linea,
     ...meses.map((m) => nombreMes(m)),
-    ...(esVariacion ? ['Total año'] : []),
+    ...(esVariacion ? [t.comun.totalAnio] : []),
   ]
   const filas: unknown[][] = [cabecera]
 
   for (const seccion of [modelo.activo, modelo.pasivo, modelo.patrimonio]) {
-    filas.push([seccion.titulo.toUpperCase()])
+    const titulo = t.bg.secciones[seccion.clase] ?? seccion.titulo
+    filas.push([titulo.toUpperCase()])
     for (const grupo of seccion.grupos) {
       filas.push([
         `    ${grupo.grupo} ${grupo.nombre}`,
@@ -104,7 +98,7 @@ export function exportarBg(modelo: ModeloBg, modo: ModoBg = 'saldos'): void {
       ])
     }
     filas.push([
-      `TOTAL ${seccion.titulo.toUpperCase()}`,
+      t.bg.totalSeccion(titulo),
       ...meses.map((mes) =>
         esVariacion ? seccion.totalesVariacion.get(mes) ?? 0 : seccion.totales.get(mes) ?? 0
       ),
@@ -113,13 +107,13 @@ export function exportarBg(modelo: ModeloBg, modo: ModoBg = 'saldos'): void {
     if (seccion.clase === '3') {
       if (esVariacion) {
         filas.push([
-          'Utilidad neta del mes (desde el ER)',
+          t.exportar.bgUtilidadMes,
           ...meses.map((mes) => modelo.utilidadNetaMensual.get(mes) ?? 0),
           meses.reduce((acc, mes) => acc + (modelo.utilidadNetaMensual.get(mes) ?? 0), 0),
         ])
       } else {
         filas.push([
-          'Resultado del ejercicio (utilidad acumulada)',
+          t.exportar.bgResultado,
           ...meses.map((mes) => modelo.resultadoEjercicio.get(mes) ?? 0),
         ])
       }
@@ -128,20 +122,18 @@ export function exportarBg(modelo: ModeloBg, modo: ModoBg = 'saldos'): void {
 
   filas.push([])
   filas.push([
-    esVariacion
-      ? 'CUADRE: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)'
-      : 'CUADRE: Activo − (Pasivo + Patrimonio + Resultado)',
+    esVariacion ? t.exportar.bgCuadreVariacion : t.exportar.bgCuadreSaldos,
     ...meses.map((mes) =>
       esVariacion ? modelo.cuadreVariacion.get(mes) ?? 0 : modelo.cuadre.get(mes) ?? 0
     ),
   ])
 
   const hoja = utils.aoa_to_sheet([
-    ...encabezado(`Balance General ${modelo.anio}`, `Modo: ${NOMBRE_MODO_BG[modo]}`),
+    ...encabezado(t, t.exportar.bgTitulo(modelo.anio), t.exportar.modo(t.exportar.modoBg[modo])),
     ...filas,
   ])
   hoja['!cols'] = [{ wch: 45 }, ...meses.map(() => ({ wch: 16 })), ...(esVariacion ? [{ wch: 18 }] : [])]
   const libro = utils.book_new()
-  utils.book_append_sheet(libro, hoja, `BG ${modelo.anio}`)
-  writeFileXLSX(libro, `Balance_General_${modelo.anio}_${modo}.xlsx`)
+  utils.book_append_sheet(libro, hoja, t.exportar.bgHoja(modelo.anio))
+  writeFileXLSX(libro, t.exportar.bgArchivo(modelo.anio, modo))
 }

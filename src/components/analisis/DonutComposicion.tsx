@@ -1,6 +1,7 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { moneda, monedaCompacta } from '../../lib/formato'
 import { PALETA_DONUT } from './colores'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface PorcionDonut {
   nombre: string
@@ -14,6 +15,7 @@ interface PropsTooltipDonut {
 }
 
 function TooltipDonut({ active, payload }: PropsTooltipDonut) {
+  const { t } = useTranslation()
   const porcion = payload?.[0]?.payload
   if (!active || !porcion) return null
   return (
@@ -23,7 +25,7 @@ function TooltipDonut({ active, payload }: PropsTooltipDonut) {
       </p>
       {porcion.topCuentas.length > 0 && (
         <>
-          <p className="mt-1.5 text-tinta-suave">Principales cuentas:</p>
+          <p className="mt-1.5 text-tinta-suave">{t.analisis.donaPrincipales}</p>
           <ul className="mt-0.5 space-y-0.5">
             {porcion.topCuentas.map((c) => (
               <li key={c.nombre} className="text-tinta">
@@ -46,6 +48,7 @@ interface DonutComposicionProps {
 
 /** Donut por rubro con detalle de las top cuentas al pasar el mouse. */
 export default function DonutComposicion({ titulo, porciones, nota }: DonutComposicionProps) {
+  const { t } = useTranslation()
   const conDatos = porciones.filter((p) => Math.abs(p.valor) > 0.005)
   const total = conDatos.reduce((acc, p) => acc + Math.abs(p.valor), 0)
 
@@ -53,11 +56,11 @@ export default function DonutComposicion({ titulo, porciones, nota }: DonutCompo
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-1 text-sm font-semibold text-brand-900">{titulo}</h2>
       {conDatos.length === 0 ? (
-        <p className="py-16 text-center text-xs text-tinta-suave">Sin datos para el mes seleccionado.</p>
+        <p className="py-16 text-center text-xs text-tinta-suave">{t.analisis.donaSinDatos}</p>
       ) : (
         <>
           <p className="mb-2 text-xs text-tinta-suave">
-            Total: <span className="tabular-nums text-tinta">{moneda(total)}</span>
+            {t.analisis.donaTotal} <span className="tabular-nums text-tinta">{moneda(total)}</span>
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>

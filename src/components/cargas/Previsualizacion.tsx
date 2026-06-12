@@ -1,16 +1,7 @@
 import type { FilaBalance, Periodo, Validacion } from '../../types/balance'
-import { MESES_ES, nombreMes } from '../../types/balance'
+import { nombreMes } from '../../types/balance'
 import { entero, fechaHora, moneda } from '../../lib/formato'
-
-const NOMBRES_CLASE: Record<string, string> = {
-  '1': 'Activo',
-  '2': 'Pasivo',
-  '3': 'Patrimonio',
-  '4': 'Ingresos',
-  '5': 'Gastos',
-  '6': 'Costos',
-  '7': 'Costos de producción',
-}
+import { useTranslation } from '../../hooks/useTranslation'
 
 const ICONO_VALIDACION = { bloqueante: '⛔', advertencia: '⚠️', info: 'ℹ️' } as const
 
@@ -34,6 +25,7 @@ export default function Previsualizacion({
   validaciones,
   cargaExistente,
 }: PrevisualizacionProps) {
+  const { t } = useTranslation()
   const transaccionales = filas.filter((f) => f.transaccional)
 
   const clasesPresentes = [...new Set(transaccionales.map((f) => f.clase))].sort()
@@ -41,7 +33,7 @@ export default function Previsualizacion({
     const deClase = transaccionales.filter((f) => f.clase === clase)
     return {
       clase,
-      nombre: NOMBRES_CLASE[clase] ?? `Clase ${clase}`,
+      nombre: t.clases[clase] ?? `${clase}`,
       cuentas: deClase.length,
       saldoFinal: deClase.reduce((acc, f) => acc + f.saldo_final, 0),
     }
@@ -50,25 +42,25 @@ export default function Previsualizacion({
   return (
     <div className="mt-6 rounded-2xl border border-borde bg-white p-6 shadow-sm">
       <p className="text-sm text-tinta-suave">
-        Archivo: <span className="font-mono text-tinta">{nombreArchivo}</span>
+        {t.cargas.archivo} <span className="font-mono text-tinta">{nombreArchivo}</span>
       </p>
 
       {/* Período en grande + selector manual */}
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
         {periodoDetectado ? (
           <p className="text-2xl font-bold text-brand-900">
-            Detecté:{' '}
+            {t.cargas.detecte}{' '}
             <span className="text-brand-700">
               {nombreMes(periodoDetectado.mes)} {periodoDetectado.anio}
             </span>
           </p>
         ) : (
-          <p className="text-2xl font-bold text-amber-600">Período no detectado</p>
+          <p className="text-2xl font-bold text-amber-600">{t.cargas.periodoNoDetectado}</p>
         )}
 
         <div className="flex items-center gap-2 text-sm">
           <label htmlFor="mes-manual" className="text-tinta-suave">
-            {periodoDetectado ? 'Corregir:' : 'Selecciónalo:'}
+            {periodoDetectado ? t.cargas.corregir : t.cargas.seleccionalo}
           </label>
           <select
             id="mes-manual"
@@ -82,9 +74,9 @@ export default function Previsualizacion({
             className="rounded-lg border border-borde bg-white px-2 py-1.5 text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
           >
             <option value="" disabled>
-              Mes…
+              {t.cargas.mesPlaceholder}
             </option>
-            {MESES_ES.map((nombre, i) => (
+            {t.meses.map((nombre, i) => (
               <option key={nombre} value={i + 1}>
                 {nombre}
               </option>
@@ -92,7 +84,7 @@ export default function Previsualizacion({
           </select>
           <input
             type="number"
-            aria-label="Año"
+            aria-label={t.cargas.anioAria}
             value={periodoEfectivo?.anio ?? new Date().getFullYear()}
             onChange={(e) =>
               onPeriodoManual({
@@ -108,34 +100,39 @@ export default function Previsualizacion({
       {/* Aviso de reemplazo */}
       {cargaExistente && periodoEfectivo && (
         <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-          ⚠️ {nombreMes(periodoEfectivo.mes)} {periodoEfectivo.anio} ya fue cargado el{' '}
-          {fechaHora(cargaExistente.creada_en)}. Esta carga lo{' '}
-          <span className="font-bold">REEMPLAZARÁ</span>.
+          ⚠️{' '}
+          {t.cargas.avisoReemplazo(
+            `${nombreMes(periodoEfectivo.mes)} ${periodoEfectivo.anio}`,
+            fechaHora(cargaExistente.creada_en)
+          )}
+          <span className="font-bold">{t.cargas.reemplazara}</span>.
         </p>
       )}
 
       {/* Conteos y totales por clase */}
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-borde bg-fondo p-4">
-          <p className="text-sm text-tinta-suave">Filas</p>
+          <p className="text-sm text-tinta-suave">{t.cargas.filas}</p>
           <p className="mt-1 text-tinta">
             <span className="text-xl font-bold text-brand-900">{entero(filas.length)}</span>{' '}
-            totales ·{' '}
+            {t.cargas.totales} ·{' '}
             <span className="text-xl font-bold text-brand-700">{entero(transaccionales.length)}</span>{' '}
-            transaccionales
+            {t.cargas.transaccionales}
           </p>
         </div>
         <div className="rounded-xl border border-borde bg-fondo p-4">
-          <p className="mb-2 text-sm text-tinta-suave">Saldos finales por clase (transaccionales)</p>
+          <p className="mb-2 text-sm text-tinta-suave">{t.cargas.saldosPorClase}</p>
           <table className="w-full text-sm">
             <tbody>
-              {totalesPorClase.map((t) => (
-                <tr key={t.clase} className="border-t border-borde first:border-t-0">
+              {totalesPorClase.map((fila) => (
+                <tr key={fila.clase} className="border-t border-borde first:border-t-0">
                   <td className="py-1 pr-2 text-tinta">
-                    {t.clase} · {t.nombre}
+                    {fila.clase} · {fila.nombre}
                   </td>
-                  <td className="py-1 pr-2 text-right text-tinta-suave">{t.cuentas} ctas.</td>
-                  <td className="py-1 text-right tabular-nums text-tinta">{moneda(t.saldoFinal)}</td>
+                  <td className="py-1 pr-2 text-right text-tinta-suave">
+                    {fila.cuentas} {t.cargas.cuentasAbrev}
+                  </td>
+                  <td className="py-1 text-right tabular-nums text-tinta">{moneda(fila.saldoFinal)}</td>
                 </tr>
               ))}
             </tbody>
@@ -145,7 +142,7 @@ export default function Previsualizacion({
 
       {/* Validaciones */}
       <div className="mt-5">
-        <p className="mb-2 text-sm font-semibold text-brand-900">Validaciones</p>
+        <p className="mb-2 text-sm font-semibold text-brand-900">{t.cargas.validaciones}</p>
         <ul className="space-y-2">
           {validaciones.map((v, i) => (
             <li

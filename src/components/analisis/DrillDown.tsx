@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react'
 import type { ModeloAnalisis } from '../../lib/analisis'
 import { moneda } from '../../lib/formato'
 import type { MovimientoResumen } from '../../types/catalogo'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface FilaDrill {
   nivel: 0 | 1 | 2
@@ -47,6 +48,7 @@ export default function DrillDown({
   etiquetaPeriodo,
   etiquetaTotal,
 }: DrillDownProps) {
+  const { t } = useTranslation()
   const [rubrosAbiertos, setRubrosAbiertos] = useState<Set<string>>(new Set())
   const [cuentasAbiertas, setCuentasAbiertas] = useState<Set<string>>(new Set())
 
@@ -122,7 +124,7 @@ export default function DrillDown({
       resultado.push({
         nivel: 0,
         clave: codigo,
-        etiqueta: info.nombre,
+        etiqueta: t.rubros[codigo] ?? info.nombre,
         valorPeriodo: valorRubro,
         total: totalRubro(codigo),
         participacion: totalRubros === 0 ? 0 : (Math.abs(valorRubro) / totalRubros) * 100,
@@ -167,7 +169,7 @@ export default function DrillDown({
       }
     }
     return resultado
-  }, [modelo, clave, rubrosAbiertos, cuentasAbiertas, auxiliaresDe])
+  }, [modelo, clave, rubrosAbiertos, cuentasAbiertas, auxiliaresDe, t])
 
   const alClic = (fila: FilaDrill) => {
     if (!fila.expandible) return
@@ -180,10 +182,10 @@ export default function DrillDown({
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-gray-50 text-left text-xs text-brand-900">
           <tr>
-            <th className="px-4 py-2.5 font-semibold">Rubro / cuenta / auxiliar</th>
+            <th className="px-4 py-2.5 font-semibold">{t.analisis.drillEncabezado}</th>
             <th className="px-4 py-2.5 text-right font-semibold">{etiquetaPeriodo}</th>
             <th className="px-4 py-2.5 text-right font-semibold">{etiquetaTotal}</th>
-            <th className="px-4 py-2.5 font-semibold">Participación</th>
+            <th className="px-4 py-2.5 font-semibold">{t.analisis.drillParticipacion}</th>
           </tr>
         </thead>
         <tbody>

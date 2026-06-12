@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { DragEvent } from 'react'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface DropzoneProps {
   onArchivo: (archivo: File) => void
@@ -8,6 +9,7 @@ interface DropzoneProps {
 
 /** Zona de arrastre (o clic) que acepta solo .xlsx. */
 export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [arrastrando, setArrastrando] = useState(false)
   const [errorTipo, setErrorTipo] = useState<string | null>(null)
@@ -15,7 +17,7 @@ export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
   const recibir = (archivo: File | undefined) => {
     if (!archivo) return
     if (!archivo.name.toLowerCase().endsWith('.xlsx')) {
-      setErrorTipo(`"${archivo.name}" no es un archivo .xlsx.`)
+      setErrorTipo(t.cargas.archivoNoXlsx(archivo.name))
       return
     }
     setErrorTipo(null)
@@ -34,7 +36,7 @@ export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Subir balance de prueba .xlsx"
+        aria-label={t.cargas.dropzoneAria}
         onClick={() => !deshabilitado && inputRef.current?.click()}
         onKeyDown={(e) => {
           if ((e.key === 'Enter' || e.key === ' ') && !deshabilitado) inputRef.current?.click()
@@ -51,11 +53,9 @@ export default function Dropzone({ onArchivo, deshabilitado }: DropzoneProps) {
             : 'border-gray-300 bg-white hover:border-brand-500'
         } ${deshabilitado ? 'pointer-events-none opacity-50' : ''}`}
       >
-        <p className="text-lg font-medium text-brand-900">
-          Arrastra aquí el balance de prueba de SIIGO
-        </p>
+        <p className="text-lg font-medium text-brand-900">{t.cargas.dropzoneTitulo}</p>
         <p className="mt-1 text-sm text-tinta-suave">
-          o haz clic para seleccionarlo — solo archivos <span className="font-mono">.xlsx</span>
+          {t.cargas.dropzoneSubtitulo} <span className="font-mono">.xlsx</span>
         </p>
       </div>
       <input

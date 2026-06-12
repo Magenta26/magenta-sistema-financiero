@@ -2,6 +2,8 @@ import type { ErDetalleFila, ErRubroFila } from '../types/informes'
 import { normalizar } from './parserSiigo'
 import { monedaCompacta } from './formato'
 import { nombreMes } from '../types/balance'
+import type { Diccionario } from '../i18n/es'
+import { idiomaGlobal } from '../i18n/idioma'
 
 /**
  * Lógica del módulo de Análisis sobre PERÍODOS agregados:
@@ -47,12 +49,6 @@ export interface ModeloAnalisis {
   cuentasInfo: Map<string, InfoCuenta>
   /** Años con datos, ascendente. */
   aniosConDatos: number[]
-}
-
-const SUSTANTIVO: Record<VistaPeriodo, string> = {
-  mensual: 'mes',
-  trimestral: 'trimestre',
-  anual: 'año',
 }
 
 function clavesMeses(rubros: ErRubroFila[]): MesAnio[] {
@@ -380,17 +376,26 @@ export function topVariaciones(modelo: ModeloAnalisis, clave: string, n = 10): V
 
 // ---------- Lectura del período ----------
 
-/** 3-5 frases determinísticas en español natural, adaptadas a la vista. */
+/** Textos que necesita la lectura: la sección `analisis.lectura` y los rubros del diccionario. */
+export interface TextosLectura {
+  lectura: Diccionario['analisis']['lectura']
+  rubros: Diccionario['rubros']
+}
+
+/** 3-5 frases determinísticas redactadas con el diccionario activo, adaptadas a la vista. */
 export function lecturaDelPeriodo(
   modelo: ModeloAnalisis,
   clave: string,
-  dya: Map<string, string>
+  dya: Map<string, string>,
+  textos: TextosLectura
 ): string[] {
   const periodo = modelo.periodos.find((p) => p.clave === clave)
   if (!periodo) return []
+  const { lectura, rubros } = textos
   const frases: string[] = []
-  const sustantivo = SUSTANTIVO[modelo.vista]
-  const ambito = modelo.vista === 'mensual' ? 'del año' : 'del rango comparado'
+  const sustantivo = lectura.sustantivo[modelo.vista]
+  const ambito = modelo.vista === 'mensual' ? lectura.ambitoMensual : lectura.ambitoRango
+  const nombreRubro = (codigo: string, alternativo: string) => rubros[codigo] ?? alternativo
   const todos = modelo.periodos.map((p) => ({
     periodo: p,
     derivados: derivadosPeriodo(modelo, p.clave, dya),
@@ -400,18 +405,23 @@ export function lecturaDelPeriodo(
   // 1) Posición del período en ingresos
   const ranking = [...todos].sort((a, b) => b.derivados.ingresos - a.derivados.ingresos)
   const posicion = ranking.findIndex((t) => t.periodo.clave === clave) + 1
-  const nota = periodo.parcial ? ' (período parcial)' : ''
+  const nota = periodo.parcial ? lectura.notaParcial : ''
+  const ingresos = monedaCompacta(actual.derivados.ingresos)
   if (posicion === 1) {
-    frases.push(
-      `${periodo.etiqueta} es el mejor ${sustantivo} ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
-    )
+    frases.push(lectura.mejor(periodo.etiqueta, sustantivo, ambito, ingresos, nota))
   } else if (posicion === todos.length) {
-    frases.push(
-      `${periodo.etiqueta} es el ${sustantivo} más bajo ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
-    )
+    frases.push(lectura.masBajo(periodo.etiqueta, sustantivo, ambito, ingresos, nota))
   } else {
     frases.push(
-      `${periodo.etiqueta} ocupa el puesto ${posicion} de ${todos.length} ${sustantivo}s ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
+      lectura.puesto(
+        periodo.etiqueta,
+        posicion,
+        todos.length,
+        lectura.sustantivoPlural[modelo.vista],
+        ambito,
+        ingresos,
+        nota
+      )
     )
   }
 
@@ -422,10 +432,15 @@ export function lecturaDelPeriodo(
     // 2) Margen neto: subió o bajó
     if (actual.derivados.margenNeto !== null && anterior.derivados.margenNeto !== null) {
       const puntos = actual.derivados.margenNeto - anterior.derivados.margenNeto
-      const direccion = puntos >= 0 ? 'subió' : 'bajó'
-      const fmt = (v: number) => v.toFixed(1).replace('.', ',')
+      const fmt = (v: number) => porcentajeCorto(v)
       frases.push(
-        `El margen neto ${direccion} de ${fmt(anterior.derivados.margenNeto)} % a ${fmt(actual.derivados.margenNeto)} % (${fmt(Math.abs(puntos))} puntos) frente a ${previo.etiqueta}.`
+        lectura.margen(
+          puntos >= 0,
+          fmt(anterior.derivados.margenNeto),
+          fmt(actual.derivados.margenNeto),
+          fmt(Math.abs(puntos)),
+          previo.etiqueta
+        )
       )
     }
 
@@ -437,21 +452,29 @@ export function lecturaDelPeriodo(
         (modelo.valores.get(clave)?.rubros.get(codigo) ?? 0) -
         (modelo.valores.get(previo.clave)?.rubros.get(codigo) ?? 0)
       if (!mayor || delta > mayor.delta) {
-        mayor = { nombre: modelo.rubroInfo.get(codigo)?.nombre ?? codigo, delta }
+        mayor = {
+          nombre: nombreRubro(codigo, modelo.rubroInfo.get(codigo)?.nombre ?? codigo),
+          delta,
+        }
       }
     }
     if (mayor && mayor.delta > 0) {
-      frases.push(
-        `El rubro que más creció frente a ${previo.etiqueta} fue ${mayor.nombre.toLowerCase()}: +${monedaCompacta(mayor.delta)}.`
-      )
+      frases.push(lectura.rubroCrecio(mayor.nombre, monedaCompacta(mayor.delta), previo.etiqueta))
     }
 
     // 4) Cuenta con la variación más fuerte
     const [top] = topVariaciones(modelo, clave, 1)
     if (top) {
-      const signo = top.delta > 0 ? 'aumentó' : 'disminuyó'
+      const info = modelo.cuentasInfo.get(top.cuenta)
       frases.push(
-        `La cuenta con la variación más fuerte fue ${top.cuenta} ${top.nombre} (${top.rubro.toLowerCase()}): ${signo} ${monedaCompacta(Math.abs(top.delta))} frente a ${previo.etiqueta}.`
+        lectura.cuentaFuerte(
+          top.cuenta,
+          top.nombre,
+          nombreRubro(info?.rubro_codigo ?? '', top.rubro),
+          top.delta > 0,
+          monedaCompacta(Math.abs(top.delta)),
+          previo.etiqueta
+        )
       )
     }
   }
@@ -460,11 +483,22 @@ export function lecturaDelPeriodo(
   const promedio =
     todos.reduce((acc, t) => acc + t.derivados.utilidadNeta, 0) / Math.max(todos.length, 1)
   if (promedio !== 0) {
-    const relacion = actual.derivados.utilidadNeta >= promedio ? 'por encima' : 'por debajo'
     frases.push(
-      `La utilidad neta del ${sustantivo} (${monedaCompacta(actual.derivados.utilidadNeta)}) está ${relacion} del promedio ${ambito} (${monedaCompacta(promedio)}).`
+      lectura.vsPromedio(
+        sustantivo,
+        monedaCompacta(actual.derivados.utilidadNeta),
+        actual.derivados.utilidadNeta >= promedio,
+        ambito,
+        monedaCompacta(promedio)
+      )
     )
   }
 
   return frases.slice(0, 5)
+}
+
+/** Porcentaje con 1 decimal y separador del idioma activo, sin el símbolo %. */
+function porcentajeCorto(valor: number): string {
+  const texto = valor.toFixed(1)
+  return idiomaGlobal() === 'en' ? texto : texto.replace('.', ',')
 }

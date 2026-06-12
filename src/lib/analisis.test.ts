@@ -9,6 +9,11 @@ import {
   topVariaciones,
 } from './analisis'
 import type { ErDetalleFila, ErRubroFila } from '../types/informes'
+import { es } from '../i18n/es'
+import { en } from '../i18n/en'
+
+const TEXTOS_ES = { lectura: es.analisis.lectura, rubros: es.rubros }
+const TEXTOS_EN = { lectura: en.analisis.lectura, rubros: en.rubros }
 
 const rubro = (
   anio: number,
@@ -160,15 +165,22 @@ describe('topVariaciones y lectura por período', () => {
 
   it('lectura trimestral compara Q vs Q anterior', () => {
     const modeloQ = construirModeloAnalisis(DETALLE, RUBROS, 'trimestral')
-    const frases = lecturaDelPeriodo(modeloQ, '2026-Q2', dya)
+    const frases = lecturaDelPeriodo(modeloQ, '2026-Q2', dya, TEXTOS_ES)
     expect(frases[0]).toContain('trimestre')
     expect(frases.join(' ')).toContain('Q1 2026')
   })
 
   it('lectura anual compara año vs año anterior y marca parciales', () => {
     const modeloA = construirModeloAnalisis(DETALLE, RUBROS, 'anual')
-    const frases = lecturaDelPeriodo(modeloA, '2026', dya)
+    const frases = lecturaDelPeriodo(modeloA, '2026', dya, TEXTOS_ES)
     expect(frases[0]).toContain('año')
     expect(frases[0]).toContain('parcial')
+  })
+
+  it('lectura en inglés usa terminología de analista (US GAAP)', () => {
+    const modeloQ = construirModeloAnalisis(DETALLE, RUBROS, 'trimestral')
+    const frases = lecturaDelPeriodo(modeloQ, '2026-Q2', dya, TEXTOS_EN)
+    expect(frases[0]).toMatch(/revenue quarter/)
+    expect(frases.join(' ')).toContain('versus')
   })
 })

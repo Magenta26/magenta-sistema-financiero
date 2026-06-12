@@ -8,15 +8,12 @@ import {
 import type { LineaDerivada, ModeloEr } from '../lib/estadoResultados'
 import { exportarEr } from '../lib/exportarExcel'
 import { contable } from '../lib/formato'
-import { MESES_ES, nombreMes } from '../types/balance'
+import { nombreMes } from '../types/balance'
 import type { ModoEr } from '../types/informes'
 import CeldaValor from '../components/informes/CeldaValor'
+import { useTranslation } from '../hooks/useTranslation'
 
-const MODOS: { valor: ModoEr; etiqueta: string }[] = [
-  { valor: 'absolutos', etiqueta: 'Absolutos' },
-  { valor: 'vertical', etiqueta: 'Vertical %' },
-  { valor: 'horizontal', etiqueta: 'Horizontal %' },
-]
+const MODOS: ModoEr[] = ['absolutos', 'vertical', 'horizontal']
 
 /** Tras qué rubro va cada línea derivada. */
 const DERIVADAS_TRAS_RUBRO: Record<string, string[]> = {
@@ -27,10 +24,13 @@ const DERIVADAS_TRAS_RUBRO: Record<string, string[]> = {
 }
 
 function FilaDerivada({ linea, modelo, modo }: { linea: LineaDerivada; modelo: ModeloEr; modo: ModoEr }) {
+  const { t } = useTranslation()
   return (
     <tr className="border-t border-brand-200 bg-brand-50">
-      <td className="px-3 py-2 text-xs font-bold text-brand-900">{linea.etiqueta}</td>
-      {MESES_ES.map((_, i) => {
+      <td className="px-3 py-2 text-xs font-bold text-brand-900">
+        {t.derivadas[linea.clave] ?? linea.etiqueta}
+      </td>
+      {t.meses.map((_, i) => {
         const mes = i + 1
         const sinDatos = !modelo.mesesConDatos.includes(mes)
         return (
@@ -49,6 +49,7 @@ function FilaDerivada({ linea, modelo, modo }: { linea: LineaDerivada; modelo: M
 }
 
 export default function EstadoResultados() {
+  const { t } = useTranslation()
   const detalle = useErDetalle()
   const rubros = useErRubros()
   const chequeos = useErChequeos()
@@ -84,49 +85,45 @@ export default function EstadoResultados() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-900">Estado de Resultados {anio}</h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Cuentas del catálogo incluidas en ER, agrupadas por rubro. ▸ expande el detalle.
-          </p>
+          <h1 className="text-2xl font-bold text-brand-900">{t.er.titulo(anio)}</h1>
+          <p className="mt-1 text-sm text-tinta-suave">{t.er.descripcion}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {MODOS.map((m) => (
               <button
-                key={m.valor}
+                key={m}
                 type="button"
-                onClick={() => setModo(m.valor)}
+                onClick={() => setModo(m)}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-150 ${
-                  modo === m.valor
-                    ? 'bg-brand-700 text-white'
-                    : 'text-tinta-suave hover:text-brand-900'
+                  modo === m ? 'bg-brand-700 text-white' : 'text-tinta-suave hover:text-brand-900'
                 }`}
               >
-                {m.etiqueta}
+                {t.er.modos[m]}
               </button>
             ))}
           </div>
           <button
             type="button"
             disabled={!modelo}
-            onClick={() => modelo && exportarEr(modelo, modo)}
+            onClick={() => modelo && exportarEr(modelo, modo, t)}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
-            Exportar a Excel
+            {t.comun.exportarExcel}
           </button>
         </div>
       </div>
 
       {error && (
         <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Error consultando las vistas: {error.message}
+          {t.er.errorVistas(error.message)}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando el Estado de Resultados…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">{t.er.calculando}</p>}
 
       {modelo && modelo.mesesConDatos.length === 0 && (
         <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
-          No hay datos cargados para {anio}. Sube balances en la sección Cargas.
+          {t.er.sinDatos(anio)}
         </p>
       )}
 
@@ -135,8 +132,8 @@ export default function EstadoResultados() {
           <table className="w-full">
             <thead className="sticky top-0 bg-gray-50 text-brand-900">
               <tr>
-                <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">Línea</th>
-                {MESES_ES.map((nombre, i) => (
+                <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">{t.comun.linea}</th>
+                {t.meses.map((nombre, i) => (
                   <th
                     key={nombre}
                     className={`px-3 py-2.5 text-right text-xs font-semibold ${
@@ -146,7 +143,7 @@ export default function EstadoResultados() {
                     {nombre}
                   </th>
                 ))}
-                <th className="px-3 py-2.5 text-right text-xs font-bold">Total año</th>
+                <th className="px-3 py-2.5 text-right text-xs font-bold">{t.comun.totalAnio}</th>
               </tr>
             </thead>
             <tbody>
@@ -163,10 +160,10 @@ export default function EstadoResultados() {
                         <span className="mr-1.5 inline-block w-3 text-tinta-suave">
                           {abierto ? '▾' : '▸'}
                         </span>
-                        {bloque.nombre}
+                        {t.rubros[bloque.codigo] ?? bloque.nombre}
                         <span className="ml-1.5 text-gray-400">({bloque.cuentas.length})</span>
                       </td>
-                      {MESES_ES.map((_, i) => {
+                      {t.meses.map((_, i) => {
                         const mes = i + 1
                         const sinDatos = !modelo.mesesConDatos.includes(mes)
                         return (
@@ -192,7 +189,7 @@ export default function EstadoResultados() {
                             <span className="font-mono text-gray-400">{cuenta.cuenta}</span>{' '}
                             {cuenta.nombre}
                           </td>
-                          {MESES_ES.map((_, i) => {
+                          {t.meses.map((_, i) => {
                             const mes = i + 1
                             const sinDatos = !modelo.mesesConDatos.includes(mes)
                             return (
@@ -223,16 +220,12 @@ export default function EstadoResultados() {
       {/* Chequeos por grupo */}
       {modelo && modelo.chequeos.length > 0 && (
         <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-800">
-            ⚠️ Chequeos con diferencia (total crudo del grupo vs clasificado en el ER)
-          </p>
-          <p className="mt-1 text-xs text-amber-700">
-            Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.
-          </p>
+          <p className="text-sm font-semibold text-amber-800">{t.er.chequeosTitulo}</p>
+          <p className="mt-1 text-xs text-amber-700">{t.er.chequeosNota}</p>
           <ul className="mt-2 space-y-1">
             {modelo.chequeos.map((ch) => (
               <li key={ch.grupo} className="text-xs text-amber-800">
-                <span className="font-bold">Grupo {ch.grupo}:</span>{' '}
+                <span className="font-bold">{t.er.chequeoGrupo(ch.grupo)}</span>{' '}
                 {[...ch.diferencias.entries()]
                   .sort((a, b) => a[0] - b[0])
                   .map(([mes, dif]) => `${nombreMes(mes)}: ${contable(dif)}`)
@@ -243,9 +236,7 @@ export default function EstadoResultados() {
         </div>
       )}
       {modelo && modelo.mesesConDatos.length > 0 && modelo.chequeos.length === 0 && (
-        <p className="mt-5 text-xs font-medium text-exito">
-          ✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).
-        </p>
+        <p className="mt-5 text-xs font-medium text-exito">{t.er.chequeosOk}</p>
       )}
     </div>
   )

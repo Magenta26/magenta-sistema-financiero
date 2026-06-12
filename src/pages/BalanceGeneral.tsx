@@ -7,13 +7,12 @@ import { contable } from '../lib/formato'
 import { nombreMes } from '../types/balance'
 import type { ModoBg } from '../types/informes'
 import SeccionBalance from '../components/informes/SeccionBalance'
+import { useTranslation } from '../hooks/useTranslation'
 
-const MODOS: { valor: ModoBg; etiqueta: string }[] = [
-  { valor: 'saldos', etiqueta: 'Saldos' },
-  { valor: 'variacion', etiqueta: 'Variación del mes' },
-]
+const MODOS: ModoBg[] = ['saldos', 'variacion']
 
 export default function BalanceGeneral() {
+  const { t } = useTranslation()
   const bg = useBg()
   const rubros = useErRubros()
   const [modo, setModo] = useState<ModoBg>('saldos')
@@ -41,51 +40,47 @@ export default function BalanceGeneral() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-900">Balance General {anio}</h1>
+          <h1 className="text-2xl font-bold text-brand-900">{t.bg.titulo(anio)}</h1>
           <p className="mt-1 text-sm text-tinta-suave">
-            {esVariacion
-              ? 'Variación del mes por grupo: saldo final − saldo inicial (impacto neto del período).'
-              : 'Por grupo (2 dígitos), saldo final de cada mes. Pasivo y patrimonio en positivo.'}
+            {esVariacion ? t.bg.descripcionVariacion : t.bg.descripcionSaldos}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {MODOS.map((m) => (
               <button
-                key={m.valor}
+                key={m}
                 type="button"
-                onClick={() => setModo(m.valor)}
+                onClick={() => setModo(m)}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-150 ${
-                  modo === m.valor
-                    ? 'bg-brand-700 text-white'
-                    : 'text-tinta-suave hover:text-brand-900'
+                  modo === m ? 'bg-brand-700 text-white' : 'text-tinta-suave hover:text-brand-900'
                 }`}
               >
-                {m.etiqueta}
+                {t.bg.modos[m]}
               </button>
             ))}
           </div>
           <button
             type="button"
             disabled={!modelo}
-            onClick={() => modelo && exportarBg(modelo, modo)}
+            onClick={() => modelo && exportarBg(modelo, modo, t)}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
-            Exportar a Excel
+            {t.comun.exportarExcel}
           </button>
         </div>
       </div>
 
       {error && (
         <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Error consultando las vistas: {error.message}
+          {t.er.errorVistas(error.message)}
         </p>
       )}
-      {cargando && <p className="mt-6 text-sm text-tinta-suave">Calculando el Balance General…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">{t.bg.calculando}</p>}
 
       {modelo && meses.length === 0 && (
         <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
-          No hay datos cargados para {anio}. Sube balances en la sección Cargas.
+          {t.er.sinDatos(anio)}
         </p>
       )}
 
@@ -95,14 +90,14 @@ export default function BalanceGeneral() {
             <table className="w-full">
               <thead className="sticky top-0 bg-gray-50 text-brand-900">
                 <tr>
-                  <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">Línea</th>
+                  <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">{t.comun.linea}</th>
                   {meses.map((mes) => (
                     <th key={mes} className="px-3 py-2.5 text-right text-xs font-semibold">
                       {nombreMes(mes)}
                     </th>
                   ))}
                   {esVariacion && (
-                    <th className="px-3 py-2.5 text-right text-xs font-bold">Total año</th>
+                    <th className="px-3 py-2.5 text-right text-xs font-bold">{t.comun.totalAnio}</th>
                   )}
                 </tr>
               </thead>
@@ -120,9 +115,7 @@ export default function BalanceGeneral() {
                 {/* Cuadre */}
                 <tr className="border-t-2 border-brand-200 bg-gray-50">
                   <td className="px-3 py-2.5 text-xs font-bold text-brand-900">
-                    {esVariacion
-                      ? 'Cuadre: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)'
-                      : 'Cuadre: Activo − (Pasivo + Patrimonio + Resultado)'}
+                    {esVariacion ? t.bg.cuadreVariacion : t.bg.cuadreSaldos}
                   </td>
                   {meses.map((mes) => {
                     const dif = cuadre?.get(mes) ?? 0
@@ -131,12 +124,12 @@ export default function BalanceGeneral() {
                       <td key={mes} className="px-3 py-2.5 text-right">
                         {cuadra ? (
                           <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-exito">
-                            ✓ cuadra
+                            {t.bg.cuadra}
                           </span>
                         ) : (
                           <span
                             className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-red-700"
-                            title={`Diferencia: ${contable(dif)}`}
+                            title={t.bg.diferencia(contable(dif))}
                           >
                             {contable(dif)}
                           </span>
@@ -150,9 +143,7 @@ export default function BalanceGeneral() {
             </table>
           </div>
           <p className="mt-3 text-xs text-tinta-suave">
-            {esVariacion
-              ? 'Variación = saldo final − saldo inicial del mes, con el signo del efecto en la posición (un aumento de pasivo se muestra como aumento). Total año = suma de variaciones, que equivale al saldo final del último mes menos el saldo inicial de enero.'
-              : 'El cuadre se considera correcto con diferencia ≤ $1 (redondeos). El resultado del ejercicio es la utilidad neta acumulada calculada desde el Estado de Resultados.'}
+            {esVariacion ? t.bg.notaVariacion : t.bg.notaSaldos}
           </p>
         </>
       )}

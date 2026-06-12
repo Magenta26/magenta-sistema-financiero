@@ -15,10 +15,12 @@ import TablaCatalogo from '../components/consolidado/TablaCatalogo'
 import type { CambioCuenta, CampoOrden } from '../components/consolidado/TablaCatalogo'
 import Toast from '../components/Toast'
 import type { DatosToast } from '../components/Toast'
+import { useTranslation } from '../hooks/useTranslation'
 
 const CLAVE_CATALOGO = ['catalogo_cuentas', 'todas'] as const
 
 export default function Consolidado() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const catalogo = useCatalogo()
   const rubros = useRubros()
@@ -85,10 +87,10 @@ export default function Consolidado() {
     },
     onError: (e, _cambio, contexto) => {
       if (contexto?.previo) queryClient.setQueryData(CLAVE_CATALOGO, contexto.previo)
-      avisar({ tipo: 'error', mensaje: `No se pudo guardar: ${e.message}. Se revirtió el cambio.` })
+      avisar({ tipo: 'error', mensaje: t.consolidado.errorGuardar(e.message) })
     },
     onSuccess: (_datos, { cuenta }) => {
-      avisar({ tipo: 'exito', mensaje: `${cuenta} guardada.` })
+      avisar({ tipo: 'exito', mensaje: t.consolidado.guardada(cuenta) })
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['catalogo_cuentas'] })
@@ -100,7 +102,11 @@ export default function Consolidado() {
     if (cambio.campos.incluir_er === true) {
       const resultado = conflictoEr(cambio.cuenta, catalogo.data ?? [])
       if (resultado) {
-        avisar({ tipo: 'error', mensaje: resultado.razon })
+        const mensaje =
+          resultado.tipo === 'la-contiene'
+            ? t.consolidado.conflictoContiene(resultado.conflicto.cuenta, cambio.cuenta)
+            : t.consolidado.conflictoContenida(resultado.conflicto.cuenta, cambio.cuenta)
+        avisar({ tipo: 'error', mensaje })
         return
       }
     }
@@ -115,19 +121,16 @@ export default function Consolidado() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-brand-900">Consolidado</h1>
-      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">
-        Clasifica cada cuenta del catálogo: su rubro del Estado de Resultados y si entra al ER y/o
-        al Balance General. Los cambios se guardan al instante.
-      </p>
+      <h1 className="text-2xl font-bold text-brand-900">{t.consolidado.titulo}</h1>
+      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">{t.consolidado.descripcion}</p>
 
       {errorCarga && (
         <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Error consultando la base: {errorCarga.message}
+          {t.comun.errorConsultando(errorCarga.message)}
         </p>
       )}
 
-      {cargando && <p className="mt-6 text-sm text-tinta-suave">Cargando catálogo y movimientos…</p>}
+      {cargando && <p className="mt-6 text-sm text-tinta-suave">{t.consolidado.cargando}</p>}
 
       {!cargando && !errorCarga && catalogo.data && (
         <>
@@ -135,14 +138,14 @@ export default function Consolidado() {
           {pendientes.length > 0 && !soloPendientes && (
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
               <p className="text-sm font-medium text-amber-800">
-                ⚠️ Hay {pendientes.length} cuenta(s) nueva(s) sin clasificar.
+                {t.consolidado.pendientesBanner(pendientes.length)}
               </p>
               <button
                 type="button"
                 onClick={() => setSoloPendientes(true)}
                 className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-amber-700"
               >
-                Ver pendientes
+                {t.consolidado.verPendientes}
               </button>
             </div>
           )}
@@ -150,10 +153,10 @@ export default function Consolidado() {
           {/* Resumen */}
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { etiqueta: 'Cuentas en el catálogo', valor: catalogo.data.length },
-              { etiqueta: 'Incluidas en ER', valor: totalEr },
-              { etiqueta: 'Incluidas en BG', valor: totalBg },
-              { etiqueta: 'Pendientes de clasificar', valor: pendientes.length },
+              { etiqueta: t.consolidado.kpiTotal, valor: catalogo.data.length },
+              { etiqueta: t.consolidado.kpiEr, valor: totalEr },
+              { etiqueta: t.consolidado.kpiBg, valor: totalBg },
+              { etiqueta: t.consolidado.kpiPendientes, valor: pendientes.length },
             ].map((kpi) => (
               <div key={kpi.etiqueta} className="rounded-xl border border-borde bg-white px-4 py-3 shadow-sm">
                 <p className="text-xs text-tinta-suave">{kpi.etiqueta}</p>
@@ -168,23 +171,21 @@ export default function Consolidado() {
               type="search"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por cuenta o nombre…"
+              placeholder={t.consolidado.buscar}
               className="w-72 rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta placeholder-gray-400 transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             />
             <select
-              aria-label="Filtrar por clase"
+              aria-label={t.consolidado.filtroClaseAria}
               value={filtroClase}
               onChange={(e) => setFiltroClase(e.target.value)}
               className="rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             >
-              <option value="todas">Todas las clases</option>
-              <option value="1">1 · Activo</option>
-              <option value="2">2 · Pasivo</option>
-              <option value="3">3 · Patrimonio</option>
-              <option value="4">4 · Ingresos</option>
-              <option value="5">5 · Gastos</option>
-              <option value="6">6 · Costos</option>
-              <option value="7">7 · Costos de producción</option>
+              <option value="todas">{t.consolidado.todasLasClases}</option>
+              {(['1', '2', '3', '4', '5', '6', '7'] as const).map((clase) => (
+                <option key={clase} value={clase}>
+                  {clase} · {t.clases[clase]}
+                </option>
+              ))}
             </select>
             <label className="flex cursor-pointer items-center gap-2 text-sm text-tinta">
               <input
@@ -193,10 +194,10 @@ export default function Consolidado() {
                 onChange={(e) => setSoloPendientes(e.target.checked)}
                 className="h-4 w-4 accent-brand-700"
               />
-              Solo pendientes de clasificar
+              {t.consolidado.soloPendientes}
             </label>
             <p className="ml-auto text-xs text-tinta-suave">
-              Mostrando {entero(visibles.length)} de {entero(catalogo.data.length)}
+              {t.consolidado.mostrando(entero(visibles.length), entero(catalogo.data.length))}
             </p>
           </div>
 
@@ -219,10 +220,7 @@ export default function Consolidado() {
             />
           </div>
 
-          <p className="mt-3 text-xs text-tinta-suave">
-            Valor: clases 4-7 acumulado del año con signo según naturaleza; clases 1-3 saldo final
-            del último mes cargado. ▸ expande el detalle mes a mes.
-          </p>
+          <p className="mt-3 text-xs text-tinta-suave">{t.consolidado.notaPie}</p>
         </>
       )}
 

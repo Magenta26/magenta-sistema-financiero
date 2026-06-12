@@ -2,6 +2,7 @@ import { detallePorMes } from '../../lib/consolidado'
 import { moneda } from '../../lib/formato'
 import { nombreMes } from '../../types/balance'
 import type { MovimientoResumen } from '../../types/catalogo'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface DetalleCuentaProps {
   cuenta: string
@@ -10,12 +11,13 @@ interface DetalleCuentaProps {
 
 /** Detalle mes a mes de una cuenta (agregando sus auxiliares si es un prefijo). */
 export default function DetalleCuenta({ cuenta, movimientos }: DetalleCuentaProps) {
+  const { t } = useTranslation()
   const detalle = detallePorMes(cuenta, movimientos)
 
   if (detalle.length === 0) {
     return (
       <p className="px-4 py-3 text-sm text-tinta-suave">
-        Sin movimientos transaccionales para el prefijo {cuenta}.
+        {t.consolidado.detalle.sinMovimientos(cuenta)}
       </p>
     )
   }
@@ -25,12 +27,12 @@ export default function DetalleCuenta({ cuenta, movimientos }: DetalleCuentaProp
       <table className="w-full text-xs">
         <thead className="text-left text-tinta-suave">
           <tr>
-            <th className="py-1.5 pr-3 font-medium">Mes</th>
-            <th className="py-1.5 pr-3 text-right font-medium">Auxiliares</th>
-            <th className="py-1.5 pr-3 text-right font-medium">Saldo inicial</th>
-            <th className="py-1.5 pr-3 text-right font-medium">Débitos</th>
-            <th className="py-1.5 pr-3 text-right font-medium">Créditos</th>
-            <th className="py-1.5 text-right font-medium">Saldo final</th>
+            <th className="py-1.5 pr-3 font-medium">{t.consolidado.detalle.mes}</th>
+            <th className="py-1.5 pr-3 text-right font-medium">{t.consolidado.detalle.auxiliares}</th>
+            <th className="py-1.5 pr-3 text-right font-medium">{t.consolidado.detalle.saldoInicial}</th>
+            <th className="py-1.5 pr-3 text-right font-medium">{t.consolidado.detalle.debitos}</th>
+            <th className="py-1.5 pr-3 text-right font-medium">{t.consolidado.detalle.creditos}</th>
+            <th className="py-1.5 text-right font-medium">{t.consolidado.detalle.saldoFinal}</th>
           </tr>
         </thead>
         <tbody className="tabular-nums">

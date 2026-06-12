@@ -8,6 +8,7 @@ import type { Periodo, ResultadoParser } from '../types/balance'
 import Dropzone from '../components/cargas/Dropzone'
 import Previsualizacion from '../components/cargas/Previsualizacion'
 import HistorialCargas from '../components/cargas/HistorialCargas'
+import { useTranslation } from '../hooks/useTranslation'
 
 interface ResultadoCarga {
   carga_id: string
@@ -16,6 +17,7 @@ interface ResultadoCarga {
 }
 
 export default function Cargas() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [archivo, setArchivo] = useState<File | null>(null)
   const [datosArchivo, setDatosArchivo] = useState<ArrayBuffer | null>(null)
@@ -55,13 +57,16 @@ export default function Cargas() {
 
   const validaciones = useMemo(() => {
     if (!parseo) return []
-    return validarBalance({
-      encabezadosFaltantes: parseo.encabezadosFaltantes,
-      periodo: periodoEfectivo,
-      filas: parseo.filas,
-      cuentasCatalogo: cuentasCatalogo ?? [],
-    })
-  }, [parseo, periodoEfectivo, cuentasCatalogo])
+    return validarBalance(
+      {
+        encabezadosFaltantes: parseo.encabezadosFaltantes,
+        periodo: periodoEfectivo,
+        filas: parseo.filas,
+        cuentasCatalogo: cuentasCatalogo ?? [],
+      },
+      t.validaciones
+    )
+  }, [parseo, periodoEfectivo, cuentasCatalogo, t])
 
   const hayBloqueantes = validaciones.some((v) => v.tipo === 'bloqueante')
 
@@ -76,16 +81,14 @@ export default function Cargas() {
       setDatosArchivo(datos)
       setParseo(parsearBalanceSiigo(datos))
     } catch (e) {
-      setErrorParseo(
-        `No se pudo leer el archivo: ${e instanceof Error ? e.message : 'error desconocido'}`
-      )
+      setErrorParseo(t.cargas.errorLectura(e instanceof Error ? e.message : '?'))
     }
   }
 
   const confirmar = useMutation({
     mutationFn: async (): Promise<ResultadoCarga> => {
       if (!archivo || !datosArchivo || !parseo || !periodoEfectivo) {
-        throw new Error('No hay carga lista para confirmar.')
+        throw new Error(t.cargas.sinCargaLista)
       }
       const { anio, mes } = periodoEfectivo
 
@@ -97,7 +100,7 @@ export default function Cargas() {
         .upload(ruta, datosArchivo, {
           contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         })
-      if (errorSubida) throw new Error(`Error subiendo el archivo a Storage: ${errorSubida.message}`)
+      if (errorSubida) throw new Error(t.cargas.errorSubida(errorSubida.message))
 
       // 2) RPC procesar_carga: todo el flujo en una transacción
       const { data, error } = await supabase.rpc('procesar_carga', {
@@ -117,7 +120,7 @@ export default function Cargas() {
         })),
         p_validaciones: validaciones,
       })
-      if (error) throw new Error(`Error procesando la carga: ${error.message}`)
+      if (error) throw new Error(t.cargas.errorProceso(error.message))
       return data as ResultadoCarga
     },
     onSuccess: (r) => {
@@ -134,11 +137,8 @@ export default function Cargas() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-brand-900">Cargas</h1>
-      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">
-        Sube el balance de prueba mensual exportado de SIIGO. Revisa la previsualización y las
-        validaciones antes de confirmar.
-      </p>
+      <h1 className="text-2xl font-bold text-brand-900">{t.cargas.titulo}</h1>
+      <p className="mt-2 max-w-2xl text-sm text-tinta-suave">{t.cargas.descripcion}</p>
 
       <div className="mt-6">
         <Dropzone onArchivo={alRecibirArchivo} deshabilitado={confirmar.isPending} />
@@ -169,11 +169,9 @@ export default function Cargas() {
               disabled={hayBloqueantes || confirmar.isPending}
               className="rounded-lg bg-brand-700 px-5 py-2.5 font-semibold text-white transition-colors duration-150 hover:bg-brand-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {confirmar.isPending ? 'Procesando…' : 'Confirmar carga'}
+              {confirmar.isPending ? t.cargas.procesando : t.cargas.confirmarCarga}
             </button>
-            {hayBloqueantes && (
-              <p className="text-sm text-red-700">Corrige los bloqueantes ⛔ para continuar.</p>
-            )}
+            {hayBloqueantes && <p className="text-sm text-red-700">{t.cargas.corrigeBloqueantes}</p>}
             <button
               type="button"
               onClick={() => {
@@ -184,7 +182,7 @@ export default function Cargas() {
               disabled={confirmar.isPending}
               className="text-sm text-tinta-suave underline-offset-2 transition-colors duration-150 hover:text-brand-700 hover:underline"
             >
-              Cancelar
+              {t.comun.cancelar}
             </button>
           </div>
         </>
@@ -193,7 +191,7 @@ export default function Cargas() {
       {confirmar.isPending && (
         <p className="mt-4 text-sm text-tinta-suave">
           <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-700 border-t-transparent align-middle" />
-          Subiendo archivo y procesando movimientos…
+          {t.cargas.subiendo}
         </p>
       )}
 
@@ -205,18 +203,11 @@ export default function Cargas() {
 
       {resultado && (
         <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          ✅ Carga procesada: <span className="font-bold">{entero(resultado.filas_importadas)}</span>{' '}
-          filas insertadas
-          {resultado.cuentas_nuevas > 0 ? (
-            <>
-              {' '}
-              · <span className="font-bold">{resultado.cuentas_nuevas}</span> cuenta(s) nueva(s)
-              agregada(s) al catálogo (revísalas en Consolidado)
-            </>
-          ) : (
-            <> · sin cuentas nuevas</>
-          )}
-          . Los datos quedaron consolidados en la base.
+          {t.cargas.resultado(entero(resultado.filas_importadas))}
+          {resultado.cuentas_nuevas > 0
+            ? t.cargas.cuentasNuevas(resultado.cuentas_nuevas)
+            : t.cargas.sinCuentasNuevas}
+          {t.cargas.datosConsolidados}
         </div>
       )}
 
