@@ -40,10 +40,12 @@ function TooltipDonut({ active, payload }: PropsTooltipDonut) {
 interface DonutComposicionProps {
   titulo: string
   porciones: PorcionDonut[]
+  /** Nota aclaratoria opcional al pie de la tarjeta. */
+  nota?: string
 }
 
 /** Donut por rubro con detalle de las top cuentas al pasar el mouse. */
-export default function DonutComposicion({ titulo, porciones }: DonutComposicionProps) {
+export default function DonutComposicion({ titulo, porciones, nota }: DonutComposicionProps) {
   const conDatos = porciones.filter((p) => Math.abs(p.valor) > 0.005)
   const total = conDatos.reduce((acc, p) => acc + Math.abs(p.valor), 0)
 
@@ -85,6 +87,7 @@ export default function DonutComposicion({ titulo, porciones }: DonutComposicion
           </ResponsiveContainer>
         </>
       )}
+      {nota && <p className="mt-2 text-xs text-gray-400">{nota}</p>}
     </div>
   )
 }

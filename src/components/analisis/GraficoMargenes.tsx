@@ -8,12 +8,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { SerieMensual } from '../../lib/analisis'
+import type { SeriePunto } from '../../lib/analisis'
 import { COLORES } from './colores'
 import { TooltipPorcentaje } from './graficos'
 
 /** Evolución de los márgenes bruto, operacional y neto (% de ingresos). */
-export default function GraficoMargenes({ series }: { series: SerieMensual[] }) {
+export default function GraficoMargenes({ series }: { series: SeriePunto[] }) {
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold text-brand-900">Evolución de márgenes</h2>

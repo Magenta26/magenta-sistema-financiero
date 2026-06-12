@@ -9,16 +9,21 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { SerieMensual } from '../../lib/analisis'
+import type { SeriePunto } from '../../lib/analisis'
 import { monedaCompacta } from '../../lib/formato'
 import { COLORES } from './colores'
 import { TooltipPesos } from './graficos'
 
+interface GraficoTendenciaProps {
+  series: SeriePunto[]
+  titulo: string
+}
+
 /** Barras de ingresos y costos+gastos con la utilidad neta superpuesta. */
-export default function GraficoTendencia({ series }: { series: SerieMensual[] }) {
+export default function GraficoTendencia({ series, titulo }: GraficoTendenciaProps) {
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-brand-900">Tendencia mensual</h2>
+      <h2 className="mb-3 text-sm font-semibold text-brand-900">{titulo}</h2>
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={series} margin={{ top: 5, right: 10, bottom: 0, left: 10 }}>
           <CartesianGrid stroke={COLORES.grilla} strokeDasharray="3 3" vertical={false} />

@@ -1,19 +1,321 @@
-import type { ModeloEr } from './estadoResultados'
+import type { ErDetalleFila, ErRubroFila } from '../types/informes'
+import { normalizar } from './parserSiigo'
 import { monedaCompacta } from './formato'
 import { nombreMes } from '../types/balance'
 
 /**
- * Lógica del módulo de Análisis (PLAN.md sección 6):
- * KPIs del mes, series para gráficos, top variaciones y "lectura del mes".
- * Todo determinístico a partir del modelo del ER.
+ * Lógica del módulo de Análisis sobre PERÍODOS agregados:
+ * vista mensual (año actual), trimestral (últimos 2 años con datos)
+ * o anual (últimos 5 años con datos). Todo determinístico desde las vistas del ER.
  */
 
-const valorDerivada = (modelo: ModeloEr, clave: string, mes: number): number =>
-  modelo.derivadas.get(clave)?.valores.get(mes) ?? 0
+export type VistaPeriodo = 'mensual' | 'trimestral' | 'anual'
 
-export interface SerieMensual {
+export interface MesAnio {
+  anio: number
   mes: number
+}
+
+export interface PeriodoAgregado {
+  clave: string // '2026-05' | '2026-Q2' | '2026'
+  etiqueta: string // 'Mayo 2026' | 'Q2 2026' | '2026'
+  etiquetaEje: string // 'May' | 'Q2 26' | '2026' (+ '*' si es parcial)
+  parcial: boolean
+  meses: MesAnio[]
+}
+
+export interface InfoCuenta {
+  nombre: string
+  naturaleza: 'CR' | 'DB'
+  rubro_codigo: string
+}
+
+export interface ValoresPeriodo {
+  /** codigo de rubro -> total del período */
+  rubros: Map<string, number>
+  /** cuenta -> valor del período (signo según naturaleza de la cuenta) */
+  cuentas: Map<string, number>
+}
+
+export interface ModeloAnalisis {
+  vista: VistaPeriodo
+  periodos: PeriodoAgregado[]
+  /** clave de período -> valores */
+  valores: Map<string, ValoresPeriodo>
+  /** codigo -> { nombre, orden } de rubros_er */
+  rubroInfo: Map<string, { nombre: string; orden: number }>
+  cuentasInfo: Map<string, InfoCuenta>
+  /** Años con datos, ascendente. */
+  aniosConDatos: number[]
+}
+
+const SUSTANTIVO: Record<VistaPeriodo, string> = {
+  mensual: 'mes',
+  trimestral: 'trimestre',
+  anual: 'año',
+}
+
+function clavesMeses(rubros: ErRubroFila[]): MesAnio[] {
+  const unicos = new Map<number, MesAnio>()
+  for (const r of rubros) unicos.set(r.anio * 100 + r.mes, { anio: r.anio, mes: r.mes })
+  return [...unicos.entries()].sort((a, b) => a[0] - b[0]).map(([, m]) => m)
+}
+
+export function construirPeriodos(mesesConDatos: MesAnio[], vista: VistaPeriodo): PeriodoAgregado[] {
+  if (mesesConDatos.length === 0) return []
+  const anios = [...new Set(mesesConDatos.map((m) => m.anio))].sort((a, b) => a - b)
+
+  if (vista === 'mensual') {
+    const anioActual = anios[anios.length - 1]
+    return mesesConDatos
+      .filter((m) => m.anio === anioActual)
+      .map((m) => ({
+        clave: `${m.anio}-${String(m.mes).padStart(2, '0')}`,
+        etiqueta: `${nombreMes(m.mes)} ${m.anio}`,
+        etiquetaEje: nombreMes(m.mes).slice(0, 3),
+        parcial: false,
+        meses: [m],
+      }))
+  }
+
+  if (vista === 'trimestral') {
+    const ultimos = anios.slice(-2)
+    const periodos: PeriodoAgregado[] = []
+    for (const anio of ultimos) {
+      for (let q = 1; q <= 4; q++) {
+        const meses = mesesConDatos.filter(
+          (m) => m.anio === anio && Math.ceil(m.mes / 3) === q
+        )
+        if (meses.length === 0) continue
+        const parcial = meses.length < 3
+        periodos.push({
+          clave: `${anio}-Q${q}`,
+          etiqueta: `Q${q} ${anio}`,
+          etiquetaEje: `Q${q} ${String(anio).slice(2)}${parcial ? '*' : ''}`,
+          parcial,
+          meses,
+        })
+      }
+    }
+    return periodos
+  }
+
+  // anual
+  return anios.slice(-5).map((anio) => {
+    const meses = mesesConDatos.filter((m) => m.anio === anio)
+    const parcial = meses.length < 12
+    return {
+      clave: `${anio}`,
+      etiqueta: `${anio}`,
+      etiquetaEje: `${anio}${parcial ? '*' : ''}`,
+      parcial,
+      meses,
+    }
+  })
+}
+
+export function construirModeloAnalisis(
+  detalle: ErDetalleFila[],
+  rubros: ErRubroFila[],
+  vista: VistaPeriodo
+): ModeloAnalisis {
+  const mesesConDatos = clavesMeses(rubros)
+  const periodos = construirPeriodos(mesesConDatos, vista)
+
+  const rubroInfo = new Map<string, { nombre: string; orden: number }>()
+  for (const r of rubros) {
+    if (!rubroInfo.has(r.codigo)) rubroInfo.set(r.codigo, { nombre: r.nombre, orden: r.orden })
+  }
+
+  const cuentasInfo = new Map<string, InfoCuenta>()
+  for (const d of detalle) {
+    if (!cuentasInfo.has(d.cuenta)) {
+      cuentasInfo.set(d.cuenta, {
+        nombre: d.nombre,
+        naturaleza: d.naturaleza,
+        rubro_codigo: d.rubro_codigo,
+      })
+    }
+  }
+
+  const valores = new Map<string, ValoresPeriodo>()
+  for (const periodo of periodos) {
+    const claves = new Set(periodo.meses.map((m) => m.anio * 100 + m.mes))
+    const vp: ValoresPeriodo = { rubros: new Map(), cuentas: new Map() }
+    for (const r of rubros) {
+      if (!claves.has(r.anio * 100 + r.mes)) continue
+      vp.rubros.set(r.codigo, (vp.rubros.get(r.codigo) ?? 0) + r.total)
+    }
+    for (const d of detalle) {
+      if (!claves.has(d.anio * 100 + d.mes)) continue
+      vp.cuentas.set(d.cuenta, (vp.cuentas.get(d.cuenta) ?? 0) + d.valor)
+    }
+    valores.set(periodo.clave, vp)
+  }
+
+  return {
+    vista,
+    periodos,
+    valores,
+    rubroInfo,
+    cuentasInfo,
+    aniosConDatos: [...new Set(mesesConDatos.map((m) => m.anio))].sort((a, b) => a - b),
+  }
+}
+
+// ---------- EBITDA: cuentas de depreciación y amortización ----------
+
+const PREFIJOS_DYA = ['5160', '5165', '5260', '5265', '7360']
+
+/**
+ * Identifica cuentas de depreciación/amortización en el catálogo del ER:
+ * por prefijo PUC (5160, 5165, 5260, 5265, 7360) o por nombre que contenga
+ * "depreciaci"/"amortizaci" (sin tildes/mayúsculas) en clases 5 y 7.
+ */
+export function cuentasDepreciacionAmortizacion(
+  cuentasInfo: Map<string, InfoCuenta>
+): Map<string, string> {
+  const resultado = new Map<string, string>()
+  for (const [cuenta, info] of cuentasInfo) {
+    const porPrefijo = PREFIJOS_DYA.some((p) => cuenta.startsWith(p))
+    const nombreNorm = normalizar(info.nombre)
+    const porNombre =
+      ['5', '7'].includes(cuenta[0]) &&
+      (nombreNorm.includes('depreciaci') || nombreNorm.includes('amortizaci'))
+    if (porPrefijo || porNombre) resultado.set(cuenta, info.nombre)
+  }
+  return resultado
+}
+
+// ---------- Derivados por período ----------
+
+export interface DerivadosPeriodo {
+  ingresos: number
+  utilidadBruta: number
+  totalGastos: number // GASTO_ADM + GASTO_VTA
+  utilidadOperacional: number
+  utilidadNeta: number
+  dya: number
+  ebitda: number
+  costosGastos: number // costo + gastos op. + gastos no op.
+  margenBruto: number | null
+  margenOperacional: number | null
+  margenNeto: number | null
+  margenEbitda: number | null
+}
+
+export function derivadosPeriodo(
+  modelo: ModeloAnalisis,
+  clave: string,
+  dya: Map<string, string>
+): DerivadosPeriodo {
+  const vp = modelo.valores.get(clave)
+  const r = (codigo: string) => vp?.rubros.get(codigo) ?? 0
+  const ingresos = r('ING_OP')
+  const totalCosto = r('COSTO_MP') + r('COSTO_PER') + r('COSTO_SER')
+  const utilidadBruta = ingresos - totalCosto
+  const totalGastos = r('GASTO_ADM') + r('GASTO_VTA')
+  const utilidadOperacional = utilidadBruta - totalGastos
+  const utilidadNeta = utilidadOperacional + r('ING_NOOP') - r('GASTO_NOOP')
+  let totalDya = 0
+  for (const cuenta of dya.keys()) totalDya += vp?.cuentas.get(cuenta) ?? 0
+  const ebitda = utilidadOperacional + totalDya
+  const margen = (v: number) => (ingresos === 0 ? null : (v / ingresos) * 100)
+  return {
+    ingresos,
+    utilidadBruta,
+    totalGastos,
+    utilidadOperacional,
+    utilidadNeta,
+    dya: totalDya,
+    ebitda,
+    costosGastos: totalCosto + totalGastos + r('GASTO_NOOP'),
+    margenBruto: margen(utilidadBruta),
+    margenOperacional: margen(utilidadOperacional),
+    margenNeto: margen(utilidadNeta),
+    margenEbitda: margen(ebitda),
+  }
+}
+
+// ---------- KPIs ----------
+
+export interface KpiAnalisis {
+  clave: string
   etiqueta: string
+  valor: number
+  /** % sobre ingresos del período (margen o peso). */
+  porcentaje: number | null
+  etiquetaPorcentaje: string
+  varAnterior: number | null
+  varPromedio: number | null
+  /** true: crecer es malo (gastos) — variación al alza en rojo. */
+  invertirColor: boolean
+}
+
+function variacion(actual: number, base: number): number | null {
+  return base === 0 ? null : ((actual - base) / Math.abs(base)) * 100
+}
+
+export function periodoAnterior(modelo: ModeloAnalisis, clave: string): PeriodoAgregado | null {
+  const indice = modelo.periodos.findIndex((p) => p.clave === clave)
+  return indice > 0 ? modelo.periodos[indice - 1] : null
+}
+
+export function calcularKpis(
+  modelo: ModeloAnalisis,
+  clave: string,
+  dya: Map<string, string>
+): KpiAnalisis[] {
+  const todos = modelo.periodos.map((p) => derivadosPeriodo(modelo, p.clave, dya))
+  const indice = modelo.periodos.findIndex((p) => p.clave === clave)
+  const actual = todos[indice]
+  const anterior = indice > 0 ? todos[indice - 1] : null
+  const n = Math.max(todos.length, 1)
+
+  const construir = (
+    claveKpi: string,
+    etiqueta: string,
+    valorDe: (d: DerivadosPeriodo) => number,
+    porcentaje: number | null,
+    etiquetaPorcentaje: string,
+    invertirColor = false
+  ): KpiAnalisis => {
+    const valor = valorDe(actual)
+    const promedio = todos.reduce((acc, d) => acc + valorDe(d), 0) / n
+    return {
+      clave: claveKpi,
+      etiqueta,
+      valor,
+      porcentaje,
+      etiquetaPorcentaje,
+      varAnterior: anterior === null ? null : variacion(valor, valorDe(anterior)),
+      varPromedio: variacion(valor, promedio),
+      invertirColor,
+    }
+  }
+
+  return [
+    construir('INGRESOS', 'Ingresos', (d) => d.ingresos, null, ''),
+    construir('UTILIDAD_BRUTA', 'Utilidad bruta', (d) => d.utilidadBruta, actual.margenBruto, 'margen'),
+    construir(
+      'TOTAL_GASTOS',
+      'Total gastos',
+      (d) => d.totalGastos,
+      actual.ingresos === 0 ? null : (actual.totalGastos / actual.ingresos) * 100,
+      'de los ingresos',
+      true
+    ),
+    construir('UTILIDAD_NETA', 'Utilidad neta', (d) => d.utilidadNeta, actual.margenNeto, 'margen'),
+    construir('EBITDA', 'EBITDA', (d) => d.ebitda, actual.margenEbitda, 'margen EBITDA'),
+  ]
+}
+
+// ---------- Series para gráficos ----------
+
+export interface SeriePunto {
+  clave: string
+  etiqueta: string
+  parcial: boolean
   ingresos: number
   costosGastos: number
   utilidadNeta: number
@@ -22,88 +324,24 @@ export interface SerieMensual {
   margenNeto: number | null
 }
 
-export function construirSeries(modelo: ModeloEr): SerieMensual[] {
-  return modelo.mesesConDatos.map((mes) => {
-    const ingresos = valorDerivada(modelo, 'TOTAL_INGRESOS', mes)
-    const rubro = (codigo: string) =>
-      modelo.rubros.find((r) => r.codigo === codigo)?.valores.get(mes) ?? 0
-    const costosGastos =
-      valorDerivada(modelo, 'TOTAL_COSTO', mes) +
-      rubro('GASTO_ADM') +
-      rubro('GASTO_VTA') +
-      rubro('GASTO_NOOP')
-    const margen = (clave: string) =>
-      ingresos === 0 ? null : (valorDerivada(modelo, clave, mes) / ingresos) * 100
+export function construirSeries(modelo: ModeloAnalisis, dya: Map<string, string>): SeriePunto[] {
+  return modelo.periodos.map((p) => {
+    const d = derivadosPeriodo(modelo, p.clave, dya)
     return {
-      mes,
-      etiqueta: nombreMes(mes).slice(0, 3),
-      ingresos,
-      costosGastos,
-      utilidadNeta: valorDerivada(modelo, 'UTILIDAD_NETA', mes),
-      margenBruto: margen('UTILIDAD_BRUTA'),
-      margenOperacional: margen('UTILIDAD_OPERACIONAL'),
-      margenNeto: margen('UTILIDAD_NETA'),
+      clave: p.clave,
+      etiqueta: p.etiquetaEje,
+      parcial: p.parcial,
+      ingresos: d.ingresos,
+      costosGastos: d.costosGastos,
+      utilidadNeta: d.utilidadNeta,
+      margenBruto: d.margenBruto,
+      margenOperacional: d.margenOperacional,
+      margenNeto: d.margenNeto,
     }
   })
 }
 
-export interface Kpi {
-  clave: string
-  etiqueta: string
-  valor: number
-  /** % sobre ingresos del mes (null para la tarjeta de ingresos). */
-  margen: number | null
-  /** Variación % vs mes anterior con datos (null si no hay anterior o anterior = 0). */
-  varMesAnterior: number | null
-  /** Variación % vs promedio de los meses cargados del año. */
-  varPromedio: number | null
-}
-
-function variacion(actual: number, base: number): number | null {
-  return base === 0 ? null : ((actual - base) / Math.abs(base)) * 100
-}
-
-export function mesAnteriorConDatos(modelo: ModeloEr, mes: number): number | null {
-  const indice = modelo.mesesConDatos.indexOf(mes)
-  return indice > 0 ? modelo.mesesConDatos[indice - 1] : null
-}
-
-export function calcularKpis(modelo: ModeloEr, mes: number): Kpi[] {
-  const anterior = mesAnteriorConDatos(modelo, mes)
-  const ingresosMes = valorDerivada(modelo, 'TOTAL_INGRESOS', mes)
-
-  const construir = (clave: string, etiqueta: string, conMargen: boolean): Kpi => {
-    const linea = modelo.derivadas.get(clave)!
-    const valor = linea.valores.get(mes) ?? 0
-    const promedio =
-      modelo.mesesConDatos.reduce((acc, m) => acc + (linea.valores.get(m) ?? 0), 0) /
-      Math.max(modelo.mesesConDatos.length, 1)
-    return {
-      clave,
-      etiqueta,
-      valor,
-      margen: conMargen && ingresosMes !== 0 ? (valor / ingresosMes) * 100 : null,
-      varMesAnterior:
-        anterior === null ? null : variacion(valor, linea.valores.get(anterior) ?? 0),
-      varPromedio: variacion(valor, promedio),
-    }
-  }
-
-  return [
-    construir('TOTAL_INGRESOS', 'Ingresos', false),
-    construir('UTILIDAD_BRUTA', 'Utilidad bruta', true),
-    construir('UTILIDAD_OPERACIONAL', 'Utilidad operacional', true),
-    construir('UTILIDAD_NETA', 'Utilidad neta', true),
-  ]
-}
-
-/** Utilidad neta acumulada del año hasta el mes indicado (inclusive). */
-export function utilidadNetaAcumulada(modelo: ModeloEr, hastaMes: number): number {
-  const linea = modelo.derivadas.get('UTILIDAD_NETA')!
-  return modelo.mesesConDatos
-    .filter((m) => m <= hastaMes)
-    .reduce((acc, m) => acc + (linea.valores.get(m) ?? 0), 0)
-}
+// ---------- Top variaciones ----------
 
 export interface VariacionCuenta {
   cuenta: string
@@ -114,113 +352,117 @@ export interface VariacionCuenta {
   delta: number
 }
 
-/** Top N cuentas del ER con mayor cambio ABSOLUTO vs el mes anterior con datos. */
-export function topVariaciones(modelo: ModeloEr, mes: number, n = 10): VariacionCuenta[] {
-  const anterior = mesAnteriorConDatos(modelo, mes)
-  if (anterior === null) return []
+/** Top N cuentas del ER con mayor cambio ABSOLUTO vs el período anterior. */
+export function topVariaciones(modelo: ModeloAnalisis, clave: string, n = 10): VariacionCuenta[] {
+  const previo = periodoAnterior(modelo, clave)
+  if (!previo) return []
+  const vpActual = modelo.valores.get(clave)
+  const vpPrevio = modelo.valores.get(previo.clave)
   const variaciones: VariacionCuenta[] = []
-  for (const bloque of modelo.rubros) {
-    for (const cuenta of bloque.cuentas) {
-      const actual = cuenta.valores.get(mes) ?? 0
-      const previo = cuenta.valores.get(anterior) ?? 0
-      const delta = actual - previo
-      if (delta !== 0) {
-        variaciones.push({
-          cuenta: cuenta.cuenta,
-          nombre: cuenta.nombre,
-          rubro: bloque.nombre,
-          actual,
-          anterior: previo,
-          delta,
-        })
-      }
-    }
+  const cuentas = new Set([...(vpActual?.cuentas.keys() ?? []), ...(vpPrevio?.cuentas.keys() ?? [])])
+  for (const cuenta of cuentas) {
+    const actual = vpActual?.cuentas.get(cuenta) ?? 0
+    const anterior = vpPrevio?.cuentas.get(cuenta) ?? 0
+    const delta = actual - anterior
+    if (delta === 0) continue
+    const info = modelo.cuentasInfo.get(cuenta)
+    variaciones.push({
+      cuenta,
+      nombre: info?.nombre ?? cuenta,
+      rubro: modelo.rubroInfo.get(info?.rubro_codigo ?? '')?.nombre ?? info?.rubro_codigo ?? '',
+      actual,
+      anterior,
+      delta,
+    })
   }
   return variaciones.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, n)
 }
 
-/** "Lectura del mes": 3-5 frases determinísticas en español natural. */
-export function lecturaDelMes(modelo: ModeloEr, mes: number): string[] {
-  const frases: string[] = []
-  const nombre = nombreMes(mes)
-  const ingresos = modelo.derivadas.get('TOTAL_INGRESOS')!
+// ---------- Lectura del período ----------
 
-  // 1) Posición del mes en ingresos dentro del año
-  const ranking = [...modelo.mesesConDatos].sort(
-    (a, b) => (ingresos.valores.get(b) ?? 0) - (ingresos.valores.get(a) ?? 0)
-  )
-  const posicion = ranking.indexOf(mes) + 1
-  const ingresosMes = ingresos.valores.get(mes) ?? 0
+/** 3-5 frases determinísticas en español natural, adaptadas a la vista. */
+export function lecturaDelPeriodo(
+  modelo: ModeloAnalisis,
+  clave: string,
+  dya: Map<string, string>
+): string[] {
+  const periodo = modelo.periodos.find((p) => p.clave === clave)
+  if (!periodo) return []
+  const frases: string[] = []
+  const sustantivo = SUSTANTIVO[modelo.vista]
+  const ambito = modelo.vista === 'mensual' ? 'del año' : 'del rango comparado'
+  const todos = modelo.periodos.map((p) => ({
+    periodo: p,
+    derivados: derivadosPeriodo(modelo, p.clave, dya),
+  }))
+  const actual = todos.find((t) => t.periodo.clave === clave)!
+
+  // 1) Posición del período en ingresos
+  const ranking = [...todos].sort((a, b) => b.derivados.ingresos - a.derivados.ingresos)
+  const posicion = ranking.findIndex((t) => t.periodo.clave === clave) + 1
+  const nota = periodo.parcial ? ' (período parcial)' : ''
   if (posicion === 1) {
     frases.push(
-      `${nombre} es el mejor mes del año en ingresos (${monedaCompacta(ingresosMes)}).`
+      `${periodo.etiqueta} es el mejor ${sustantivo} ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
     )
-  } else if (posicion === ranking.length) {
+  } else if (posicion === todos.length) {
     frases.push(
-      `${nombre} es el mes más bajo del año en ingresos (${monedaCompacta(ingresosMes)}).`
+      `${periodo.etiqueta} es el ${sustantivo} más bajo ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
     )
   } else {
     frases.push(
-      `${nombre} ocupa el puesto ${posicion} de ${ranking.length} meses del año en ingresos (${monedaCompacta(ingresosMes)}).`
+      `${periodo.etiqueta} ocupa el puesto ${posicion} de ${todos.length} ${sustantivo}s ${ambito} en ingresos (${monedaCompacta(actual.derivados.ingresos)})${nota}.`
     )
   }
 
-  const anterior = mesAnteriorConDatos(modelo, mes)
-  if (anterior !== null) {
-    const nombreAnterior = nombreMes(anterior)
+  const previo = periodoAnterior(modelo, clave)
+  if (previo) {
+    const anterior = todos.find((t) => t.periodo.clave === previo.clave)!
 
     // 2) Margen neto: subió o bajó
-    const margenDe = (m: number) => {
-      const ing = ingresos.valores.get(m) ?? 0
-      return ing === 0 ? null : ((valorDerivada(modelo, 'UTILIDAD_NETA', m) ?? 0) / ing) * 100
-    }
-    const margenActual = margenDe(mes)
-    const margenAnterior = margenDe(anterior)
-    if (margenActual !== null && margenAnterior !== null) {
-      const puntos = margenActual - margenAnterior
+    if (actual.derivados.margenNeto !== null && anterior.derivados.margenNeto !== null) {
+      const puntos = actual.derivados.margenNeto - anterior.derivados.margenNeto
       const direccion = puntos >= 0 ? 'subió' : 'bajó'
+      const fmt = (v: number) => v.toFixed(1).replace('.', ',')
       frases.push(
-        `El margen neto ${direccion} de ${margenAnterior.toFixed(1).replace('.', ',')} % a ${margenActual.toFixed(1).replace('.', ',')} % (${Math.abs(puntos).toFixed(1).replace('.', ',')} puntos).`
+        `El margen neto ${direccion} de ${fmt(anterior.derivados.margenNeto)} % a ${fmt(actual.derivados.margenNeto)} % (${fmt(Math.abs(puntos))} puntos) frente a ${previo.etiqueta}.`
       )
     }
 
     // 3) Rubro de costo/gasto que más creció
-    const rubrosCostoGasto = modelo.rubros.filter((r) =>
-      ['COSTO_MP', 'COSTO_PER', 'COSTO_SER', 'GASTO_ADM', 'GASTO_VTA', 'GASTO_NOOP'].includes(r.codigo)
-    )
-    let mayorCrecimiento: { nombre: string; delta: number } | null = null
-    for (const rubro of rubrosCostoGasto) {
-      const delta = (rubro.valores.get(mes) ?? 0) - (rubro.valores.get(anterior) ?? 0)
-      if (!mayorCrecimiento || delta > mayorCrecimiento.delta) {
-        mayorCrecimiento = { nombre: rubro.nombre, delta }
+    const codigosCostoGasto = ['COSTO_MP', 'COSTO_PER', 'COSTO_SER', 'GASTO_ADM', 'GASTO_VTA', 'GASTO_NOOP']
+    let mayor: { nombre: string; delta: number } | null = null
+    for (const codigo of codigosCostoGasto) {
+      const delta =
+        (modelo.valores.get(clave)?.rubros.get(codigo) ?? 0) -
+        (modelo.valores.get(previo.clave)?.rubros.get(codigo) ?? 0)
+      if (!mayor || delta > mayor.delta) {
+        mayor = { nombre: modelo.rubroInfo.get(codigo)?.nombre ?? codigo, delta }
       }
     }
-    if (mayorCrecimiento && mayorCrecimiento.delta > 0) {
+    if (mayor && mayor.delta > 0) {
       frases.push(
-        `El rubro que más creció frente a ${nombreAnterior} fue ${mayorCrecimiento.nombre.toLowerCase()}: +${monedaCompacta(mayorCrecimiento.delta)}.`
+        `El rubro que más creció frente a ${previo.etiqueta} fue ${mayor.nombre.toLowerCase()}: +${monedaCompacta(mayor.delta)}.`
       )
     }
 
     // 4) Cuenta con la variación más fuerte
-    const [top] = topVariaciones(modelo, mes, 1)
+    const [top] = topVariaciones(modelo, clave, 1)
     if (top) {
       const signo = top.delta > 0 ? 'aumentó' : 'disminuyó'
       frases.push(
-        `La cuenta con la variación más fuerte fue ${top.cuenta} ${top.nombre} (${top.rubro.toLowerCase()}): ${signo} ${monedaCompacta(Math.abs(top.delta))} frente a ${nombreAnterior}.`
+        `La cuenta con la variación más fuerte fue ${top.cuenta} ${top.nombre} (${top.rubro.toLowerCase()}): ${signo} ${monedaCompacta(Math.abs(top.delta))} frente a ${previo.etiqueta}.`
       )
     }
   }
 
-  // 5) Utilidad neta vs promedio del año
-  const neta = modelo.derivadas.get('UTILIDAD_NETA')!
-  const valorNeta = neta.valores.get(mes) ?? 0
+  // 5) Utilidad neta vs promedio
   const promedio =
-    modelo.mesesConDatos.reduce((acc, m) => acc + (neta.valores.get(m) ?? 0), 0) /
-    Math.max(modelo.mesesConDatos.length, 1)
+    todos.reduce((acc, t) => acc + t.derivados.utilidadNeta, 0) / Math.max(todos.length, 1)
   if (promedio !== 0) {
-    const relacion = valorNeta >= promedio ? 'por encima' : 'por debajo'
+    const relacion = actual.derivados.utilidadNeta >= promedio ? 'por encima' : 'por debajo'
     frases.push(
-      `La utilidad neta del mes (${monedaCompacta(valorNeta)}) está ${relacion} del promedio del año (${monedaCompacta(promedio)}).`
+      `La utilidad neta del ${sustantivo} (${monedaCompacta(actual.derivados.utilidadNeta)}) está ${relacion} del promedio ${ambito} (${monedaCompacta(promedio)}).`
     )
   }
 

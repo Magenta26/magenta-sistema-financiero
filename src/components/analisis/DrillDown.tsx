@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import type { ModeloEr } from '../../lib/estadoResultados'
+import type { ModeloAnalisis } from '../../lib/analisis'
 import { moneda } from '../../lib/formato'
 import type { MovimientoResumen } from '../../types/catalogo'
 
@@ -7,9 +7,9 @@ interface FilaDrill {
   nivel: 0 | 1 | 2
   clave: string
   etiqueta: string
-  valorMes: number
-  acumulado: number
-  /** % de participación dentro de su padre (sobre valores absolutos del mes). */
+  valorPeriodo: number
+  total: number
+  /** % de participación dentro de su padre (sobre valores absolutos del período). */
   participacion: number
   expandible: boolean
 }
@@ -31,101 +31,143 @@ function BarraParticipacion({ porcentaje: pct }: { porcentaje: number }) {
 }
 
 interface DrillDownProps {
-  modelo: ModeloEr
+  modelo: ModeloAnalisis
   movimientos: MovimientoResumen[]
-  mes: number
+  /** Clave del período seleccionado. */
+  clave: string
+  etiquetaPeriodo: string
+  etiquetaTotal: string // 'Acumulado año' | 'Total del rango'
 }
 
-/** Exploración jerárquica: Rubro → cuentas del catálogo → auxiliares. */
-export default function DrillDown({ modelo, movimientos, mes }: DrillDownProps) {
+/** Exploración jerárquica: Rubro → cuentas del catálogo → auxiliares, por período. */
+export default function DrillDown({
+  modelo,
+  movimientos,
+  clave,
+  etiquetaPeriodo,
+  etiquetaTotal,
+}: DrillDownProps) {
   const [rubrosAbiertos, setRubrosAbiertos] = useState<Set<string>>(new Set())
   const [cuentasAbiertas, setCuentasAbiertas] = useState<Set<string>>(new Set())
 
-  const alternar = (conjunto: Set<string>, clave: string) => {
+  const alternar = (conjunto: Set<string>, claveFila: string) => {
     const nuevo = new Set(conjunto)
-    if (nuevo.has(clave)) nuevo.delete(clave)
-    else nuevo.add(clave)
+    if (nuevo.has(claveFila)) nuevo.delete(claveFila)
+    else nuevo.add(claveFila)
     return nuevo
   }
+
+  // Meses del período seleccionado y de todo el rango visible
+  const mesesPeriodo = useMemo(() => {
+    const periodo = modelo.periodos.find((p) => p.clave === clave)
+    return new Set((periodo?.meses ?? []).map((m) => m.anio * 100 + m.mes))
+  }, [modelo, clave])
+  const mesesRango = useMemo(
+    () =>
+      new Set(modelo.periodos.flatMap((p) => p.meses.map((m) => m.anio * 100 + m.mes))),
+    [modelo]
+  )
 
   /** Auxiliares de una cuenta del catálogo, firmados según su naturaleza. */
   const auxiliaresDe = useMemo(() => {
     return (cuentaCatalogo: string, naturaleza: 'CR' | 'DB') => {
-      const porAuxiliar = new Map<string, { nombre: string; valorMes: number; acumulado: number }>()
+      const porAuxiliar = new Map<string, { nombre: string; valorPeriodo: number; total: number }>()
       for (const m of movimientos) {
         if (!m.cuenta.startsWith(cuentaCatalogo)) continue
+        const claveMes = m.anio * 100 + m.mes
+        if (!mesesRango.has(claveMes)) continue
         const valor =
           naturaleza === 'CR' ? m.mov_credito - m.mov_debito : m.mov_debito - m.mov_credito
         let aux = porAuxiliar.get(m.cuenta)
         if (!aux) {
-          aux = { nombre: m.nombre_cuenta, valorMes: 0, acumulado: 0 }
+          aux = { nombre: m.nombre_cuenta, valorPeriodo: 0, total: 0 }
           porAuxiliar.set(m.cuenta, aux)
         }
-        aux.acumulado += valor
-        if (m.mes === mes) aux.valorMes += valor
+        aux.total += valor
+        if (mesesPeriodo.has(claveMes)) aux.valorPeriodo += valor
       }
       return porAuxiliar
     }
-  }, [movimientos, mes])
+  }, [movimientos, mesesPeriodo, mesesRango])
 
   const filas = useMemo(() => {
     const resultado: FilaDrill[] = []
-    const totalRubros = modelo.rubros.reduce(
-      (acc, r) => acc + Math.abs(r.valores.get(mes) ?? 0),
+    const vp = modelo.valores.get(clave)
+    if (!vp) return resultado
+
+    const rubros = [...modelo.rubroInfo.entries()].sort((a, b) => a[1].orden - b[1].orden)
+    const totalRubros = rubros.reduce(
+      (acc, [codigo]) => acc + Math.abs(vp.rubros.get(codigo) ?? 0),
       0
     )
 
-    for (const rubro of modelo.rubros) {
-      const valorRubro = rubro.valores.get(mes) ?? 0
-      resultado.push({
-        nivel: 0,
-        clave: rubro.codigo,
-        etiqueta: rubro.nombre,
-        valorMes: valorRubro,
-        acumulado: rubro.totalAnio,
-        participacion: totalRubros === 0 ? 0 : (Math.abs(valorRubro) / totalRubros) * 100,
-        expandible: rubro.cuentas.length > 0,
-      })
-      if (!rubrosAbiertos.has(rubro.codigo)) continue
-
-      const totalCuentas = rubro.cuentas.reduce(
-        (acc, c) => acc + Math.abs(c.valores.get(mes) ?? 0),
+    // Total del rango por rubro y por cuenta
+    const totalRubro = (codigo: string) =>
+      modelo.periodos.reduce(
+        (acc, p) => acc + (modelo.valores.get(p.clave)?.rubros.get(codigo) ?? 0),
         0
       )
-      for (const cuenta of rubro.cuentas) {
-        const valorCuenta = cuenta.valores.get(mes) ?? 0
-        const auxiliares = auxiliaresDe(cuenta.cuenta, cuenta.naturaleza)
+    const totalCuenta = (cuenta: string) =>
+      modelo.periodos.reduce(
+        (acc, p) => acc + (modelo.valores.get(p.clave)?.cuentas.get(cuenta) ?? 0),
+        0
+      )
+
+    for (const [codigo, info] of rubros) {
+      const valorRubro = vp.rubros.get(codigo) ?? 0
+      const cuentasDelRubro = [...modelo.cuentasInfo.entries()]
+        .filter(([, c]) => c.rubro_codigo === codigo)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+
+      resultado.push({
+        nivel: 0,
+        clave: codigo,
+        etiqueta: info.nombre,
+        valorPeriodo: valorRubro,
+        total: totalRubro(codigo),
+        participacion: totalRubros === 0 ? 0 : (Math.abs(valorRubro) / totalRubros) * 100,
+        expandible: cuentasDelRubro.length > 0,
+      })
+      if (!rubrosAbiertos.has(codigo)) continue
+
+      const totalCuentas = cuentasDelRubro.reduce(
+        (acc, [cuenta]) => acc + Math.abs(vp.cuentas.get(cuenta) ?? 0),
+        0
+      )
+      for (const [cuenta, infoCuenta] of cuentasDelRubro) {
+        const valorCuenta = vp.cuentas.get(cuenta) ?? 0
+        const auxiliares = auxiliaresDe(cuenta, infoCuenta.naturaleza)
         const tieneAuxiliares =
-          auxiliares.size > 1 || (auxiliares.size === 1 && !auxiliares.has(cuenta.cuenta))
-        const claveCuenta = `${rubro.codigo}:${cuenta.cuenta}`
+          auxiliares.size > 1 || (auxiliares.size === 1 && !auxiliares.has(cuenta))
+        const claveCuenta = `${codigo}:${cuenta}`
         resultado.push({
           nivel: 1,
           clave: claveCuenta,
-          etiqueta: `${cuenta.cuenta} ${cuenta.nombre}`,
-          valorMes: valorCuenta,
-          acumulado: cuenta.totalAnio,
+          etiqueta: `${cuenta} ${infoCuenta.nombre}`,
+          valorPeriodo: valorCuenta,
+          total: totalCuenta(cuenta),
           participacion: totalCuentas === 0 ? 0 : (Math.abs(valorCuenta) / totalCuentas) * 100,
           expandible: tieneAuxiliares,
         })
         if (!tieneAuxiliares || !cuentasAbiertas.has(claveCuenta)) continue
 
         const listaAux = [...auxiliares.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-        const totalAux = listaAux.reduce((acc, [, a]) => acc + Math.abs(a.valorMes), 0)
+        const totalAux = listaAux.reduce((acc, [, a]) => acc + Math.abs(a.valorPeriodo), 0)
         for (const [codigoAux, aux] of listaAux) {
           resultado.push({
             nivel: 2,
             clave: `${claveCuenta}:${codigoAux}`,
             etiqueta: `${codigoAux} ${aux.nombre}`,
-            valorMes: aux.valorMes,
-            acumulado: aux.acumulado,
-            participacion: totalAux === 0 ? 0 : (Math.abs(aux.valorMes) / totalAux) * 100,
+            valorPeriodo: aux.valorPeriodo,
+            total: aux.total,
+            participacion: totalAux === 0 ? 0 : (Math.abs(aux.valorPeriodo) / totalAux) * 100,
             expandible: false,
           })
         }
       }
     }
     return resultado
-  }, [modelo, mes, rubrosAbiertos, cuentasAbiertas, auxiliaresDe])
+  }, [modelo, clave, rubrosAbiertos, cuentasAbiertas, auxiliaresDe])
 
   const alClic = (fila: FilaDrill) => {
     if (!fila.expandible) return
@@ -139,8 +181,8 @@ export default function DrillDown({ modelo, movimientos, mes }: DrillDownProps) 
         <thead className="sticky top-0 bg-gray-50 text-left text-xs text-brand-900">
           <tr>
             <th className="px-4 py-2.5 font-semibold">Rubro / cuenta / auxiliar</th>
-            <th className="px-4 py-2.5 text-right font-semibold">Mes</th>
-            <th className="px-4 py-2.5 text-right font-semibold">Acumulado año</th>
+            <th className="px-4 py-2.5 text-right font-semibold">{etiquetaPeriodo}</th>
+            <th className="px-4 py-2.5 text-right font-semibold">{etiquetaTotal}</th>
             <th className="px-4 py-2.5 font-semibold">Participación</th>
           </tr>
         </thead>
@@ -174,17 +216,17 @@ export default function DrillDown({ modelo, movimientos, mes }: DrillDownProps) 
                   </td>
                   <td
                     className={`whitespace-nowrap px-4 py-2 text-right text-xs tabular-nums ${
-                      fila.valorMes < 0 ? 'text-red-600' : 'text-tinta'
+                      fila.valorPeriodo < 0 ? 'text-red-600' : 'text-tinta'
                     }`}
                   >
-                    {moneda(fila.valorMes)}
+                    {moneda(fila.valorPeriodo)}
                   </td>
                   <td
                     className={`whitespace-nowrap px-4 py-2 text-right text-xs tabular-nums ${
-                      fila.acumulado < 0 ? 'text-red-600' : 'text-tinta-suave'
+                      fila.total < 0 ? 'text-red-600' : 'text-tinta-suave'
                     }`}
                   >
-                    {moneda(fila.acumulado)}
+                    {moneda(fila.total)}
                   </td>
                   <td className="px-4 py-2">
                     <BarraParticipacion porcentaje={fila.participacion} />

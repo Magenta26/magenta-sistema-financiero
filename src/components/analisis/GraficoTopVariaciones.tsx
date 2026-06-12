@@ -39,8 +39,17 @@ function TooltipVariacion({ active, payload }: PropsTooltipVariacion) {
   )
 }
 
-/** Top cuentas por cambio absoluto vs mes anterior: barras divergentes. */
-export default function GraficoTopVariaciones({ variaciones }: { variaciones: VariacionCuenta[] }) {
+interface GraficoTopVariacionesProps {
+  variaciones: VariacionCuenta[]
+  /** 'mes' | 'trimestre' | 'año' según la vista activa. */
+  sustantivoPeriodo: string
+}
+
+/** Top cuentas por cambio absoluto vs el período anterior: barras divergentes. */
+export default function GraficoTopVariaciones({
+  variaciones,
+  sustantivoPeriodo,
+}: GraficoTopVariacionesProps) {
   const datos = variaciones.map((v) => ({
     ...v,
     etiqueta: `${v.cuenta} ${v.nombre.length > 22 ? v.nombre.slice(0, 22) + '…' : v.nombre}`,
@@ -48,15 +57,17 @@ export default function GraficoTopVariaciones({ variaciones }: { variaciones: Va
 
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
-      <h2 className="mb-1 text-sm font-semibold text-brand-900">¿Qué movió el resultado este mes?</h2>
+      <h2 className="mb-1 text-sm font-semibold text-brand-900">
+        ¿Qué movió el resultado este {sustantivoPeriodo}?
+      </h2>
       <p className="mb-2 text-xs text-tinta-suave">
-        Top {datos.length} cuentas por variación absoluta vs el mes anterior —{' '}
+        Top {datos.length} cuentas por variación absoluta vs el {sustantivoPeriodo} anterior —{' '}
         <span className="font-semibold text-brand-700">aumentos</span> /{' '}
         <span className="font-semibold text-exito">disminuciones</span>
       </p>
       {datos.length === 0 ? (
         <p className="py-16 text-center text-xs text-tinta-suave">
-          No hay mes anterior para comparar.
+          No hay {sustantivoPeriodo} anterior para comparar.
         </p>
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(240, datos.length * 32)}>
