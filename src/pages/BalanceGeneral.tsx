@@ -1,15 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useBg, useErRubros } from '../hooks/useInformes'
 import { construirModeloBg } from '../lib/balanceGeneral'
 import { construirModeloEr } from '../lib/estadoResultados'
 import { exportarBg } from '../lib/exportarExcel'
 import { contable } from '../lib/formato'
 import { nombreMes } from '../types/balance'
+import type { ModoBg } from '../types/informes'
 import SeccionBalance from '../components/informes/SeccionBalance'
+
+const MODOS: { valor: ModoBg; etiqueta: string }[] = [
+  { valor: 'saldos', etiqueta: 'Saldos' },
+  { valor: 'variacion', etiqueta: 'Variación del mes' },
+]
 
 export default function BalanceGeneral() {
   const bg = useBg()
   const rubros = useErRubros()
+  const [modo, setModo] = useState<ModoBg>('saldos')
 
   const anio = useMemo(
     () => (bg.data ?? []).reduce((max, f) => Math.max(max, f.anio), new Date().getFullYear()),
@@ -27,6 +34,8 @@ export default function BalanceGeneral() {
   const cargando = bg.isLoading || rubros.isLoading
   const error = bg.error ?? rubros.error
   const meses = modelo?.mesesConDatos ?? []
+  const esVariacion = modo === 'variacion'
+  const cuadre = esVariacion ? modelo?.cuadreVariacion : modelo?.cuadre
 
   return (
     <div>
@@ -34,17 +43,37 @@ export default function BalanceGeneral() {
         <div>
           <h1 className="text-2xl font-bold text-brand-900">Balance General {anio}</h1>
           <p className="mt-1 text-sm text-tinta-suave">
-            Por grupo (2 dígitos), saldo final de cada mes. Pasivo y patrimonio en positivo.
+            {esVariacion
+              ? 'Variación del mes por grupo: saldo final − saldo inicial (impacto neto del período).'
+              : 'Por grupo (2 dígitos), saldo final de cada mes. Pasivo y patrimonio en positivo.'}
           </p>
         </div>
-        <button
-          type="button"
-          disabled={!modelo}
-          onClick={() => modelo && exportarBg(modelo)}
-          className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
-        >
-          Exportar a Excel
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg border border-borde bg-white p-0.5">
+            {MODOS.map((m) => (
+              <button
+                key={m.valor}
+                type="button"
+                onClick={() => setModo(m.valor)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors duration-150 ${
+                  modo === m.valor
+                    ? 'bg-brand-700 text-white'
+                    : 'text-tinta-suave hover:text-brand-900'
+                }`}
+              >
+                {m.etiqueta}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={!modelo}
+            onClick={() => modelo && exportarBg(modelo, modo)}
+            className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
+          >
+            Exportar a Excel
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -72,24 +101,31 @@ export default function BalanceGeneral() {
                       {nombreMes(mes)}
                     </th>
                   ))}
+                  {esVariacion && (
+                    <th className="px-3 py-2.5 text-right text-xs font-bold">Total año</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                <SeccionBalance seccion={modelo.activo} meses={meses} />
-                <SeccionBalance seccion={modelo.pasivo} meses={meses} />
+                <SeccionBalance seccion={modelo.activo} meses={meses} modo={modo} />
+                <SeccionBalance seccion={modelo.pasivo} meses={meses} modo={modo} />
                 <SeccionBalance
                   seccion={modelo.patrimonio}
                   meses={meses}
+                  modo={modo}
                   resultadoEjercicio={modelo.resultadoEjercicio}
+                  utilidadNetaMensual={modelo.utilidadNetaMensual}
                 />
 
                 {/* Cuadre */}
                 <tr className="border-t-2 border-brand-200 bg-gray-50">
                   <td className="px-3 py-2.5 text-xs font-bold text-brand-900">
-                    Cuadre: Activo − (Pasivo + Patrimonio + Resultado)
+                    {esVariacion
+                      ? 'Cuadre: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)'
+                      : 'Cuadre: Activo − (Pasivo + Patrimonio + Resultado)'}
                   </td>
                   {meses.map((mes) => {
-                    const dif = modelo.cuadre.get(mes) ?? 0
+                    const dif = cuadre?.get(mes) ?? 0
                     const cuadra = Math.abs(dif) <= 1
                     return (
                       <td key={mes} className="px-3 py-2.5 text-right">
@@ -108,13 +144,15 @@ export default function BalanceGeneral() {
                       </td>
                     )
                   })}
+                  {esVariacion && <td />}
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="mt-3 text-xs text-tinta-suave">
-            El cuadre se considera correcto con diferencia ≤ $1 (redondeos). El resultado del
-            ejercicio es la utilidad neta acumulada calculada desde el Estado de Resultados.
+            {esVariacion
+              ? 'Variación = saldo final − saldo inicial del mes, con el signo del efecto en la posición (un aumento de pasivo se muestra como aumento). Total año = suma de variaciones, que equivale al saldo final del último mes menos el saldo inicial de enero.'
+              : 'El cuadre se considera correcto con diferencia ≤ $1 (redondeos). El resultado del ejercicio es la utilidad neta acumulada calculada desde el Estado de Resultados.'}
           </p>
         </>
       )}

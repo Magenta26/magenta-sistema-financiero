@@ -42,6 +42,11 @@ export interface BgFila {
   nombre_grupo: string
   saldo_final: number
   saldo_presentacion: number
+  saldo_inicial: number
+  /** saldo_final − saldo_inicial del mes, con signo de presentación (clases 2-3 × −1). */
+  variacion_presentacion: number
 }
 
 export type ModoEr = 'absolutos' | 'vertical' | 'horizontal'
+
+export type ModoBg = 'saldos' | 'variacion'

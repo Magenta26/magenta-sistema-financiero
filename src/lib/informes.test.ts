@@ -74,14 +74,35 @@ describe('construirModeloEr', () => {
 })
 
 describe('construirModeloBg', () => {
+  // Fixture contablemente consistente en ambos modos:
+  // utilidad mensual m1 = 240, m2 = -50; identidad A = P + Pat + Resultado.
+  const fila = (
+    mes: number,
+    clase: '1' | '2' | '3',
+    grupo: string,
+    nombre: string,
+    si: number,
+    sf: number
+  ): BgFila => ({
+    anio: 2026,
+    mes,
+    clase,
+    grupo,
+    nombre_grupo: nombre,
+    saldo_inicial: si,
+    saldo_final: sf,
+    saldo_presentacion: clase === '1' ? sf : -sf,
+    variacion_presentacion: clase === '1' ? sf - si : -(sf - si),
+  })
   const filas: BgFila[] = [
-    { anio: 2026, mes: 1, clase: '1', grupo: '11', nombre_grupo: 'DISPONIBLE', saldo_final: 500, saldo_presentacion: 500 },
-    { anio: 2026, mes: 1, clase: '1', grupo: '13', nombre_grupo: 'DEUDORES', saldo_final: 300, saldo_presentacion: 300 },
-    { anio: 2026, mes: 1, clase: '2', grupo: '22', nombre_grupo: 'PROVEEDORES', saldo_final: -350, saldo_presentacion: 350 },
-    { anio: 2026, mes: 1, clase: '3', grupo: '31', nombre_grupo: 'CAPITAL', saldo_final: -210, saldo_presentacion: 210 },
-    { anio: 2026, mes: 2, clase: '1', grupo: '11', nombre_grupo: 'DISPONIBLE', saldo_final: 700, saldo_presentacion: 700 },
-    { anio: 2026, mes: 2, clase: '2', grupo: '22', nombre_grupo: 'PROVEEDORES', saldo_final: -300, saldo_presentacion: 300 },
-    { anio: 2026, mes: 2, clase: '3', grupo: '31', nombre_grupo: 'CAPITAL', saldo_final: -210, saldo_presentacion: 210 },
+    fila(1, '1', '11', 'DISPONIBLE', 430, 500),
+    fila(1, '1', '13', 'DEUDORES', 100, 300),
+    fila(1, '2', '22', 'PROVEEDORES', -320, -350),
+    fila(1, '3', '31', 'CAPITAL', -210, -210),
+    fila(2, '1', '11', 'DISPONIBLE', 500, 350),
+    fila(2, '1', '13', 'DEUDORES', 300, 350),
+    fila(2, '2', '22', 'PROVEEDORES', -350, -300),
+    fila(2, '3', '31', 'CAPITAL', -210, -210),
   ]
   const utilidadMensual = new Map([
     [1, 240],
@@ -89,8 +110,9 @@ describe('construirModeloBg', () => {
   ])
   const modelo = construirModeloBg(filas, utilidadMensual, 2026)
 
-  it('agrupa por sección y totaliza por mes', () => {
+  it('agrupa por sección y totaliza por mes (saldos)', () => {
     expect(modelo.activo.totales.get(1)).toBe(800)
+    expect(modelo.activo.totales.get(2)).toBe(700)
     expect(modelo.pasivo.totales.get(1)).toBe(350)
     expect(modelo.patrimonio.totales.get(1)).toBe(210)
   })
@@ -100,9 +122,32 @@ describe('construirModeloBg', () => {
     expect(modelo.resultadoEjercicio.get(2)).toBe(190) // 240 + (-50)
   })
 
-  it('cuadre = Activo − (Pasivo + Patrimonio + Resultado)', () => {
+  it('cuadre saldos = Activo − (Pasivo + Patrimonio + Resultado)', () => {
     expect(modelo.cuadre.get(1)).toBe(0) // 800 - (350+210+240)
     expect(modelo.cuadre.get(2)).toBe(0) // 700 - (300+210+190)
+  })
+
+  it('variación del mes con signo de presentación', () => {
+    const once = modelo.activo.grupos.find((g) => g.grupo === '11')!
+    expect(once.variaciones.get(1)).toBe(70) // 500 - 430
+    expect(once.variaciones.get(2)).toBe(-150) // 350 - 500
+    const proveedores = modelo.pasivo.grupos.find((g) => g.grupo === '22')!
+    expect(proveedores.variaciones.get(1)).toBe(30) // aumento de pasivo mostrado como aumento
+    expect(proveedores.variaciones.get(2)).toBe(-50)
+  })
+
+  it('total año de la variación = saldo final último mes − saldo inicial del primero', () => {
+    const once = modelo.activo.grupos.find((g) => g.grupo === '11')!
+    expect(once.totalVariacionAnio).toBe(350 - 430) // -80
+    const deudores = modelo.activo.grupos.find((g) => g.grupo === '13')!
+    expect(deudores.totalVariacionAnio).toBe(350 - 100) // 250
+    expect(modelo.activo.totalVariacionAnio).toBe(-80 + 250)
+  })
+
+  it('cuadre variación = var.Activo − (var.Pasivo + var.Patrimonio + utilidad del mes)', () => {
+    expect(modelo.activo.totalesVariacion.get(1)).toBe(270)
+    expect(modelo.cuadreVariacion.get(1)).toBe(0) // 270 - (30 + 0 + 240)
+    expect(modelo.cuadreVariacion.get(2)).toBe(0) // -100 - (-50 + 0 + (-50))
   })
 })
 

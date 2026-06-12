@@ -1,6 +1,6 @@
 import { utils, writeFileXLSX } from 'xlsx'
 import { nombreMes } from '../types/balance'
-import type { ModoEr } from '../types/informes'
+import type { ModoBg, ModoEr } from '../types/informes'
 import type { ModeloEr } from './estadoResultados'
 import { transformarTotalAnio, transformarValor } from './estadoResultados'
 import type { ModeloBg } from './balanceGeneral'
@@ -76,10 +76,20 @@ export function exportarEr(modelo: ModeloEr, modo: ModoEr): void {
   writeFileXLSX(libro, `Estado_Resultados_${modelo.anio}_${modo}.xlsx`)
 }
 
-/** Exporta el BG a un .xlsx (descarga en el navegador). */
-export function exportarBg(modelo: ModeloBg): void {
+const NOMBRE_MODO_BG: Record<ModoBg, string> = {
+  saldos: 'Saldos (saldo final por mes)',
+  variacion: 'Variación del mes (saldo final − saldo inicial)',
+}
+
+/** Exporta el BG del modo activo a un .xlsx (descarga en el navegador). */
+export function exportarBg(modelo: ModeloBg, modo: ModoBg = 'saldos'): void {
   const meses = modelo.mesesConDatos
-  const cabecera = ['Línea', ...meses.map((m) => nombreMes(m))]
+  const esVariacion = modo === 'variacion'
+  const cabecera = [
+    'Línea',
+    ...meses.map((m) => nombreMes(m)),
+    ...(esVariacion ? ['Total año'] : []),
+  ]
   const filas: unknown[][] = [cabecera]
 
   for (const seccion of [modelo.activo, modelo.pasivo, modelo.patrimonio]) {
@@ -87,27 +97,51 @@ export function exportarBg(modelo: ModeloBg): void {
     for (const grupo of seccion.grupos) {
       filas.push([
         `    ${grupo.grupo} ${grupo.nombre}`,
-        ...meses.map((mes) => grupo.valores.get(mes) ?? 0),
+        ...meses.map((mes) =>
+          esVariacion ? grupo.variaciones.get(mes) ?? 0 : grupo.valores.get(mes) ?? 0
+        ),
+        ...(esVariacion ? [grupo.totalVariacionAnio] : []),
       ])
     }
-    filas.push([`TOTAL ${seccion.titulo.toUpperCase()}`, ...meses.map((mes) => seccion.totales.get(mes) ?? 0)])
+    filas.push([
+      `TOTAL ${seccion.titulo.toUpperCase()}`,
+      ...meses.map((mes) =>
+        esVariacion ? seccion.totalesVariacion.get(mes) ?? 0 : seccion.totales.get(mes) ?? 0
+      ),
+      ...(esVariacion ? [seccion.totalVariacionAnio] : []),
+    ])
     if (seccion.clase === '3') {
-      filas.push([
-        'Resultado del ejercicio (utilidad acumulada)',
-        ...meses.map((mes) => modelo.resultadoEjercicio.get(mes) ?? 0),
-      ])
+      if (esVariacion) {
+        filas.push([
+          'Utilidad neta del mes (desde el ER)',
+          ...meses.map((mes) => modelo.utilidadNetaMensual.get(mes) ?? 0),
+          meses.reduce((acc, mes) => acc + (modelo.utilidadNetaMensual.get(mes) ?? 0), 0),
+        ])
+      } else {
+        filas.push([
+          'Resultado del ejercicio (utilidad acumulada)',
+          ...meses.map((mes) => modelo.resultadoEjercicio.get(mes) ?? 0),
+        ])
+      }
     }
   }
 
   filas.push([])
   filas.push([
-    'CUADRE: Activo − (Pasivo + Patrimonio + Resultado)',
-    ...meses.map((mes) => modelo.cuadre.get(mes) ?? 0),
+    esVariacion
+      ? 'CUADRE: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)'
+      : 'CUADRE: Activo − (Pasivo + Patrimonio + Resultado)',
+    ...meses.map((mes) =>
+      esVariacion ? modelo.cuadreVariacion.get(mes) ?? 0 : modelo.cuadre.get(mes) ?? 0
+    ),
   ])
 
-  const hoja = utils.aoa_to_sheet([...encabezado(`Balance General ${modelo.anio}`, 'Por grupo (2 dígitos), saldos de presentación'), ...filas])
-  hoja['!cols'] = [{ wch: 45 }, ...meses.map(() => ({ wch: 16 }))]
+  const hoja = utils.aoa_to_sheet([
+    ...encabezado(`Balance General ${modelo.anio}`, `Modo: ${NOMBRE_MODO_BG[modo]}`),
+    ...filas,
+  ])
+  hoja['!cols'] = [{ wch: 45 }, ...meses.map(() => ({ wch: 16 })), ...(esVariacion ? [{ wch: 18 }] : [])]
   const libro = utils.book_new()
   utils.book_append_sheet(libro, hoja, `BG ${modelo.anio}`)
-  writeFileXLSX(libro, `Balance_General_${modelo.anio}.xlsx`)
+  writeFileXLSX(libro, `Balance_General_${modelo.anio}_${modo}.xlsx`)
 }
