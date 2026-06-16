@@ -1,6 +1,8 @@
 import { Fragment, useMemo, useState } from 'react'
 import type { ModeloAnalisis } from '../../lib/analisis'
 import { moneda } from '../../lib/formato'
+import { nombreCuenta } from '../../lib/nombreCuenta'
+import type { MapaTraducciones } from '../../lib/nombreCuenta'
 import type { MovimientoResumen } from '../../types/catalogo'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -8,6 +10,8 @@ interface FilaDrill {
   nivel: 0 | 1 | 2
   clave: string
   etiqueta: string
+  /** true en modo EN cuando la cuenta/auxiliar no tiene traducción. */
+  sinTraducir: boolean
   valorPeriodo: number
   total: number
   /** % de participación dentro de su padre (sobre valores absolutos del período). */
@@ -34,6 +38,7 @@ function BarraParticipacion({ porcentaje: pct }: { porcentaje: number }) {
 interface DrillDownProps {
   modelo: ModeloAnalisis
   movimientos: MovimientoResumen[]
+  traducciones: MapaTraducciones
   /** Clave del período seleccionado. */
   clave: string
   etiquetaPeriodo: string
@@ -44,6 +49,7 @@ interface DrillDownProps {
 export default function DrillDown({
   modelo,
   movimientos,
+  traducciones,
   clave,
   etiquetaPeriodo,
   etiquetaTotal,
@@ -125,6 +131,7 @@ export default function DrillDown({
         nivel: 0,
         clave: codigo,
         etiqueta: t.rubros[codigo] ?? info.nombre,
+        sinTraducir: false,
         valorPeriodo: valorRubro,
         total: totalRubro(codigo),
         participacion: totalRubros === 0 ? 0 : (Math.abs(valorRubro) / totalRubros) * 100,
@@ -142,10 +149,12 @@ export default function DrillDown({
         const tieneAuxiliares =
           auxiliares.size > 1 || (auxiliares.size === 1 && !auxiliares.has(cuenta))
         const claveCuenta = `${codigo}:${cuenta}`
+        const nc = nombreCuenta(traducciones, cuenta, infoCuenta.nombre)
         resultado.push({
           nivel: 1,
           clave: claveCuenta,
-          etiqueta: `${cuenta} ${infoCuenta.nombre}`,
+          etiqueta: `${cuenta} ${nc.texto}`,
+          sinTraducir: nc.sinTraducir,
           valorPeriodo: valorCuenta,
           total: totalCuenta(cuenta),
           participacion: totalCuentas === 0 ? 0 : (Math.abs(valorCuenta) / totalCuentas) * 100,
@@ -156,10 +165,12 @@ export default function DrillDown({
         const listaAux = [...auxiliares.entries()].sort((a, b) => a[0].localeCompare(b[0]))
         const totalAux = listaAux.reduce((acc, [, a]) => acc + Math.abs(a.valorPeriodo), 0)
         for (const [codigoAux, aux] of listaAux) {
+          const na = nombreCuenta(traducciones, codigoAux, aux.nombre)
           resultado.push({
             nivel: 2,
             clave: `${claveCuenta}:${codigoAux}`,
-            etiqueta: `${codigoAux} ${aux.nombre}`,
+            etiqueta: `${codigoAux} ${na.texto}`,
+            sinTraducir: na.sinTraducir,
             valorPeriodo: aux.valorPeriodo,
             total: aux.total,
             participacion: totalAux === 0 ? 0 : (Math.abs(aux.valorPeriodo) / totalAux) * 100,
@@ -169,7 +180,7 @@ export default function DrillDown({
       }
     }
     return resultado
-  }, [modelo, clave, rubrosAbiertos, cuentasAbiertas, auxiliaresDe, t])
+  }, [modelo, clave, rubrosAbiertos, cuentasAbiertas, auxiliaresDe, traducciones, t])
 
   const alClic = (fila: FilaDrill) => {
     if (!fila.expandible) return
@@ -214,7 +225,7 @@ export default function DrillDown({
                         {abierta ? '▾' : '▸'}
                       </span>
                     )}
-                    {fila.etiqueta}
+                    <span title={fila.sinTraducir ? 'Untranslated' : undefined}>{fila.etiqueta}</span>
                   </td>
                   <td
                     className={`whitespace-nowrap px-4 py-2 text-right text-xs tabular-nums ${

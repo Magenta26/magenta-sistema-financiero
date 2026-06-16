@@ -9,6 +9,9 @@ import {
   useMovimientosTransaccionales,
   useRubros,
 } from '../hooks/useConsolidado'
+import { useTraducciones } from '../hooks/useTraducciones'
+import { useRol } from '../hooks/useRol'
+import type { MapaTraducciones } from '../lib/nombreCuenta'
 import { esPendiente } from '../types/catalogo'
 import type { CuentaCatalogo } from '../types/catalogo'
 import TablaCatalogo from '../components/consolidado/TablaCatalogo'
@@ -18,6 +21,7 @@ import type { DatosToast } from '../components/Toast'
 import { useTranslation } from '../hooks/useTranslation'
 
 const CLAVE_CATALOGO = ['catalogo_cuentas', 'todas'] as const
+const CLAVE_TRADUCCIONES = ['traducciones_cuentas'] as const
 
 export default function Consolidado() {
   const { t } = useTranslation()
@@ -25,6 +29,8 @@ export default function Consolidado() {
   const catalogo = useCatalogo()
   const rubros = useRubros()
   const movimientos = useMovimientosTransaccionales()
+  const traducciones = useTraducciones()
+  const { esEditor } = useRol()
 
   const [busqueda, setBusqueda] = useState('')
   const [filtroClase, setFiltroClase] = useState<'todas' | string>('todas')
@@ -94,6 +100,36 @@ export default function Consolidado() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['catalogo_cuentas'] })
+    },
+  })
+
+  const guardarTraduccion = useMutation({
+    mutationFn: async ({ cuenta, nombreEn }: { cuenta: string; nombreEn: string }) => {
+      const { error } = await supabase.from('traducciones_cuentas').upsert(
+        { cuenta, nombre_en: nombreEn, origen: 'manual', actualizada_en: new Date().toISOString() },
+        { onConflict: 'cuenta' }
+      )
+      if (error) throw new Error(error.message)
+    },
+    onMutate: async ({ cuenta, nombreEn }) => {
+      await queryClient.cancelQueries({ queryKey: CLAVE_TRADUCCIONES })
+      const previo = queryClient.getQueryData<MapaTraducciones>(CLAVE_TRADUCCIONES)
+      queryClient.setQueryData<MapaTraducciones>(CLAVE_TRADUCCIONES, (actual) => {
+        const copia = new Map(actual ?? [])
+        copia.set(cuenta, nombreEn)
+        return copia
+      })
+      return { previo }
+    },
+    onError: (e, _v, contexto) => {
+      if (contexto?.previo) queryClient.setQueryData(CLAVE_TRADUCCIONES, contexto.previo)
+      avisar({ tipo: 'error', mensaje: t.consolidado.errorTraduccion(e.message) })
+    },
+    onSuccess: (_datos, { cuenta }) => {
+      avisar({ tipo: 'exito', mensaje: t.consolidado.traduccionGuardada(cuenta) })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: CLAVE_TRADUCCIONES })
     },
   })
 
@@ -207,6 +243,9 @@ export default function Consolidado() {
               valores={valores}
               rubros={rubros.data ?? []}
               movimientos={movimientos.data ?? []}
+              traducciones={traducciones.data ?? new Map()}
+              puedeEditarTraduccion={esEditor}
+              onTraducir={(cuenta, nombreEn) => guardarTraduccion.mutate({ cuenta, nombreEn })}
               orden={orden}
               onOrdenar={(campo) =>
                 setOrden((o) =>

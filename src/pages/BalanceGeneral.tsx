@@ -7,6 +7,7 @@ import { contable } from '../lib/formato'
 import { nombreMes } from '../types/balance'
 import type { ModoBg } from '../types/informes'
 import SeccionBalance from '../components/informes/SeccionBalance'
+import { useTraducciones } from '../hooks/useTraducciones'
 import { useTranslation } from '../hooks/useTranslation'
 
 const MODOS: ModoBg[] = ['saldos', 'variacion']
@@ -15,6 +16,8 @@ export default function BalanceGeneral() {
   const { t } = useTranslation()
   const bg = useBg()
   const rubros = useErRubros()
+  const traducciones = useTraducciones()
+  const trad = traducciones.data ?? new Map()
   const [modo, setModo] = useState<ModoBg>('saldos')
 
   const anio = useMemo(
@@ -63,7 +66,7 @@ export default function BalanceGeneral() {
           <button
             type="button"
             disabled={!modelo}
-            onClick={() => modelo && exportarBg(modelo, modo, t)}
+            onClick={() => modelo && exportarBg(modelo, modo, t, trad)}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
             {t.comun.exportarExcel}
@@ -102,12 +105,13 @@ export default function BalanceGeneral() {
                 </tr>
               </thead>
               <tbody>
-                <SeccionBalance seccion={modelo.activo} meses={meses} modo={modo} />
-                <SeccionBalance seccion={modelo.pasivo} meses={meses} modo={modo} />
+                <SeccionBalance seccion={modelo.activo} meses={meses} modo={modo} traducciones={trad} />
+                <SeccionBalance seccion={modelo.pasivo} meses={meses} modo={modo} traducciones={trad} />
                 <SeccionBalance
                   seccion={modelo.patrimonio}
                   meses={meses}
                   modo={modo}
+                  traducciones={trad}
                   resultadoEjercicio={modelo.resultadoEjercicio}
                   utilidadNetaMensual={modelo.utilidadNetaMensual}
                 />

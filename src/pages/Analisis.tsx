@@ -18,6 +18,9 @@ import GraficoTopVariaciones from '../components/analisis/GraficoTopVariaciones'
 import DonutComposicion from '../components/analisis/DonutComposicion'
 import type { PorcionDonut } from '../components/analisis/DonutComposicion'
 import DrillDown from '../components/analisis/DrillDown'
+import { useTraducciones } from '../hooks/useTraducciones'
+import { nombreCuentaTexto } from '../lib/nombreCuenta'
+import type { MapaTraducciones } from '../lib/nombreCuenta'
 import { useTranslation } from '../hooks/useTranslation'
 
 const VISTAS: VistaPeriodo[] = ['mensual', 'trimestral', 'anual']
@@ -27,7 +30,8 @@ function porcionesRubros(
   modelo: ModeloAnalisis,
   clave: string,
   codigos: string[],
-  nombresRubros: Record<string, string>
+  nombresRubros: Record<string, string>,
+  trad: MapaTraducciones
 ): PorcionDonut[] {
   const vp = modelo.valores.get(clave)
   return codigos.flatMap((codigo) => {
@@ -35,7 +39,10 @@ function porcionesRubros(
     if (Math.abs(valor) < 0.005) return []
     const topCuentas = [...modelo.cuentasInfo.entries()]
       .filter(([, c]) => c.rubro_codigo === codigo)
-      .map(([cuenta, c]) => ({ nombre: c.nombre, valor: vp?.cuentas.get(cuenta) ?? 0 }))
+      .map(([cuenta, c]) => ({
+        nombre: nombreCuentaTexto(trad, cuenta, c.nombre),
+        valor: vp?.cuentas.get(cuenta) ?? 0,
+      }))
       .filter((c) => Math.abs(c.valor) > 0.005)
       .sort((a, b) => Math.abs(b.valor) - Math.abs(a.valor))
       .slice(0, 3)
@@ -50,14 +57,14 @@ function porcionesRubros(
 }
 
 /** Composición de las ventas: cuentas de ING_OP (las contra-cuentas, ej. devoluciones, no se grafican). */
-function porcionesVentas(modelo: ModeloAnalisis, clave: string): PorcionDonut[] {
+function porcionesVentas(modelo: ModeloAnalisis, clave: string, trad: MapaTraducciones): PorcionDonut[] {
   const vp = modelo.valores.get(clave)
   return [...modelo.cuentasInfo.entries()]
     .filter(([, c]) => c.rubro_codigo === 'ING_OP')
     .map(([cuenta, c]) => {
       const bruto = vp?.cuentas.get(cuenta) ?? 0
       return {
-        nombre: c.nombre,
+        nombre: nombreCuentaTexto(trad, cuenta, c.nombre),
         valor: c.naturaleza === 'CR' ? bruto : -bruto,
         topCuentas: [],
       }
@@ -72,6 +79,8 @@ export default function Analisis() {
   const rubros = useErRubros()
   const periodoActual = usePeriodoActual()
   const movimientos = useMovimientosTransaccionales()
+  const traducciones = useTraducciones()
+  const trad = traducciones.data ?? new Map()
 
   const [vista, setVista] = useState<VistaPeriodo>('mensual')
   const [claveElegida, setClaveElegida] = useState<string | null>(null)
@@ -108,15 +117,25 @@ export default function Analisis() {
   )
   const series = useMemo(() => (modelo ? construirSeries(modelo, dya) : []), [modelo, dya])
   const variaciones = useMemo(
-    () => (modelo && clave ? topVariaciones(modelo, clave, 10) : []),
-    [modelo, clave]
+    () =>
+      modelo && clave
+        ? topVariaciones(modelo, clave, 10).map((v) => ({
+            ...v,
+            nombre: nombreCuentaTexto(trad, v.cuenta, v.nombre),
+          }))
+        : [],
+    // idioma/traducciones.data: re-traduce los nombres al cambiar idioma o datos
+    [modelo, clave, traducciones.data, idioma] // eslint-disable-line react-hooks/exhaustive-deps
   )
   const frases = useMemo(
     () =>
       modelo && clave
-        ? lecturaDelPeriodo(modelo, clave, dya, { lectura: t.analisis.lectura, rubros: t.rubros })
+        ? lecturaDelPeriodo(modelo, clave, dya, { lectura: t.analisis.lectura, rubros: t.rubros }, (cuenta, nombre) =>
+            nombreCuentaTexto(trad, cuenta, nombre)
+          )
         : [],
-    [modelo, clave, dya, t]
+    // traducciones.data: re-traduce el nombre de cuenta de la frase
+    [modelo, clave, dya, t, traducciones.data] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const cargando = detalle.isLoading || rubros.isLoading || movimientos.isLoading
@@ -130,7 +149,9 @@ export default function Analisis() {
     dya.size > 0
       ? [
           ...t.analisis.tooltipEbitdaCon,
-          ...[...dya.entries()].map(([cuenta, nombre]) => `• ${cuenta} ${nombre}`),
+          ...[...dya.entries()].map(
+            ([cuenta, nombre]) => `• ${cuenta} ${nombreCuentaTexto(trad, cuenta, nombre)}`
+          ),
         ]
       : t.analisis.tooltipEbitdaSin
 
@@ -250,16 +271,16 @@ export default function Analisis() {
             <div className="grid gap-4 lg:grid-cols-3">
               <DonutComposicion
                 titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesVentas(modelo, clave)}
+                porciones={porcionesVentas(modelo, clave, trad)}
                 nota={t.analisis.donaNotaVentas}
               />
               <DonutComposicion
                 titulo={`${t.analisis.donaCosto} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'], t.rubros)}
+                porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'], t.rubros, trad)}
               />
               <DonutComposicion
                 titulo={`${t.analisis.donaGastos} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros)}
+                porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros, trad)}
               />
             </div>
           </div>
@@ -273,6 +294,7 @@ export default function Analisis() {
             <DrillDown
               modelo={modelo}
               movimientos={movimientos.data ?? []}
+              traducciones={trad}
               clave={clave}
               etiquetaPeriodo={periodoSeleccionado.etiqueta}
               etiquetaTotal={

@@ -196,6 +196,11 @@ export const en: Diccionario = {
       'Value: classes 4-7 year-to-date with sign by nature; classes 1-3 ending balance of the latest month. ▸ expands the monthly detail. Amounts in COP.',
     guardada: (cuenta: string) => `${cuenta} saved.`,
     errorGuardar: (detalle: string) => `Could not save: ${detalle}. The change was reverted.`,
+    traduccionGuardada: (cuenta: string) => `${cuenta} translation saved.`,
+    errorTraduccion: (detalle: string) => `Could not save the translation: ${detalle}.`,
+    nombreEnAria: (cuenta: string) => `English name for ${cuenta}`,
+    placeholderEn: 'Translate…',
+    enPendiente: 'EN pending',
     conflictoContiene: (incluida: string, nueva: string) =>
       `${incluida} is already included in the Income Statement and contains ${nueva} — including both would double-count.`,
     conflictoContenida: (incluida: string, nueva: string) =>
@@ -203,6 +208,7 @@ export const en: Diccionario = {
     encabezados: {
       cuenta: 'Account',
       nombre: 'Name',
+      nombreEn: 'EN Name',
       clase: 'Class',
       naturaleza: 'Nat.',
       rubro: 'Category',

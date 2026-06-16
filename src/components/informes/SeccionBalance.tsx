@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import type { SeccionBg } from '../../lib/balanceGeneral'
 import type { ModoBg } from '../../types/informes'
+import { nombreCuenta } from '../../lib/nombreCuenta'
+import type { MapaTraducciones } from '../../lib/nombreCuenta'
 import CeldaValor from './CeldaValor'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -8,6 +10,7 @@ interface SeccionBalanceProps {
   seccion: SeccionBg
   meses: number[]
   modo: ModoBg
+  traducciones: MapaTraducciones
   /** Solo para Patrimonio. */
   resultadoEjercicio?: Map<number, number>
   /** Solo para Patrimonio, en modo variación. */
@@ -19,6 +22,7 @@ export default function SeccionBalance({
   seccion,
   meses,
   modo,
+  traducciones,
   resultadoEjercicio,
   utilidadNetaMensual,
 }: SeccionBalanceProps) {
@@ -46,7 +50,11 @@ export default function SeccionBalance({
           className="border-t border-borde transition-colors duration-150 even:bg-gray-50/60 hover:bg-brand-50"
         >
           <td className="py-1.5 pl-7 pr-3 text-xs text-tinta">
-            <span className="font-mono text-tinta-suave">{grupo.grupo}</span> {grupo.nombre}
+            <span className="font-mono text-tinta-suave">{grupo.grupo}</span>{' '}
+            {(() => {
+              const n = nombreCuenta(traducciones, grupo.grupo, grupo.nombre)
+              return <span title={n.sinTraducir ? 'Untranslated' : undefined}>{n.texto}</span>
+            })()}
           </td>
           {meses.map((mes) => (
             <CeldaValor key={mes} valor={valoresDe(grupo).get(mes) ?? 0} modo="absolutos" />

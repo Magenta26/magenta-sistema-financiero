@@ -387,7 +387,9 @@ export function lecturaDelPeriodo(
   modelo: ModeloAnalisis,
   clave: string,
   dya: Map<string, string>,
-  textos: TextosLectura
+  textos: TextosLectura,
+  /** Traduce el nombre de cuenta al idioma activo (por defecto, identidad). */
+  traducirNombre: (cuenta: string, nombre: string) => string = (_c, nombre) => nombre
 ): string[] {
   const periodo = modelo.periodos.find((p) => p.clave === clave)
   if (!periodo) return []
@@ -469,7 +471,7 @@ export function lecturaDelPeriodo(
       frases.push(
         lectura.cuentaFuerte(
           top.cuenta,
-          top.nombre,
+          traducirNombre(top.cuenta, top.nombre),
           nombreRubro(info?.rubro_codigo ?? '', top.rubro),
           top.delta > 0,
           monedaCompacta(Math.abs(top.delta)),

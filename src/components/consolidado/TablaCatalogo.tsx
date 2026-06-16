@@ -1,14 +1,62 @@
 import { Fragment, useState } from 'react'
 import { moneda } from '../../lib/formato'
+import { nombreCuenta } from '../../lib/nombreCuenta'
+import type { MapaTraducciones } from '../../lib/nombreCuenta'
 import type { CuentaCatalogo, MovimientoResumen, RubroEr } from '../../types/catalogo'
 import DetalleCuenta from './DetalleCuenta'
 import { useTranslation } from '../../hooks/useTranslation'
+import type { Diccionario } from '../../i18n/es'
 
 export type CampoOrden = 'cuenta' | 'valor'
 
 export interface CambioCuenta {
   cuenta: string
   campos: Partial<Pick<CuentaCatalogo, 'rubro_codigo' | 'incluir_er' | 'incluir_bg'>>
+}
+
+/** Celda editable del nombre en inglés (gestión de traducciones). */
+function CeldaTraduccion({
+  cuenta,
+  nombreEn,
+  editable,
+  onGuardar,
+  t,
+}: {
+  cuenta: string
+  nombreEn: string
+  editable: boolean
+  onGuardar: (cuenta: string, nombreEn: string) => void
+  t: Diccionario
+}) {
+  const pendiente = nombreEn.trim() === ''
+  return (
+    <div className="flex flex-col gap-1">
+      {editable ? (
+        <input
+          // key: reinicia el valor no controlado cuando cambia la traducción guardada
+          key={nombreEn}
+          defaultValue={nombreEn}
+          aria-label={t.consolidado.nombreEnAria(cuenta)}
+          placeholder={t.consolidado.placeholderEn}
+          onBlur={(e) => {
+            const v = e.target.value.trim()
+            if (v !== nombreEn.trim()) onGuardar(cuenta, v)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur()
+          }}
+          className="w-full max-w-56 rounded-lg border border-borde bg-white px-2 py-1 text-xs text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
+        />
+      ) : (
+        !pendiente && <span className="text-tinta">{nombreEn}</span>
+      )}
+      {pendiente && (
+        <span className="self-start rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+          {t.consolidado.enPendiente}
+        </span>
+      )}
+    </div>
+  )
 }
 
 const ESTILO_ORIGEN: Record<CuentaCatalogo['origen'], string> = {
@@ -22,6 +70,9 @@ interface TablaCatalogoProps {
   valores: Map<string, number>
   rubros: RubroEr[]
   movimientos: MovimientoResumen[]
+  traducciones: MapaTraducciones
+  puedeEditarTraduccion: boolean
+  onTraducir: (cuenta: string, nombreEn: string) => void
   orden: { campo: CampoOrden; ascendente: boolean }
   onOrdenar: (campo: CampoOrden) => void
   onCambiar: (cambio: CambioCuenta) => void
@@ -33,6 +84,9 @@ export default function TablaCatalogo({
   valores,
   rubros,
   movimientos,
+  traducciones,
+  puedeEditarTraduccion,
+  onTraducir,
   orden,
   onOrdenar,
   onCambiar,
@@ -61,6 +115,7 @@ export default function TablaCatalogo({
               </button>
             </th>
             <th className="px-3 py-2.5 font-semibold">{t.consolidado.encabezados.nombre}</th>
+            <th className="px-3 py-2.5 font-semibold">{t.consolidado.encabezados.nombreEn}</th>
             <th className="px-3 py-2.5 text-center font-semibold">{t.consolidado.encabezados.clase}</th>
             <th className="px-3 py-2.5 text-center font-semibold">{t.consolidado.encabezados.naturaleza}</th>
             <th className="px-3 py-2.5 font-semibold">{t.consolidado.encabezados.rubro}</th>
@@ -107,10 +162,19 @@ export default function TablaCatalogo({
                   </td>
                   <td
                     className="max-w-64 cursor-pointer truncate px-3 py-2 text-tinta"
-                    title={c.nombre}
+                    title={nombreCuenta(traducciones, c.cuenta, c.nombre).sinTraducir ? 'Untranslated' : c.nombre}
                     onClick={() => setExpandida(abierta ? null : c.cuenta)}
                   >
-                    {c.nombre}
+                    {nombreCuenta(traducciones, c.cuenta, c.nombre).texto}
+                  </td>
+                  <td className="max-w-56 px-3 py-2">
+                    <CeldaTraduccion
+                      cuenta={c.cuenta}
+                      nombreEn={traducciones.get(c.cuenta) ?? ''}
+                      editable={puedeEditarTraduccion}
+                      onGuardar={onTraducir}
+                      t={t}
+                    />
                   </td>
                   <td className="px-3 py-2 text-center text-tinta-suave">{c.cuenta[0]}</td>
                   <td className="px-3 py-2 text-center text-tinta-suave">{c.naturaleza}</td>
@@ -176,7 +240,7 @@ export default function TablaCatalogo({
                 </tr>
                 {abierta && (
                   <tr className="border-t border-borde bg-brand-50/60">
-                    <td colSpan={10}>
+                    <td colSpan={11}>
                       <DetalleCuenta cuenta={c.cuenta} movimientos={movimientos} />
                     </td>
                   </tr>

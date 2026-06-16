@@ -197,6 +197,11 @@ export const es = {
       'Valor: clases 4-7 acumulado del año con signo según naturaleza; clases 1-3 saldo final del último mes cargado. ▸ expande el detalle mes a mes. Cifras en COP.',
     guardada: (cuenta: string) => `${cuenta} guardada.`,
     errorGuardar: (detalle: string) => `No se pudo guardar: ${detalle}. Se revirtió el cambio.`,
+    traduccionGuardada: (cuenta: string) => `Traducción de ${cuenta} guardada.`,
+    errorTraduccion: (detalle: string) => `No se pudo guardar la traducción: ${detalle}.`,
+    nombreEnAria: (cuenta: string) => `Nombre en inglés de ${cuenta}`,
+    placeholderEn: 'Traducir…',
+    enPendiente: 'EN pendiente',
     conflictoContiene: (incluida: string, nueva: string) =>
       `${incluida} ya está incluida en el ER y contiene a ${nueva} — incluir ambas duplicaría el valor.`,
     conflictoContenida: (incluida: string, nueva: string) =>
@@ -204,6 +209,7 @@ export const es = {
     encabezados: {
       cuenta: 'Cuenta',
       nombre: 'Nombre',
+      nombreEn: 'Nombre EN',
       clase: 'Clase',
       naturaleza: 'Nat.',
       rubro: 'Rubro',

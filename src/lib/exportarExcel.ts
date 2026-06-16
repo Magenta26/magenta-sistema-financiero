@@ -6,6 +6,8 @@ import { transformarTotalAnio, transformarValor } from './estadoResultados'
 import type { ModeloBg } from './balanceGeneral'
 import { localeActual } from '../i18n/idioma'
 import type { Diccionario } from '../i18n/es'
+import { nombreCuentaTexto } from './nombreCuenta'
+import type { MapaTraducciones } from './nombreCuenta'
 
 /** Exports a Excel en el idioma activo: encabezados y nombres de línea del diccionario. */
 
@@ -31,7 +33,8 @@ export function exportarEr(
   modelo: ModeloEr,
   modo: ModoEr,
   t: Diccionario,
-  notas: NotaExport[] = []
+  notas: NotaExport[] = [],
+  traducciones: MapaTraducciones = new Map()
 ): void {
   const meses = modelo.mesesConDatos
   const cabecera = [t.comun.linea, ...meses.map((m) => nombreMes(m)), t.comun.totalAnio]
@@ -50,7 +53,13 @@ export function exportarEr(
   const filas: unknown[][] = [cabecera]
   for (const bloque of modelo.rubros) {
     for (const cuenta of bloque.cuentas) {
-      filas.push(filaDe(`    ${cuenta.cuenta} ${cuenta.nombre}`, cuenta.valores, cuenta.totalAnio))
+      filas.push(
+        filaDe(
+          `    ${cuenta.cuenta} ${nombreCuentaTexto(traducciones, cuenta.cuenta, cuenta.nombre)}`,
+          cuenta.valores,
+          cuenta.totalAnio
+        )
+      )
     }
     const nombreRubro = t.rubros[bloque.codigo] ?? bloque.nombre
     filas.push(filaDe(nombreRubro.toUpperCase(), bloque.valores, bloque.totalAnio))
@@ -98,7 +107,12 @@ export function exportarEr(
 }
 
 /** Exporta el BG del modo activo a un .xlsx (descarga en el navegador). */
-export function exportarBg(modelo: ModeloBg, modo: ModoBg, t: Diccionario): void {
+export function exportarBg(
+  modelo: ModeloBg,
+  modo: ModoBg,
+  t: Diccionario,
+  traducciones: MapaTraducciones = new Map()
+): void {
   const meses = modelo.mesesConDatos
   const esVariacion = modo === 'variacion'
   const cabecera = [
@@ -113,7 +127,7 @@ export function exportarBg(modelo: ModeloBg, modo: ModoBg, t: Diccionario): void
     filas.push([titulo.toUpperCase()])
     for (const grupo of seccion.grupos) {
       filas.push([
-        `    ${grupo.grupo} ${grupo.nombre}`,
+        `    ${grupo.grupo} ${nombreCuentaTexto(traducciones, grupo.grupo, grupo.nombre)}`,
         ...meses.map((mes) =>
           esVariacion ? grupo.variaciones.get(mes) ?? 0 : grupo.valores.get(mes) ?? 0
         ),

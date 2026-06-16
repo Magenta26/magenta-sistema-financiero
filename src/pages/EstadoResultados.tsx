@@ -13,6 +13,8 @@ import type { ModoEr } from '../types/informes'
 import CeldaValor from '../components/informes/CeldaValor'
 import NotasFinancieras from '../components/informes/NotasFinancieras'
 import { useNotasAnio } from '../hooks/useNotas'
+import { useTraducciones } from '../hooks/useTraducciones'
+import { nombreCuenta } from '../lib/nombreCuenta'
 import { useTranslation } from '../hooks/useTranslation'
 
 const MODOS: ModoEr[] = ['absolutos', 'vertical', 'horizontal']
@@ -66,6 +68,9 @@ export default function EstadoResultados() {
 
   // Notas financieras del año: se muestran abajo y viajan en el export del ER.
   const notas = useNotasAnio(anio)
+  // Traducciones de nombres de cuenta (modo EN).
+  const traducciones = useTraducciones()
+  const trad = traducciones.data ?? new Map()
 
   const modelo = useMemo(
     () =>
@@ -111,7 +116,7 @@ export default function EstadoResultados() {
           <button
             type="button"
             disabled={!modelo}
-            onClick={() => modelo && exportarEr(modelo, modo, t, notas.data ?? [])}
+            onClick={() => modelo && exportarEr(modelo, modo, t, notas.data ?? [], trad)}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
             {t.comun.exportarExcel}
@@ -192,7 +197,12 @@ export default function EstadoResultados() {
                         >
                           <td className="py-1.5 pl-10 pr-3 text-xs text-tinta-suave">
                             <span className="font-mono text-gray-400">{cuenta.cuenta}</span>{' '}
-                            {cuenta.nombre}
+                            {(() => {
+                              const n = nombreCuenta(trad, cuenta.cuenta, cuenta.nombre)
+                              return (
+                                <span title={n.sinTraducir ? 'Untranslated' : undefined}>{n.texto}</span>
+                              )
+                            })()}
                           </td>
                           {t.meses.map((_, i) => {
                             const mes = i + 1
