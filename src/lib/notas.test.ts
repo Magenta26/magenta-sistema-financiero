@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mesesConNotas, mesPorDefecto } from './notas'
+import { estadoNotasPorMes, mesesConNotas, mesPorDefecto } from './notas'
 
 describe('mesesConNotas', () => {
   it('marca solo los meses con datos y contenido no vacío', () => {
@@ -16,6 +16,28 @@ describe('mesesConNotas', () => {
   it('ignora notas de meses que no están en la lista visible', () => {
     const notas = [{ mes: 11, contenido: 'Nota vieja' }]
     expect(mesesConNotas(notas, [1, 2, 3]).size).toBe(0)
+  })
+})
+
+describe('estadoNotasPorMes', () => {
+  const notas = [
+    { mes: 1, contenido: 'Hola', contenido_en: 'Hi' }, // ambas
+    { mes: 2, contenido: 'Solo ES', contenido_en: '' }, // una
+    { mes: 3, contenido: '', contenido_en: 'Only EN' }, // una
+    { mes: 4, contenido: '   ', contenido_en: '' }, // ninguna (espacios)
+    { mes: 11, contenido: 'Fuera', contenido_en: 'Out' }, // fuera de rango
+  ]
+
+  it('clasifica ambas / una / ninguna', () => {
+    const estados = estadoNotasPorMes(notas, [1, 2, 3, 4])
+    expect(estados.get(1)).toBe('ambas')
+    expect(estados.get(2)).toBe('una')
+    expect(estados.get(3)).toBe('una')
+    expect(estados.has(4)).toBe(false)
+  })
+
+  it('ignora meses fuera de la lista visible', () => {
+    expect(estadoNotasPorMes(notas, [1, 2, 3, 4]).has(11)).toBe(false)
   })
 })
 

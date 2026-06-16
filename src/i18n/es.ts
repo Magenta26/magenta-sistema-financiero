@@ -255,6 +255,12 @@ export const es = {
       guardada: 'Notas guardadas.',
       errorGuardar: (detalle: string) => `No se pudieron guardar las notas: ${detalle}`,
       vacio: 'Sin notas para este mes todavía.',
+      versionEs: 'Versión en español:',
+      versionEn: 'Versión en inglés:',
+      estadoEscrita: '✓ escrita',
+      estadoPendiente: '— pendiente',
+      verOtra: 'Ver/editar la otra versión',
+      ocultarOtra: 'Ocultar la otra versión',
       conNotasAria: (mes: string) => `${mes} (con notas)`,
       ultimaActualizacion: (fecha: string, email: string) =>
         `Última actualización: ${fecha} por ${email}`,
