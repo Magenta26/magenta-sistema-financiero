@@ -53,7 +53,7 @@ function FilaDerivada({ linea, modelo, modo }: { linea: LineaDerivada; modelo: M
 }
 
 export default function EstadoResultados() {
-  const { t, idioma } = useTranslation()
+  const { t } = useTranslation()
   const detalle = useErDetalle()
   const rubros = useErRubros()
   const chequeos = useErChequeos()
@@ -116,19 +116,7 @@ export default function EstadoResultados() {
           <button
             type="button"
             disabled={!modelo}
-            onClick={() =>
-              modelo &&
-              exportarEr(
-                modelo,
-                modo,
-                t,
-                (notas.data ?? []).map((n) => ({
-                  mes: n.mes,
-                  contenido: idioma === 'en' ? n.contenido_en : n.contenido,
-                })),
-                trad
-              )
-            }
+            onClick={() => modelo && exportarEr(modelo, modo, t, notas.data ?? [], trad)}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
             {t.comun.exportarExcel}
