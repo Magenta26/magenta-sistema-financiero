@@ -135,10 +135,23 @@ export const en: Diccionario = {
       estado: 'Status',
       filas: 'Rows',
       validaciones: 'Checks',
+      acciones: 'Actions',
     },
     estados: { activa: 'Active', reemplazada: 'Replaced' } as Record<string, string>,
     descargar: 'Download .xlsx',
     generando: 'Generating…',
+    eliminar: {
+      aria: (periodo: string) => `Delete the ${periodo} upload`,
+      titulo: 'Delete upload?',
+      cuerpoActiva: (periodo: string) =>
+        `Delete the ${periodo} upload? It will be removed from the Income Statement, Balance Sheet and Analytics. The original file is kept for auditing. This action cannot be undone.`,
+      cuerpoReemplazada: (periodo: string) =>
+        `This is a historical (replaced) ${periodo} upload. Deleting it does NOT affect current data: it only clears the old file from the history. The original file is kept for auditing. This action cannot be undone.`,
+      confirmar: 'Delete',
+      eliminando: 'Deleting…',
+      exito: (periodo: string) => `${periodo} upload deleted.`,
+      error: (detalle: string) => `Could not delete the upload: ${detalle}`,
+    },
   },
 
   validaciones: {

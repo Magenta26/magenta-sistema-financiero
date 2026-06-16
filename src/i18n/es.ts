@@ -135,10 +135,23 @@ export const es = {
       estado: 'Estado',
       filas: 'Filas',
       validaciones: 'Validaciones',
+      acciones: 'Acciones',
     },
     estados: { activa: 'activa', reemplazada: 'reemplazada' } as Record<string, string>,
     descargar: 'Descargar .xlsx',
     generando: 'Generando…',
+    eliminar: {
+      aria: (periodo: string) => `Eliminar la carga de ${periodo}`,
+      titulo: '¿Eliminar carga?',
+      cuerpoActiva: (periodo: string) =>
+        `¿Eliminar la carga de ${periodo}? Se quitará del Estado de Resultados, Balance General y Análisis. El archivo original se conserva para auditoría. Esta acción no se puede deshacer.`,
+      cuerpoReemplazada: (periodo: string) =>
+        `Esta es una carga histórica (reemplazada) de ${periodo}. Eliminarla NO afecta los datos actuales: solo limpia el archivo viejo del historial. El archivo original se conserva para auditoría. Esta acción no se puede deshacer.`,
+      confirmar: 'Eliminar',
+      eliminando: 'Eliminando…',
+      exito: (periodo: string) => `Carga de ${periodo} eliminada.`,
+      error: (detalle: string) => `No se pudo eliminar la carga: ${detalle}`,
+    },
   },
 
   validaciones: {
