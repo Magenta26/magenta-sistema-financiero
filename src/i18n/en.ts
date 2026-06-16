@@ -238,6 +238,19 @@ export const en: Diccionario = {
     chequeosNota: 'A difference points to unmapped or misclassified accounts in that group.',
     chequeoGrupo: (grupo: string) => `Group ${grupo}:`,
     chequeosOk: '✓ All group tie-out checks balance (41, 42, 51, 52, 53, 71, 72, 73).',
+    notas: {
+      titulo: 'Financial Notes',
+      selectorMesAria: 'Notes month',
+      placeholder: 'Write the month’s notes and analysis here…',
+      guardar: 'Save',
+      guardando: 'Saving…',
+      guardada: 'Notes saved.',
+      errorGuardar: (detalle: string) => `Could not save the notes: ${detalle}`,
+      vacio: 'No notes for this month yet.',
+      conNotasAria: (mes: string) => `${mes} (has notes)`,
+      ultimaActualizacion: (fecha: string, email: string) => `Last updated: ${fecha} by ${email}`,
+      ultimaActualizacionSinEmail: (fecha: string) => `Last updated: ${fecha}`,
+    },
   },
 
   bg: {
@@ -378,6 +391,8 @@ export const en: Diccionario = {
     bgUtilidadMes: 'Net income for the month (from the Income Statement)',
     bgCuadreSaldos: 'TIE-OUT: Assets − (Liabilities + Equity + Current Year Earnings)',
     bgCuadreVariacion: 'TIE-OUT: Δ Assets − (Δ Liabilities + Δ Equity + monthly net income)',
+    notasTitulo: 'FINANCIAL NOTES',
+    notaMes: (mes: string) => `Notes — ${mes}`,
   },
 
   nomina: {

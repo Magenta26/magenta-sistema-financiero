@@ -11,6 +11,8 @@ import { contable } from '../lib/formato'
 import { nombreMes } from '../types/balance'
 import type { ModoEr } from '../types/informes'
 import CeldaValor from '../components/informes/CeldaValor'
+import NotasFinancieras from '../components/informes/NotasFinancieras'
+import { useNotasAnio } from '../hooks/useNotas'
 import { useTranslation } from '../hooks/useTranslation'
 
 const MODOS: ModoEr[] = ['absolutos', 'vertical', 'horizontal']
@@ -62,6 +64,9 @@ export default function EstadoResultados() {
     [rubros.data]
   )
 
+  // Notas financieras del año: se muestran abajo y viajan en el export del ER.
+  const notas = useNotasAnio(anio)
+
   const modelo = useMemo(
     () =>
       detalle.data && rubros.data && chequeos.data
@@ -106,7 +111,7 @@ export default function EstadoResultados() {
           <button
             type="button"
             disabled={!modelo}
-            onClick={() => modelo && exportarEr(modelo, modo, t)}
+            onClick={() => modelo && exportarEr(modelo, modo, t, notas.data ?? [])}
             className="rounded-lg border border-borde bg-white px-3 py-1.5 text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:border-brand-700 hover:text-brand-700 disabled:opacity-50"
           >
             {t.comun.exportarExcel}
@@ -237,6 +242,11 @@ export default function EstadoResultados() {
       )}
       {modelo && modelo.mesesConDatos.length > 0 && modelo.chequeos.length === 0 && (
         <p className="mt-5 text-xs font-medium text-exito">{t.er.chequeosOk}</p>
+      )}
+
+      {/* Notas financieras por mes (editables a mano) */}
+      {modelo && modelo.mesesConDatos.length > 0 && (
+        <NotasFinancieras anio={anio} mesesConDatos={modelo.mesesConDatos} />
       )}
     </div>
   )

@@ -20,8 +20,19 @@ function encabezado(t: Diccionario, titulo: string, subtitulo: string): unknown[
   ]
 }
 
+/** Nota financiera mínima para el export (el comentario viaja con las cifras). */
+export interface NotaExport {
+  mes: number
+  contenido: string
+}
+
 /** Exporta el ER del modo activo a un .xlsx (descarga en el navegador). */
-export function exportarEr(modelo: ModeloEr, modo: ModoEr, t: Diccionario): void {
+export function exportarEr(
+  modelo: ModeloEr,
+  modo: ModoEr,
+  t: Diccionario,
+  notas: NotaExport[] = []
+): void {
   const meses = modelo.mesesConDatos
   const cabecera = [t.comun.linea, ...meses.map((m) => nombreMes(m)), t.comun.totalAnio]
 
@@ -61,6 +72,18 @@ export function exportarEr(modelo: ModeloEr, modo: ModoEr, t: Diccionario): void
         ...meses.map((mes) => ch.diferencias.get(mes) ?? 0),
         [...ch.diferencias.values()].reduce((a, b) => a + b, 0),
       ])
+    }
+  }
+
+  // Notas financieras de los meses visibles (el comentario viaja con las cifras).
+  const notasVisibles = notas
+    .filter((n) => meses.includes(n.mes) && n.contenido.trim() !== '')
+    .sort((a, b) => a.mes - b.mes)
+  if (notasVisibles.length > 0) {
+    filas.push([])
+    filas.push([t.exportar.notasTitulo])
+    for (const n of notasVisibles) {
+      filas.push([t.exportar.notaMes(nombreMes(n.mes)), n.contenido])
     }
   }
 

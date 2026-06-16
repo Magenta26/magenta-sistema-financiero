@@ -240,6 +240,20 @@ export const es = {
       'Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.',
     chequeoGrupo: (grupo: string) => `Grupo ${grupo}:`,
     chequeosOk: '✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).',
+    notas: {
+      titulo: 'Notas financieras',
+      selectorMesAria: 'Mes de las notas',
+      placeholder: 'Escribe aquí las notas y el análisis del mes…',
+      guardar: 'Guardar',
+      guardando: 'Guardando…',
+      guardada: 'Notas guardadas.',
+      errorGuardar: (detalle: string) => `No se pudieron guardar las notas: ${detalle}`,
+      vacio: 'Sin notas para este mes todavía.',
+      conNotasAria: (mes: string) => `${mes} (con notas)`,
+      ultimaActualizacion: (fecha: string, email: string) =>
+        `Última actualización: ${fecha} por ${email}`,
+      ultimaActualizacionSinEmail: (fecha: string) => `Última actualización: ${fecha}`,
+    },
   },
 
   bg: {
@@ -381,6 +395,8 @@ export const es = {
     bgUtilidadMes: 'Utilidad neta del mes (desde el ER)',
     bgCuadreSaldos: 'CUADRE: Activo − (Pasivo + Patrimonio + Resultado)',
     bgCuadreVariacion: 'CUADRE: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)',
+    notasTitulo: 'NOTAS FINANCIERAS',
+    notaMes: (mes: string) => `Notas — ${mes}`,
   },
 
   nomina: {
