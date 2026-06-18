@@ -238,7 +238,23 @@ export default function Analisis() {
             ))}
           </div>
 
-          {/* Donas de composición (van arriba, antes de la tendencia) */}
+          {/* Lectura del período (va arriba de las donas) */}
+          {frases.length > 0 && (
+            <div className="mt-5 rounded-2xl border border-brand-200 bg-brand-50 p-5">
+              <h2 className="text-sm font-semibold text-brand-700">
+                {t.analisis.lecturaTitulo(periodoSeleccionado.etiqueta)}
+              </h2>
+              <ul className="mt-2 space-y-1.5">
+                {frases.map((frase, i) => (
+                  <li key={i} className="text-sm leading-relaxed text-tinta">
+                    • {frase}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Donas de composición */}
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
             <DonutComposicion
               titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}
@@ -254,22 +270,6 @@ export default function Analisis() {
               porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros, trad)}
             />
           </div>
-
-          {/* Lectura del período */}
-          {frases.length > 0 && (
-            <div className="mt-5 rounded-2xl border border-brand-200 bg-brand-50 p-5">
-              <h2 className="text-sm font-semibold text-brand-700">
-                {t.analisis.lecturaTitulo(periodoSeleccionado.etiqueta)}
-              </h2>
-              <ul className="mt-2 space-y-1.5">
-                {frases.map((frase, i) => (
-                  <li key={i} className="text-sm leading-relaxed text-tinta">
-                    • {frase}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {/* Fila de 3 gráficos alineados (misma grid que las donas, misma altura) */}
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
