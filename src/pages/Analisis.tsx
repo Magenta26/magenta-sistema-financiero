@@ -271,14 +271,18 @@ export default function Analisis() {
             />
           </div>
 
-          {/* Fila de 3 gráficos alineados (misma grid que las donas, misma altura) */}
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            <GraficoTendencia series={series} titulo={t.analisis.tendencia[vista]} altura={380} />
-            <GraficoMargenes series={series} altura={380} />
+          {/* Fila de 2 gráficos alineados (misma altura) */}
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <GraficoTendencia series={series} titulo={t.analisis.tendencia[vista]} altura={300} />
+            <GraficoMargenes series={series} altura={300} />
+          </div>
+
+          {/* Tornado a ancho completo (en su propia fila) */}
+          <div className="mt-4">
             <GraficoTornado
               lineas={tornado}
               titulo={t.analisis.tornadoTitulo(periodoSeleccionado.etiqueta)}
-              altura={380}
+              altura={480}
             />
           </div>
 
