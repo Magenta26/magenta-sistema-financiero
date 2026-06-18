@@ -58,10 +58,17 @@ function TooltipTornado({ active, payload }: PropsTooltip) {
 interface GraficoTornadoProps {
   lineas: LineaTornado[]
   titulo: string
+  /** Alto del área de gráfico (para igualar la fila de 3). */
+  altura?: number
+}
+
+/** Acorta el nombre del rubro para el eje (el completo va en el tooltip). */
+function truncar(nombre: string, max = 14): string {
+  return nombre.length > max ? `${nombre.slice(0, max - 1)}…` : nombre
 }
 
 /** Tornado de magnitudes del Estado de Resultados, centrado en 0. */
-export default function GraficoTornado({ lineas, titulo }: GraficoTornadoProps) {
+export default function GraficoTornado({ lineas, titulo, altura }: GraficoTornadoProps) {
   const { t } = useTranslation()
   const datos: DatoTornado[] = lineas.map((l) => ({
     etiqueta: etiquetaRubro(l.clave, t),
@@ -69,6 +76,8 @@ export default function GraficoTornado({ lineas, titulo }: GraficoTornadoProps) 
     valor: l.valor,
     color: COLOR_TIPO[l.tipo],
   }))
+  // Más holgura en el dominio (×1.6) para que, a 1/3 de ancho, las barras no
+  // toquen los bordes y las etiquetas de dato quepan sin recortarse.
   const maxAbs = Math.max(1, ...datos.map((d) => Math.abs(d.x)))
 
   // Etiqueta de dato (millones COP) al extremo EXTERIOR de cada barra.
@@ -85,14 +94,14 @@ export default function GraficoTornado({ lineas, titulo }: GraficoTornadoProps) 
     const height = Number(props.height ?? 0)
     const d = datos[props.index ?? 0]
     const positivo = (d?.x ?? 0) >= 0
-    const px = positivo ? x + width + 6 : x - 6
+    const px = positivo ? x + width + 5 : x - 5
     return (
       <text
         x={px}
         y={y + height / 2}
         dy={3}
         textAnchor={positivo ? 'start' : 'end'}
-        fontSize={10}
+        fontSize={9}
         fill={COLORES.ejes}
       >
         {monedaMillones(d?.valor ?? 0)}
@@ -103,25 +112,26 @@ export default function GraficoTornado({ lineas, titulo }: GraficoTornadoProps) 
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold text-brand-900">{titulo}</h2>
-      <ResponsiveContainer width="100%" height={Math.max(360, datos.length * 34)}>
+      <ResponsiveContainer width="100%" height={altura ?? Math.max(360, datos.length * 34)}>
         <BarChart
           data={datos}
           layout="vertical"
-          margin={{ top: 0, right: 84, bottom: 0, left: 8 }}
+          margin={{ top: 0, right: 16, bottom: 0, left: 4 }}
         >
           <XAxis
             type="number"
-            domain={[-maxAbs * 1.15, maxAbs * 1.15]}
+            domain={[-maxAbs * 1.6, maxAbs * 1.6]}
             tickFormatter={(v: number) => monedaMillones(v)}
-            tick={{ fill: COLORES.ejes, fontSize: 10 }}
+            tick={{ fill: COLORES.ejes, fontSize: 9 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             type="category"
             dataKey="etiqueta"
-            width={200}
-            tick={{ fill: '#1f2430', fontSize: 10 }}
+            width={92}
+            tickFormatter={(v: string) => truncar(v)}
+            tick={{ fill: '#1f2430', fontSize: 9 }}
             axisLine={false}
             tickLine={false}
           />

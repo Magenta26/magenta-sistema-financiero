@@ -14,12 +14,19 @@ import { TooltipPorcentaje } from './graficos'
 import { useTranslation } from '../../hooks/useTranslation'
 
 /** Evolución de los márgenes bruto, operacional y neto (% de ingresos). */
-export default function GraficoMargenes({ series }: { series: SeriePunto[] }) {
+export default function GraficoMargenes({
+  series,
+  altura = 260,
+}: {
+  series: SeriePunto[]
+  /** Alto del área de gráfico (para igualar la fila de 3). */
+  altura?: number
+}) {
   const { t } = useTranslation()
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold text-brand-900">{t.analisis.margenes}</h2>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={altura}>
         <LineChart data={series} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={COLORES.grilla} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="etiqueta" tick={{ fill: COLORES.ejes, fontSize: 11 }} axisLine={{ stroke: COLORES.grilla }} tickLine={false} />

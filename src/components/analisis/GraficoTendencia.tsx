@@ -18,15 +18,17 @@ import { useTranslation } from '../../hooks/useTranslation'
 interface GraficoTendenciaProps {
   series: SeriePunto[]
   titulo: string
+  /** Alto del área de gráfico (para igualar la fila de 3). */
+  altura?: number
 }
 
 /** Barras de ingresos y costos+gastos con la utilidad neta superpuesta. */
-export default function GraficoTendencia({ series, titulo }: GraficoTendenciaProps) {
+export default function GraficoTendencia({ series, titulo, altura = 280 }: GraficoTendenciaProps) {
   const { t } = useTranslation()
   return (
     <div className="rounded-2xl border border-borde bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold text-brand-900">{titulo}</h2>
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={altura}>
         <ComposedChart data={series} margin={{ top: 5, right: 10, bottom: 0, left: 10 }}>
           <CartesianGrid stroke={COLORES.grilla} strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="etiqueta" tick={{ fill: COLORES.ejes, fontSize: 11 }} axisLine={{ stroke: COLORES.grilla }} tickLine={false} />
