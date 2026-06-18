@@ -238,6 +238,23 @@ export default function Analisis() {
             ))}
           </div>
 
+          {/* Donas de composición (van arriba, antes de la tendencia) */}
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            <DonutComposicion
+              titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}
+              porciones={porcionesVentas(modelo, clave, trad)}
+              nota={t.analisis.donaNotaVentas}
+            />
+            <DonutComposicion
+              titulo={`${t.analisis.donaCosto} · ${periodoSeleccionado.etiqueta}`}
+              porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'], t.rubros, trad)}
+            />
+            <DonutComposicion
+              titulo={`${t.analisis.donaGastos} · ${periodoSeleccionado.etiqueta}`}
+              porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros, trad)}
+            />
+          </div>
+
           {/* Lectura del período */}
           {frases.length > 0 && (
             <div className="mt-5 rounded-2xl border border-brand-200 bg-brand-50 p-5">
@@ -262,21 +279,6 @@ export default function Analisis() {
               lineas={tornado}
               titulo={t.analisis.tornadoTitulo(periodoSeleccionado.etiqueta)}
             />
-            <div className="grid gap-4 lg:grid-cols-3">
-              <DonutComposicion
-                titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesVentas(modelo, clave, trad)}
-                nota={t.analisis.donaNotaVentas}
-              />
-              <DonutComposicion
-                titulo={`${t.analisis.donaCosto} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['COSTO_MP', 'COSTO_PER', 'COSTO_SER'], t.rubros, trad)}
-              />
-              <DonutComposicion
-                titulo={`${t.analisis.donaGastos} · ${periodoSeleccionado.etiqueta}`}
-                porciones={porcionesRubros(modelo, clave, ['GASTO_ADM', 'GASTO_VTA'], t.rubros, trad)}
-              />
-            </div>
           </div>
 
           {/* Drill-down */}
