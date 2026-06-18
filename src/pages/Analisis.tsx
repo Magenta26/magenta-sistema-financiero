@@ -8,13 +8,13 @@ import {
   construirSeries,
   cuentasDepreciacionAmortizacion,
   lecturaDelPeriodo,
-  topVariaciones,
+  lineasTornado,
 } from '../lib/analisis'
 import type { ModeloAnalisis, VistaPeriodo } from '../lib/analisis'
 import TarjetaKpi from '../components/analisis/TarjetaKpi'
 import GraficoTendencia from '../components/analisis/GraficoTendencia'
 import GraficoMargenes from '../components/analisis/GraficoMargenes'
-import GraficoTopVariaciones from '../components/analisis/GraficoTopVariaciones'
+import GraficoTornado from '../components/analisis/GraficoTornado'
 import DonutComposicion from '../components/analisis/DonutComposicion'
 import type { PorcionDonut } from '../components/analisis/DonutComposicion'
 import DrillDown from '../components/analisis/DrillDown'
@@ -116,16 +116,9 @@ export default function Analisis() {
     [modelo, clave, dya]
   )
   const series = useMemo(() => (modelo ? construirSeries(modelo, dya) : []), [modelo, dya])
-  const variaciones = useMemo(
-    () =>
-      modelo && clave
-        ? topVariaciones(modelo, clave, 10).map((v) => ({
-            ...v,
-            nombre: nombreCuentaTexto(trad, v.cuenta, v.nombre),
-          }))
-        : [],
-    // idioma/traducciones.data: re-traduce los nombres al cambiar idioma o datos
-    [modelo, clave, traducciones.data, idioma] // eslint-disable-line react-hooks/exhaustive-deps
+  const tornado = useMemo(
+    () => (modelo && clave ? lineasTornado(modelo, clave, dya) : []),
+    [modelo, clave, dya]
   )
   const frases = useMemo(
     () =>
@@ -264,10 +257,11 @@ export default function Analisis() {
           {/* Gráficos */}
           <div className="mt-5 grid gap-4">
             <GraficoTendencia series={series} titulo={t.analisis.tendencia[vista]} />
-            <div className="grid gap-4 lg:grid-cols-2">
-              <GraficoMargenes series={series} />
-              <GraficoTopVariaciones variaciones={variaciones} sustantivoPeriodo={sustantivo} />
-            </div>
+            <GraficoMargenes series={series} />
+            <GraficoTornado
+              lineas={tornado}
+              titulo={t.analisis.tornadoTitulo(periodoSeleccionado.etiqueta)}
+            />
             <div className="grid gap-4 lg:grid-cols-3">
               <DonutComposicion
                 titulo={`${t.analisis.donaVentas} · ${periodoSeleccionado.etiqueta}`}

@@ -6,6 +6,7 @@ import {
   cuentasDepreciacionAmortizacion,
   derivadosPeriodo,
   lecturaDelPeriodo,
+  lineasTornado,
   topVariaciones,
 } from './analisis'
 import type { ErDetalleFila, ErRubroFila } from '../types/informes'
@@ -182,5 +183,48 @@ describe('topVariaciones y lectura por período', () => {
     const frases = lecturaDelPeriodo(modeloQ, '2026-Q2', dya, TEXTOS_EN)
     expect(frases[0]).toMatch(/revenue quarter/)
     expect(frases.join(' ')).toContain('versus')
+  })
+})
+
+describe('lineasTornado', () => {
+  const modelo = construirModeloAnalisis(DETALLE, RUBROS, 'mensual')
+  const dya = cuentasDepreciacionAmortizacion(modelo.cuentasInfo)
+
+  it('arma las 12 líneas del P&L en orden, con signo de eje por tipo', () => {
+    const lineas = lineasTornado(modelo, '2026-01', dya)
+    // Orden de P&L con EBITDA al final
+    expect(lineas.map((l) => l.clave)).toEqual([
+      'ING_OP',
+      'COSTO_MP',
+      'COSTO_PER',
+      'COSTO_SER',
+      'UTILIDAD_BRUTA',
+      'GASTO_ADM',
+      'GASTO_VTA',
+      'UTILIDAD_OPERACIONAL',
+      'ING_NOOP',
+      'GASTO_NOOP',
+      'UTILIDAD_NETA',
+      'EBITDA',
+    ])
+    const por = Object.fromEntries(lineas.map((l) => [l.clave, l]))
+    // Ingresos a la derecha (x positivo)
+    expect(por.ING_OP).toMatchObject({ valor: 1000, x: 1000, tipo: 'ingreso' })
+    // Costos/gastos a la izquierda (x negativo), valor en positivo
+    expect(por.COSTO_MP).toMatchObject({ valor: 400, x: -400, tipo: 'costo' })
+    expect(por.GASTO_ADM).toMatchObject({ valor: 200, x: -200, tipo: 'costo' })
+    // Utilidades: bruta 600, operacional 350, neta 350 (destacada)
+    expect(por.UTILIDAD_BRUTA).toMatchObject({ valor: 600, x: 600, tipo: 'utilidad' })
+    expect(por.UTILIDAD_OPERACIONAL).toMatchObject({ x: 350, tipo: 'utilidad' })
+    expect(por.UTILIDAD_NETA).toMatchObject({ valor: 350, x: 350, tipo: 'utilidadNeta' })
+    // EBITDA = operacional 350 + D&A 80 (51601005, prefijo 5160) = 430
+    expect(por.EBITDA).toMatchObject({ valor: 430, x: 430, tipo: 'ebitda' })
+  })
+
+  it('un costo en cero no produce -0 en el eje', () => {
+    const lineas = lineasTornado(modelo, '2026-01', dya)
+    const costoPer = lineas.find((l) => l.clave === 'COSTO_PER')!
+    expect(Object.is(costoPer.x, -0)).toBe(false)
+    expect(costoPer.x).toBe(0)
   })
 })

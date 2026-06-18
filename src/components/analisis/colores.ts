@@ -6,6 +6,7 @@ export const COLORES = {
   profundo: '#501040', // brand-900
   exito: '#2e8b57', // verde hoja: utilidad / disminuciones
   ambar: '#d97706',
+  teal: '#0f766e', // teal-700: costos y gastos en el tornado (tono diferenciado)
   ejes: '#6b7280',
   grilla: '#e5e7eb',
 }

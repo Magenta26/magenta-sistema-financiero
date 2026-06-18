@@ -50,6 +50,18 @@ export function monedaCompacta(valor: number): string {
   return `${signo}COP $${num(absoluto, 0)}`
 }
 
+/** Monto en millones de COP con 1 decimal: ES "COP $258,3 M" · EN "COP $258.3 M". */
+export function monedaMillones(valor: number): string {
+  const millones = valor / 1_000_000
+  const signo = millones < 0 ? '−' : ''
+  const num = formato({
+    clave: 'mill',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(Math.abs(millones))
+  return `${signo}COP $${num} M`
+}
+
 /** Formato contable sin moneda (tablas): negativos entre paréntesis. */
 export function contable(valor: number): string {
   const absoluto = decimales().format(Math.abs(valor))

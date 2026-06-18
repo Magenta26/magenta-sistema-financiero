@@ -383,6 +383,65 @@ export function topVariaciones(modelo: ModeloAnalisis, clave: string, n = 10): V
   return variaciones.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, n)
 }
 
+// ---------- Tornado del Estado de Resultados ----------
+
+export type TipoLineaTornado = 'ingreso' | 'costo' | 'utilidad' | 'utilidadNeta' | 'ebitda'
+
+export interface LineaTornado {
+  /** Código del rubro/derivada: ING_OP, COSTO_MP…, UTILIDAD_BRUTA, EBITDA, etc. */
+  clave: string
+  /** Valor económico para la etiqueta/tooltip (ingresos y costos en positivo; utilidades con signo). */
+  valor: number
+  /** Valor con signo para el eje del tornado: + se extiende a la derecha, − a la izquierda. */
+  x: number
+  tipo: TipoLineaTornado
+}
+
+/**
+ * Magnitudes de las líneas del P&L para el gráfico de tornado, en orden de
+ * Estado de Resultados. Reutiliza los mismos agregados que los KPIs
+ * (`derivadosPeriodo` + los totales de rubro del período): NO recalcula aparte.
+ * Convención: ingresos y utilidades positivas a la derecha; costos y gastos a
+ * la izquierda; utilidades negativas a la izquierda (con su propio color).
+ */
+export function lineasTornado(
+  modelo: ModeloAnalisis,
+  clave: string,
+  dya: Map<string, string>
+): LineaTornado[] {
+  const vp = modelo.valores.get(clave)
+  const r = (codigo: string) => vp?.rubros.get(codigo) ?? 0
+  const d = derivadosPeriodo(modelo, clave, dya)
+  const ingreso = (c: string, valor: number): LineaTornado => ({ clave: c, valor, x: valor, tipo: 'ingreso' })
+  // x: valor === 0 ? 0 evita el -0 (que rompe igualdad y se vería raro en la etiqueta)
+  const costo = (c: string, valor: number): LineaTornado => ({
+    clave: c,
+    valor,
+    x: valor === 0 ? 0 : -valor,
+    tipo: 'costo',
+  })
+  const utilidad = (c: string, valor: number, tipo: TipoLineaTornado): LineaTornado => ({
+    clave: c,
+    valor,
+    x: valor, // si la utilidad es negativa, x ya es negativo → se extiende a la izquierda
+    tipo,
+  })
+  return [
+    ingreso('ING_OP', r('ING_OP')),
+    costo('COSTO_MP', r('COSTO_MP')),
+    costo('COSTO_PER', r('COSTO_PER')),
+    costo('COSTO_SER', r('COSTO_SER')),
+    utilidad('UTILIDAD_BRUTA', d.utilidadBruta, 'utilidad'),
+    costo('GASTO_ADM', r('GASTO_ADM')),
+    costo('GASTO_VTA', r('GASTO_VTA')),
+    utilidad('UTILIDAD_OPERACIONAL', d.utilidadOperacional, 'utilidad'),
+    ingreso('ING_NOOP', r('ING_NOOP')),
+    costo('GASTO_NOOP', r('GASTO_NOOP')),
+    utilidad('UTILIDAD_NETA', d.utilidadNeta, 'utilidadNeta'),
+    utilidad('EBITDA', d.ebitda, 'ebitda'),
+  ]
+}
+
 // ---------- Lectura del período ----------
 
 /** Textos que necesita la lectura: la sección `analisis.lectura` y los rubros del diccionario. */

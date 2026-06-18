@@ -1,8 +1,26 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { parsearNumero } from './formato'
+import { monedaMillones, parsearNumero } from './formato'
 import { setIdiomaGlobal } from '../i18n/idioma'
 
 afterEach(() => setIdiomaGlobal('es'))
+
+describe('monedaMillones', () => {
+  it('ES: millones con coma decimal y sufijo " M"', () => {
+    setIdiomaGlobal('es')
+    expect(monedaMillones(258_300_000)).toBe('COP $258,3 M')
+    expect(monedaMillones(1_500_000)).toBe('COP $1,5 M')
+  })
+
+  it('EN: millones con punto decimal y sufijo " M"', () => {
+    setIdiomaGlobal('en')
+    expect(monedaMillones(258_300_000)).toBe('COP $258.3 M')
+  })
+
+  it('negativos con signo menos', () => {
+    setIdiomaGlobal('es')
+    expect(monedaMillones(-12_000_000)).toBe('−COP $12,0 M')
+  })
+})
 
 describe('parsearNumero (es-CO: miles "." decimal ",")', () => {
   it('parsea un valor formateado con separadores de miles', () => {
