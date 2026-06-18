@@ -246,6 +246,12 @@ export const es = {
       'Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.',
     chequeoGrupo: (grupo: string) => `Grupo ${grupo}:`,
     chequeosOk: '✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).',
+    ebitda: 'EBITDA',
+    ebitdaInfoAria: 'Cuentas sumadas como depreciaciones y amortizaciones',
+    ventasEfectivo: 'Ventas en efectivo',
+    ventasEfectivoAria: (mes: string) => `Ventas en efectivo de ${mes}`,
+    ventasGuardada: 'Ventas en efectivo guardadas.',
+    errorVentas: (detalle: string) => `No se pudieron guardar las ventas en efectivo: ${detalle}`,
     notas: {
       titulo: 'Notas financieras',
       selectorMesAria: 'Mes de las notas',

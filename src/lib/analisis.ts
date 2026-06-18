@@ -164,21 +164,30 @@ export function construirModeloAnalisis(
 const PREFIJOS_DYA = ['5160', '5165', '5260', '5265', '7360']
 
 /**
- * Identifica cuentas de depreciación/amortización en el catálogo del ER:
- * por prefijo PUC (5160, 5165, 5260, 5265, 7360) o por nombre que contenga
- * "depreciaci"/"amortizaci" (sin tildes/mayúsculas) en clases 5 y 7.
+ * ¿Es una cuenta de depreciación/amortización? Criterio único compartido por
+ * el Análisis y el Estado de Resultados (coherencia): por prefijo PUC
+ * (5160/5165/5260/5265/7360) o por nombre que contenga "depreciaci"/"amortizaci"
+ * (sin tildes/mayúsculas) dentro de clases 5 y 7.
+ */
+export function esCuentaDya(cuenta: string, nombre: string): boolean {
+  const porPrefijo = PREFIJOS_DYA.some((p) => cuenta.startsWith(p))
+  const nombreNorm = normalizar(nombre)
+  const porNombre =
+    ['5', '7'].includes(cuenta[0]) &&
+    (nombreNorm.includes('depreciaci') || nombreNorm.includes('amortizaci'))
+  return porPrefijo || porNombre
+}
+
+/**
+ * Identifica cuentas de depreciación/amortización en el catálogo del ER
+ * (ver {@link esCuentaDya}). Devuelve cuenta -> nombre.
  */
 export function cuentasDepreciacionAmortizacion(
   cuentasInfo: Map<string, InfoCuenta>
 ): Map<string, string> {
   const resultado = new Map<string, string>()
   for (const [cuenta, info] of cuentasInfo) {
-    const porPrefijo = PREFIJOS_DYA.some((p) => cuenta.startsWith(p))
-    const nombreNorm = normalizar(info.nombre)
-    const porNombre =
-      ['5', '7'].includes(cuenta[0]) &&
-      (nombreNorm.includes('depreciaci') || nombreNorm.includes('amortizaci'))
-    if (porPrefijo || porNombre) resultado.set(cuenta, info.nombre)
+    if (esCuentaDya(cuenta, info.nombre)) resultado.set(cuenta, info.nombre)
   }
   return resultado
 }

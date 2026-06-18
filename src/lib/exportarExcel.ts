@@ -34,7 +34,8 @@ export function exportarEr(
   modo: ModoEr,
   t: Diccionario,
   notas: NotaExport[] = [],
-  traducciones: MapaTraducciones = new Map()
+  traducciones: MapaTraducciones = new Map(),
+  ventasEfectivo: Map<number, number> = new Map()
 ): void {
   const meses = modelo.mesesConDatos
   const cabecera = [t.comun.linea, ...meses.map((m) => nombreMes(m)), t.comun.totalAnio]
@@ -71,6 +72,12 @@ export function exportarEr(
     if (bloque.codigo === 'GASTO_VTA') filas.push(filaDerivada('UTILIDAD_OPERACIONAL'))
     if (bloque.codigo === 'GASTO_NOOP') filas.push(filaDerivada('UTILIDAD_NETA'))
   }
+
+  // Rubros independientes al final (después de Utilidad Neta).
+  const lineaEbitda = modelo.derivadas.get('EBITDA')!
+  filas.push(filaDe(t.er.ebitda, lineaEbitda.valores, lineaEbitda.totalAnio))
+  const totalVentas = meses.reduce((acc, mes) => acc + (ventasEfectivo.get(mes) ?? 0), 0)
+  filas.push(filaDe(t.er.ventasEfectivo, ventasEfectivo, totalVentas))
 
   if (modelo.chequeos.length > 0) {
     filas.push([])

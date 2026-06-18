@@ -1,4 +1,5 @@
 import type { ErChequeoFila, ErDetalleFila, ErRubroFila, ModoEr } from '../types/informes'
+import { esCuentaDya } from './analisis'
 
 /**
  * Modelo del Estado de Resultados (PLAN.md secciones 4 y 6).
@@ -8,6 +9,8 @@ import type { ErChequeoFila, ErDetalleFila, ErRubroFila, ModoEr } from '../types
  *   UTILIDAD BRUTA      = ING_OP − TOTAL COSTO
  *   UTILIDAD OPERACIONAL= UTILIDAD BRUTA − GASTO_ADM − GASTO_VTA
  *   UTILIDAD NETA       = UTILIDAD OPERACIONAL + ING_NOOP − GASTO_NOOP
+ *   EBITDA              = UTILIDAD OPERACIONAL + Depreciaciones + Amortizaciones
+ *                         (métrica derivada al final; NO afecta la utilidad neta)
  */
 
 export interface LineaCuenta {
@@ -45,8 +48,11 @@ export interface ModeloEr {
   /** Meses (1-12) con datos cargados. */
   mesesConDatos: number[]
   rubros: BloqueRubro[]
+  /** Incluye TOTAL_INGRESOS…UTILIDAD_NETA y EBITDA (esta última, derivada al final). */
   derivadas: Map<string, LineaDerivada>
   chequeos: LineaChequeo[]
+  /** Cuentas D&A sumadas para el EBITDA (transparencia del tooltip). */
+  cuentasDya: { cuenta: string; nombre: string }[]
 }
 
 function sumarMapas(...mapas: Map<number, number>[]): Map<number, number> {
@@ -127,6 +133,23 @@ export function construirModeloEr(
     valoresDe('GASTO_NOOP')
   )
 
+  // EBITDA = Utilidad Operacional + Depreciaciones + Amortizaciones del período.
+  // Las cuentas D&A (clases 5 y 7 incluidas en el ER, por prefijo PUC o nombre)
+  // ya están restadas dentro de los rubros de costo/gasto, así que se SUMAN de
+  // vuelta. Es una métrica derivada al final: no afecta ningún subtotal ni la
+  // utilidad neta, ni participa del matching por prefijo de los rubros.
+  const cuentasDya: { cuenta: string; nombre: string }[] = []
+  const dyaValores = new Map<number, number>()
+  for (const bloque of bloques) {
+    for (const c of bloque.cuentas) {
+      if (!esCuentaDya(c.cuenta, c.nombre)) continue
+      cuentasDya.push({ cuenta: c.cuenta, nombre: c.nombre })
+      for (const [mes, valor] of c.valores) dyaValores.set(mes, (dyaValores.get(mes) ?? 0) + valor)
+    }
+  }
+  cuentasDya.sort((a, b) => a.cuenta.localeCompare(b.cuenta))
+  const ebitda = sumarMapas(utilidadOperacional, dyaValores)
+
   const derivadas = new Map<string, LineaDerivada>(
     (
       [
@@ -135,6 +158,7 @@ export function construirModeloEr(
         ['UTILIDAD_BRUTA', 'UTILIDAD BRUTA', utilidadBruta],
         ['UTILIDAD_OPERACIONAL', 'UTILIDAD OPERACIONAL', utilidadOperacional],
         ['UTILIDAD_NETA', 'UTILIDAD NETA', utilidadNeta],
+        ['EBITDA', 'EBITDA', ebitda],
       ] as const
     ).map(([clave, etiqueta, valores]) => [
       clave,
@@ -157,7 +181,7 @@ export function construirModeloEr(
     .map(([grupo, diferencias]) => ({ grupo, diferencias }))
     .sort((a, b) => a.grupo.localeCompare(b.grupo))
 
-  return { anio, mesesConDatos, rubros: bloques, derivadas, chequeos: lineasChequeo }
+  return { anio, mesesConDatos, rubros: bloques, derivadas, chequeos: lineasChequeo, cuentasDya }
 }
 
 /**
