@@ -282,7 +282,7 @@ export default function Analisis() {
             <GraficoTornado
               lineas={tornado}
               titulo={t.analisis.tornadoTitulo(periodoSeleccionado.etiqueta)}
-              altura={480}
+              altura={456}
             />
           </div>
 

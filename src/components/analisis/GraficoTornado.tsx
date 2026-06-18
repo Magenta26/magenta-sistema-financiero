@@ -113,14 +113,9 @@ export default function GraficoTornado({ lineas, titulo, altura }: GraficoTornad
           layout="vertical"
           margin={{ top: 0, right: 96, bottom: 0, left: 8 }}
         >
-          <XAxis
-            type="number"
-            domain={[-maxAbs * 1.3, maxAbs * 1.3]}
-            tickFormatter={(v: number) => monedaMillones(v)}
-            tick={{ fill: COLORES.ejes, fontSize: 10 }}
-            axisLine={false}
-            tickLine={false}
-          />
+          {/* Eje X oculto (sin escala numérica abajo); conserva el dominio para
+              escalar las barras. Las etiquetas de dato sobre las barras quedan. */}
+          <XAxis type="number" domain={[-maxAbs * 1.3, maxAbs * 1.3]} hide />
           <YAxis
             type="category"
             dataKey="etiqueta"
