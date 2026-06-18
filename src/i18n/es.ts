@@ -343,6 +343,8 @@ export const es = {
     donaNotaVentas: 'Las contra-cuentas (ej. devoluciones) no se grafican.',
     donaSinDatos: 'Sin datos para el período seleccionado.',
     donaTotal: 'Total:',
+    donaValor: 'Valor:',
+    donaParticipacion: 'Participación:',
     donaPrincipales: 'Principales cuentas:',
     drillTitulo: 'Explorar el detalle',
     drillDescripcion: (etiqueta: string) =>

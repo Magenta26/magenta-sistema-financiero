@@ -339,6 +339,8 @@ export const en: Diccionario = {
     donaNotaVentas: 'Contra-revenue accounts (e.g., sales returns) are not charted.',
     donaSinDatos: 'No data for the selected period.',
     donaTotal: 'Total:',
+    donaValor: 'Amount:',
+    donaParticipacion: 'Share:',
     donaPrincipales: 'Top accounts:',
     drillTitulo: 'Drill into the detail',
     drillDescripcion: (etiqueta: string) =>
