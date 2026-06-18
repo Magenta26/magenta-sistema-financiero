@@ -246,6 +246,7 @@ export const es = {
       'Una diferencia indica cuentas del grupo sin clasificar o mal clasificadas en el catálogo.',
     chequeoGrupo: (grupo: string) => `Grupo ${grupo}:`,
     chequeosOk: '✓ Todos los chequeos por grupo cuadran (41, 42, 51, 52, 53, 71, 72, 73).',
+    adicionalesTitulo: 'Indicadores adicionales',
     ebitda: 'EBITDA',
     ebitdaInfoAria: 'Cuentas sumadas como depreciaciones y amortizaciones',
     ventasEfectivo: 'Ventas en efectivo',

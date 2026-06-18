@@ -9,7 +9,7 @@ import {
 import type { LineaDerivada, ModeloEr } from '../lib/estadoResultados'
 import { exportarEr } from '../lib/exportarExcel'
 import { supabase } from '../lib/supabase'
-import { contable } from '../lib/formato'
+import { contable, parsearNumero } from '../lib/formato'
 import { nombreMes } from '../types/balance'
 import type { ModoEr } from '../types/informes'
 import CeldaValor from '../components/informes/CeldaValor'
@@ -38,16 +38,17 @@ function CeldaEfectivo({
 }) {
   return (
     <td className="px-1 py-1">
+      {/* type=text (sin flechas/spinners); muestra el valor formateado (es-CO)
+          y al confirmar se parsea de vuelta a número. */}
       <input
-        type="number"
-        step="any"
+        type="text"
+        inputMode="decimal"
         key={valor}
-        defaultValue={valor === 0 ? '' : valor}
+        defaultValue={valor === 0 ? '' : contable(valor)}
         aria-label={aria}
         onBlur={(e) => {
-          const texto = e.target.value.trim()
-          const n = texto === '' ? 0 : Number(texto)
-          if (Number.isFinite(n) && n !== valor) onGuardar(n)
+          const n = parsearNumero(e.target.value) ?? 0
+          if (n !== valor) onGuardar(n)
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur()
@@ -316,81 +317,110 @@ export default function EstadoResultados() {
                   </Fragment>
                 )
               })}
-
-              {/* ── Rubros independientes al final (después de Utilidad Neta) ── */}
-
-              {/* EBITDA (calculado): Utilidad Operacional + D&A. */}
-              <tr className="border-t-2 border-brand-200 bg-brand-50">
-                <td className="px-3 py-2 text-xs font-bold text-brand-900">
-                  {t.er.ebitda}
-                  <span
-                    className="ml-1.5 cursor-help align-middle text-tinta-suave"
-                    title={tooltipEbitda}
-                    aria-label={t.er.ebitdaInfoAria}
-                  >
-                    ⓘ
-                  </span>
-                </td>
-                {t.meses.map((_, i) => {
-                  const mes = i + 1
-                  const sinDatos = !modelo.mesesConDatos.includes(mes)
-                  return (
-                    <CeldaValor
-                      key={mes}
-                      valor={
-                        sinDatos
-                          ? null
-                          : transformarValor(modo, modelo.derivadas.get('EBITDA')!.valores, mes, modelo)
-                      }
-                      modo={modo}
-                      sinDatos={sinDatos}
-                      negrilla
-                    />
-                  )
-                })}
-                <CeldaValor
-                  valor={transformarTotalAnio(modo, modelo.derivadas.get('EBITDA')!.totalAnio, modelo)}
-                  modo={modo}
-                  negrilla
-                />
-              </tr>
-
-              {/* Ventas en efectivo (dato manual informativo, no afecta subtotales). */}
-              <tr className="border-t border-borde bg-white">
-                <td className="px-3 py-2 text-xs font-semibold text-tinta">{t.er.ventasEfectivo}</td>
-                {t.meses.map((_, i) => {
-                  const mes = i + 1
-                  const sinDatos = !modelo.mesesConDatos.includes(mes)
-                  if (modo === 'absolutos' && esEditor && !sinDatos) {
-                    return (
-                      <CeldaEfectivo
-                        key={mes}
-                        valor={ventasMapa.get(mes) ?? 0}
-                        aria={t.er.ventasEfectivoAria(nombreMes(mes))}
-                        onGuardar={(valor) => guardarVenta.mutate({ mes, valor })}
-                      />
-                    )
-                  }
-                  return (
-                    <CeldaValor
-                      key={mes}
-                      valor={sinDatos ? null : transformarValor(modo, ventasMapa, mes, modelo)}
-                      modo={modo}
-                      sinDatos={sinDatos}
-                    />
-                  )
-                })}
-                <CeldaValor
-                  valor={transformarTotalAnio(
-                    modo,
-                    modelo.mesesConDatos.reduce((acc, mes) => acc + (ventasMapa.get(mes) ?? 0), 0),
-                    modelo
-                  )}
-                  modo={modo}
-                />
-              </tr>
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── Bloque independiente: EBITDA y Ventas en efectivo ──
+          Van fuera del cuadro del ER (que termina en Utilidad Neta); no afectan
+          ningún total. Mismas columnas (meses + Total año) para alinear con la
+          tabla de arriba. */}
+      {modelo && modelo.mesesConDatos.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold text-brand-900">{t.er.adicionalesTitulo}</h2>
+          <div className="mt-2 overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
+            <table className="w-full">
+              <thead className="bg-gray-50 text-brand-900">
+                <tr>
+                  <th className="min-w-64 px-3 py-2.5 text-left text-xs font-semibold">{t.comun.linea}</th>
+                  {t.meses.map((nombre, i) => (
+                    <th
+                      key={nombre}
+                      className={`px-3 py-2.5 text-right text-xs font-semibold ${
+                        modelo.mesesConDatos.includes(i + 1) ? '' : 'text-gray-400'
+                      }`}
+                    >
+                      {nombre}
+                    </th>
+                  ))}
+                  <th className="px-3 py-2.5 text-right text-xs font-bold">{t.comun.totalAnio}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* EBITDA (calculado): Utilidad Operacional + D&A. */}
+                <tr className="border-t border-brand-200 bg-brand-50">
+                  <td className="px-3 py-2 text-xs font-bold text-brand-900">
+                    {t.er.ebitda}
+                    <span
+                      className="ml-1.5 cursor-help align-middle text-tinta-suave"
+                      title={tooltipEbitda}
+                      aria-label={t.er.ebitdaInfoAria}
+                    >
+                      ⓘ
+                    </span>
+                  </td>
+                  {t.meses.map((_, i) => {
+                    const mes = i + 1
+                    const sinDatos = !modelo.mesesConDatos.includes(mes)
+                    return (
+                      <CeldaValor
+                        key={mes}
+                        valor={
+                          sinDatos
+                            ? null
+                            : transformarValor(modo, modelo.derivadas.get('EBITDA')!.valores, mes, modelo)
+                        }
+                        modo={modo}
+                        sinDatos={sinDatos}
+                        negrilla
+                      />
+                    )
+                  })}
+                  <CeldaValor
+                    valor={transformarTotalAnio(modo, modelo.derivadas.get('EBITDA')!.totalAnio, modelo)}
+                    modo={modo}
+                    negrilla
+                  />
+                </tr>
+
+                {/* Ventas en efectivo (dato manual informativo, no afecta subtotales). */}
+                <tr className="border-t border-borde bg-white">
+                  <td className="px-3 py-2 text-xs font-semibold text-tinta">{t.er.ventasEfectivo}</td>
+                  {t.meses.map((_, i) => {
+                    const mes = i + 1
+                    const sinDatos = !modelo.mesesConDatos.includes(mes)
+                    if (modo === 'absolutos' && esEditor && !sinDatos) {
+                      return (
+                        <CeldaEfectivo
+                          key={mes}
+                          valor={ventasMapa.get(mes) ?? 0}
+                          aria={t.er.ventasEfectivoAria(nombreMes(mes))}
+                          onGuardar={(valor) => guardarVenta.mutate({ mes, valor })}
+                        />
+                      )
+                    }
+                    return (
+                      <CeldaValor
+                        key={mes}
+                        valor={sinDatos ? null : transformarValor(modo, ventasMapa, mes, modelo)}
+                        modo={modo}
+                        sinDatos={sinDatos}
+                      />
+                    )
+                  })}
+                  <CeldaValor
+                    valor={transformarTotalAnio(
+                      modo,
+                      modelo.mesesConDatos.reduce((acc, mes) => acc + (ventasMapa.get(mes) ?? 0), 0),
+                      modelo
+                    )}
+                    modo={modo}
+                  />
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

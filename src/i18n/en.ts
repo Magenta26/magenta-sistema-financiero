@@ -244,6 +244,7 @@ export const en: Diccionario = {
     chequeosNota: 'A difference points to unmapped or misclassified accounts in that group.',
     chequeoGrupo: (grupo: string) => `Group ${grupo}:`,
     chequeosOk: '✓ All group tie-out checks balance (41, 42, 51, 52, 53, 71, 72, 73).',
+    adicionalesTitulo: 'Additional metrics',
     ebitda: 'EBITDA',
     ebitdaInfoAria: 'Accounts added back as depreciation and amortization',
     ventasEfectivo: 'Cash Sales',
