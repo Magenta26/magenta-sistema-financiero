@@ -50,6 +50,23 @@ export const en: Diccionario = {
     },
   },
 
+  cambiarPassword: {
+    titulo: 'Change your password',
+    subtitulo: 'For security, set a new password before continuing.',
+    nueva: 'New password',
+    confirmar: 'Confirm password',
+    regla: 'At least 8 characters and different from the temporary password.',
+    guardar: 'Save password',
+    guardando: 'Saving…',
+    exito: 'Password updated.',
+    errores: {
+      corta: 'Password must be at least 8 characters.',
+      temporal: 'You can’t reuse the temporary password.',
+      noCoincide: 'Passwords don’t match.',
+      generico: (detalle: string) => `Could not update the password: ${detalle}`,
+    },
+  },
+
   meses: [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',

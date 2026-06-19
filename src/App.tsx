@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import RutaProtegida from './components/RutaProtegida'
 import Analisis from './pages/Analisis'
 import BalanceGeneral from './pages/BalanceGeneral'
+import CambiarPassword from './pages/CambiarPassword'
 import Cargas from './pages/Cargas'
 import Consolidado from './pages/Consolidado'
 import EstadoResultados from './pages/EstadoResultados'
@@ -14,6 +15,8 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route element={<RutaProtegida />}>
+        {/* Cambio de contraseña obligatorio: protegida pero fuera del Layout */}
+        <Route path="/cambiar-password" element={<CambiarPassword />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/finanzas/cargas" replace />} />
 

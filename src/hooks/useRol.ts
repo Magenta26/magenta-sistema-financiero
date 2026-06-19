@@ -4,7 +4,12 @@ import { useAuth } from './useAuth'
 
 export type Rol = 'admin' | 'contadora'
 
-/** Rol del usuario actual (de la tabla `perfiles`). null si no tiene perfil. */
+interface Perfil {
+  rol: Rol | null
+  debeCambiarPassword: boolean
+}
+
+/** Perfil del usuario actual (rol + flag de cambio de contraseña). */
 export function useRol() {
   const { sesion } = useAuth()
   const userId = sesion?.user.id
@@ -12,17 +17,25 @@ export function useRol() {
   const query = useQuery({
     queryKey: ['perfil', 'rol', userId],
     enabled: !!userId,
-    queryFn: async () => {
+    queryFn: async (): Promise<Perfil> => {
       const { data, error } = await supabase
         .from('perfiles')
-        .select('rol')
+        .select('rol, debe_cambiar_password')
         .eq('user_id', userId!)
         .maybeSingle()
       if (error) throw new Error(error.message)
-      return (data?.rol ?? null) as Rol | null
+      return {
+        rol: (data?.rol ?? null) as Rol | null,
+        debeCambiarPassword: data?.debe_cambiar_password === true,
+      }
     },
   })
 
-  const rol = query.data ?? null
-  return { rol, esEditor: rol === 'admin' || rol === 'contadora', ...query }
+  const rol = query.data?.rol ?? null
+  return {
+    rol,
+    esEditor: rol === 'admin' || rol === 'contadora',
+    debeCambiarPassword: query.data?.debeCambiarPassword ?? false,
+    ...query,
+  }
 }

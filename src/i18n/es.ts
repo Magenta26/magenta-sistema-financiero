@@ -49,6 +49,23 @@ export const es = {
     },
   },
 
+  cambiarPassword: {
+    titulo: 'Cambia tu contraseña',
+    subtitulo: 'Por seguridad, define una contraseña nueva antes de continuar.',
+    nueva: 'Nueva contraseña',
+    confirmar: 'Confirmar contraseña',
+    regla: 'Mínimo 8 caracteres y distinta a la contraseña temporal.',
+    guardar: 'Guardar contraseña',
+    guardando: 'Guardando…',
+    exito: 'Contraseña actualizada.',
+    errores: {
+      corta: 'La contraseña debe tener al menos 8 caracteres.',
+      temporal: 'No puedes reutilizar la contraseña temporal.',
+      noCoincide: 'Las contraseñas no coinciden.',
+      generico: (detalle: string) => `No se pudo actualizar la contraseña: ${detalle}`,
+    },
+  },
+
   meses: [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
