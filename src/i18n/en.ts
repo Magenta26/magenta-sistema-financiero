@@ -349,6 +349,7 @@ export const en: Diccionario = {
     drillTotalMensual: 'Year to Date',
     drillTotalRango: 'Range Total',
     drillParticipacion: 'Share',
+    drillParticipacionNota: '% of period revenue',
     lectura: {
       sustantivo: { mensual: 'month', trimestral: 'quarter', anual: 'year' },
       sustantivoPlural: { mensual: 'months', trimestral: 'quarters', anual: 'years' },

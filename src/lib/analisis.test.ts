@@ -5,8 +5,10 @@ import {
   construirPeriodos,
   cuentasDepreciacionAmortizacion,
   derivadosPeriodo,
+  ingresosDelPeriodo,
   lecturaDelPeriodo,
   lineasTornado,
+  participacionSobreIngresos,
   topVariaciones,
 } from './analisis'
 import type { ErDetalleFila, ErRubroFila } from '../types/informes'
@@ -226,5 +228,38 @@ describe('lineasTornado', () => {
     const costoPer = lineas.find((l) => l.clave === 'COSTO_PER')!
     expect(Object.is(costoPer.x, -0)).toBe(false)
     expect(costoPer.x).toBe(0)
+  })
+})
+
+describe('participación (análisis vertical sobre ingresos del período)', () => {
+  const modelo = construirModeloAnalisis(DETALLE, RUBROS, 'mensual')
+
+  it('la base es el total de ingresos del período seleccionado', () => {
+    expect(ingresosDelPeriodo(modelo, '2026-01')).toBe(1000)
+    expect(ingresosDelPeriodo(modelo, '2026-02')).toBe(1200)
+  })
+
+  it('ingresos operacionales = 100% sobre sí mismos', () => {
+    const ene = ingresosDelPeriodo(modelo, '2026-01')
+    expect(participacionSobreIngresos(modelo.valores.get('2026-01')!.rubros.get('ING_OP')!, ene)).toBe(100)
+  })
+
+  it('RECALCULA al cambiar el período (no es estático)', () => {
+    // COSTO_MP: Enero 400/1000 = 40% ; Febrero 500/1200 = 41,67%
+    const costoEne = participacionSobreIngresos(
+      modelo.valores.get('2026-01')!.rubros.get('COSTO_MP')!,
+      ingresosDelPeriodo(modelo, '2026-01')
+    )
+    const costoFeb = participacionSobreIngresos(
+      modelo.valores.get('2026-02')!.rubros.get('COSTO_MP')!,
+      ingresosDelPeriodo(modelo, '2026-02')
+    )
+    expect(costoEne).toBe(40)
+    expect(costoFeb).toBeCloseTo(41.6667, 3)
+    expect(costoEne).not.toBeCloseTo(costoFeb, 3) // cambia con el período
+  })
+
+  it('base en cero → 0 (sin dividir por cero)', () => {
+    expect(participacionSobreIngresos(500, 0)).toBe(0)
   })
 })

@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import type { ModeloAnalisis } from '../../lib/analisis'
-import { moneda } from '../../lib/formato'
+import { ingresosDelPeriodo, participacionSobreIngresos } from '../../lib/analisis'
+import { moneda, porcentaje } from '../../lib/formato'
 import { nombreCuenta } from '../../lib/nombreCuenta'
 import type { MapaTraducciones } from '../../lib/nombreCuenta'
 import type { MovimientoResumen } from '../../types/catalogo'
@@ -14,12 +15,12 @@ interface FilaDrill {
   sinTraducir: boolean
   valorPeriodo: number
   total: number
-  /** % de participación dentro de su padre (sobre valores absolutos del período). */
+  /** % common-size: valor del período de la fila ÷ total ingresos del período. */
   participacion: number
   expandible: boolean
 }
 
-function BarraParticipacion({ porcentaje: pct }: { porcentaje: number }) {
+function BarraParticipacion({ pct }: { pct: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-200">
@@ -28,8 +29,8 @@ function BarraParticipacion({ porcentaje: pct }: { porcentaje: number }) {
           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
         />
       </div>
-      <span className="w-12 text-right text-xs tabular-nums text-tinta-suave">
-        {pct.toFixed(1).replace('.', ',')} %
+      <span className="w-14 text-right text-xs tabular-nums text-tinta-suave">
+        {porcentaje(pct)}
       </span>
     </div>
   )
@@ -104,10 +105,8 @@ export default function DrillDown({
     if (!vp) return resultado
 
     const rubros = [...modelo.rubroInfo.entries()].sort((a, b) => a[1].orden - b[1].orden)
-    const totalRubros = rubros.reduce(
-      (acc, [codigo]) => acc + Math.abs(vp.rubros.get(codigo) ?? 0),
-      0
-    )
+    // Base del análisis vertical: total ingresos del período seleccionado.
+    const ingresosPeriodo = ingresosDelPeriodo(modelo, clave)
 
     // Total del rango por rubro y por cuenta
     const totalRubro = (codigo: string) =>
@@ -134,15 +133,11 @@ export default function DrillDown({
         sinTraducir: false,
         valorPeriodo: valorRubro,
         total: totalRubro(codigo),
-        participacion: totalRubros === 0 ? 0 : (Math.abs(valorRubro) / totalRubros) * 100,
+        participacion: participacionSobreIngresos(valorRubro, ingresosPeriodo),
         expandible: cuentasDelRubro.length > 0,
       })
       if (!rubrosAbiertos.has(codigo)) continue
 
-      const totalCuentas = cuentasDelRubro.reduce(
-        (acc, [cuenta]) => acc + Math.abs(vp.cuentas.get(cuenta) ?? 0),
-        0
-      )
       for (const [cuenta, infoCuenta] of cuentasDelRubro) {
         const valorCuenta = vp.cuentas.get(cuenta) ?? 0
         const auxiliares = auxiliaresDe(cuenta, infoCuenta.naturaleza)
@@ -157,13 +152,12 @@ export default function DrillDown({
           sinTraducir: nc.sinTraducir,
           valorPeriodo: valorCuenta,
           total: totalCuenta(cuenta),
-          participacion: totalCuentas === 0 ? 0 : (Math.abs(valorCuenta) / totalCuentas) * 100,
+          participacion: participacionSobreIngresos(valorCuenta, ingresosPeriodo),
           expandible: tieneAuxiliares,
         })
         if (!tieneAuxiliares || !cuentasAbiertas.has(claveCuenta)) continue
 
         const listaAux = [...auxiliares.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-        const totalAux = listaAux.reduce((acc, [, a]) => acc + Math.abs(a.valorPeriodo), 0)
         for (const [codigoAux, aux] of listaAux) {
           const na = nombreCuenta(traducciones, codigoAux, aux.nombre)
           resultado.push({
@@ -173,7 +167,7 @@ export default function DrillDown({
             sinTraducir: na.sinTraducir,
             valorPeriodo: aux.valorPeriodo,
             total: aux.total,
-            participacion: totalAux === 0 ? 0 : (Math.abs(aux.valorPeriodo) / totalAux) * 100,
+            participacion: participacionSobreIngresos(aux.valorPeriodo, ingresosPeriodo),
             expandible: false,
           })
         }
@@ -196,7 +190,10 @@ export default function DrillDown({
             <th className="px-4 py-2.5 font-semibold">{t.analisis.drillEncabezado}</th>
             <th className="px-4 py-2.5 text-right font-semibold">{etiquetaPeriodo}</th>
             <th className="px-4 py-2.5 text-right font-semibold">{etiquetaTotal}</th>
-            <th className="px-4 py-2.5 font-semibold">{t.analisis.drillParticipacion}</th>
+            <th className="px-4 py-2.5 font-semibold" title={t.analisis.drillParticipacionNota}>
+              {t.analisis.drillParticipacion}
+              <span className="ml-1 font-normal text-tinta-suave">· {t.analisis.drillParticipacionNota}</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -242,7 +239,7 @@ export default function DrillDown({
                     {moneda(fila.total)}
                   </td>
                   <td className="px-4 py-2">
-                    <BarraParticipacion porcentaje={fila.participacion} />
+                    <BarraParticipacion pct={fila.participacion} />
                   </td>
                 </tr>
               </Fragment>

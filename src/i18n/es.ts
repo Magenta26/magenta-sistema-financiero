@@ -353,6 +353,7 @@ export const es = {
     drillTotalMensual: 'Acumulado año',
     drillTotalRango: 'Total del rango',
     drillParticipacion: 'Participación',
+    drillParticipacionNota: '% sobre ingresos del período',
     lectura: {
       sustantivo: { mensual: 'mes', trimestral: 'trimestre', anual: 'año' },
       sustantivoPlural: { mensual: 'meses', trimestral: 'trimestres', anual: 'años' },

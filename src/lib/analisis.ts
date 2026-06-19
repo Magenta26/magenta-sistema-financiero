@@ -242,6 +242,22 @@ export function derivadosPeriodo(
   }
 }
 
+// ---------- Participación (análisis vertical / common-size) ----------
+
+/** Total de ingresos operacionales del período (base del análisis vertical). */
+export function ingresosDelPeriodo(modelo: ModeloAnalisis, clave: string): number {
+  return modelo.valores.get(clave)?.rubros.get('ING_OP') ?? 0
+}
+
+/**
+ * Participación common-size: valor de una línea ÷ total de ingresos del MISMO
+ * período, en %. Reacciona al período porque la base se toma de ese período.
+ * 0 si no hay ingresos (evita dividir por cero).
+ */
+export function participacionSobreIngresos(valorPeriodo: number, ingresosPeriodo: number): number {
+  return ingresosPeriodo === 0 ? 0 : (valorPeriodo / ingresosPeriodo) * 100
+}
+
 // ---------- KPIs ----------
 
 export interface KpiAnalisis {
