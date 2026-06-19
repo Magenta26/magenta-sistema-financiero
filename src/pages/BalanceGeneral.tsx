@@ -7,7 +7,10 @@ import { contable } from '../lib/formato'
 import { nombreMes } from '../types/balance'
 import type { ModoBg } from '../types/informes'
 import SeccionBalance from '../components/informes/SeccionBalance'
+import SelectorAnio from '../components/informes/SelectorAnio'
 import { useTraducciones } from '../hooks/useTraducciones'
+import { usePeriodoActual } from '../hooks/usePeriodoActual'
+import { aniosConDatos, anioPorDefecto } from '../lib/anios'
 import { useTranslation } from '../hooks/useTranslation'
 
 const MODOS: ModoBg[] = ['saldos', 'variacion']
@@ -16,14 +19,17 @@ export default function BalanceGeneral() {
   const { t } = useTranslation()
   const bg = useBg()
   const rubros = useErRubros()
+  const periodoActual = usePeriodoActual()
   const traducciones = useTraducciones()
   const trad = traducciones.data ?? new Map()
   const [modo, setModo] = useState<ModoBg>('saldos')
+  const [anioElegido, setAnioElegido] = useState<number | null>(null)
 
-  const anio = useMemo(
-    () => (bg.data ?? []).reduce((max, f) => Math.max(max, f.anio), new Date().getFullYear()),
-    [bg.data]
-  )
+  // Años con datos (de v_bg) y año mostrado: elección del usuario, si no el del
+  // periodo_actual, si no el más reciente.
+  const anios = useMemo(() => aniosConDatos(bg.data ?? []), [bg.data])
+  const anio =
+    anioPorDefecto(anioElegido, anios, periodoActual.data?.anio ?? null) ?? new Date().getFullYear()
 
   const modelo = useMemo(() => {
     if (!bg.data || !rubros.data) return null
@@ -48,7 +54,8 @@ export default function BalanceGeneral() {
             {esVariacion ? t.bg.descripcionVariacion : t.bg.descripcionSaldos}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <SelectorAnio anios={anios} anioSel={anio} onCambiar={setAnioElegido} />
           <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {MODOS.map((m) => (
               <button

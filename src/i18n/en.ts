@@ -9,6 +9,7 @@ export const en: Diccionario = {
     cargando: 'Loading…',
     exportarExcel: 'Export to Excel',
     cancelar: 'Cancel',
+    anio: 'Year',
     totalAnio: 'Full Year',
     linea: 'Line Item',
     cifrasEnCop: 'Amounts in Colombian Pesos (COP).',

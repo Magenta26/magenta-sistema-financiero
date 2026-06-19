@@ -8,6 +8,7 @@ export const es = {
     cargando: 'Cargando…',
     exportarExcel: 'Exportar a Excel',
     cancelar: 'Cancelar',
+    anio: 'Año',
     totalAnio: 'Total año',
     linea: 'Línea',
     cifrasEnCop: 'Cifras en pesos colombianos (COP).',

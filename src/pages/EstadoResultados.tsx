@@ -14,11 +14,14 @@ import { nombreMes } from '../types/balance'
 import type { ModoEr } from '../types/informes'
 import CeldaValor from '../components/informes/CeldaValor'
 import NotasFinancieras from '../components/informes/NotasFinancieras'
+import SelectorAnio from '../components/informes/SelectorAnio'
 import { useNotasAnio } from '../hooks/useNotas'
 import { useVentasEfectivo } from '../hooks/useVentasEfectivo'
 import { useTraducciones } from '../hooks/useTraducciones'
 import { useRol } from '../hooks/useRol'
 import { useAuth } from '../hooks/useAuth'
+import { usePeriodoActual } from '../hooks/usePeriodoActual'
+import { aniosConDatos, anioPorDefecto } from '../lib/anios'
 import { nombreCuenta } from '../lib/nombreCuenta'
 import Toast from '../components/Toast'
 import type { DatosToast } from '../components/Toast'
@@ -100,8 +103,10 @@ export default function EstadoResultados() {
   const detalle = useErDetalle()
   const rubros = useErRubros()
   const chequeos = useErChequeos()
+  const periodoActual = usePeriodoActual()
 
   const [modo, setModo] = useState<ModoEr>('absolutos')
+  const [anioElegido, setAnioElegido] = useState<number | null>(null)
   const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<DatosToast | null>(null)
   const temporizadorToast = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -112,10 +117,11 @@ export default function EstadoResultados() {
     temporizadorToast.current = setTimeout(() => setToast(null), 4000)
   }
 
-  const anio = useMemo(
-    () => (rubros.data ?? []).reduce((max, r) => Math.max(max, r.anio), new Date().getFullYear()),
-    [rubros.data]
-  )
+  // Años con datos (de las vistas del ER) y año mostrado: elección del usuario,
+  // si no el del periodo_actual, si no el más reciente.
+  const anios = useMemo(() => aniosConDatos(rubros.data ?? []), [rubros.data])
+  const anio =
+    anioPorDefecto(anioElegido, anios, periodoActual.data?.anio ?? null) ?? new Date().getFullYear()
 
   // Notas financieras del año: se muestran abajo y viajan en el export del ER.
   const notas = useNotasAnio(anio)
@@ -188,7 +194,8 @@ export default function EstadoResultados() {
           <h1 className="text-2xl font-bold text-brand-900">{t.er.titulo(anio)}</h1>
           <p className="mt-1 text-sm text-tinta-suave">{t.er.descripcion}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <SelectorAnio anios={anios} anioSel={anio} onCambiar={setAnioElegido} />
           <div className="flex rounded-lg border border-borde bg-white p-0.5">
             {MODOS.map((m) => (
               <button
