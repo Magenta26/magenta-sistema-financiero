@@ -8,7 +8,7 @@ import Cargas from './pages/Cargas'
 import Consolidado from './pages/Consolidado'
 import EstadoResultados from './pages/EstadoResultados'
 import Login from './pages/Login'
-import Nomina from './pages/Nomina'
+import Natillera from './pages/Natillera'
 
 export default function App() {
   return (
@@ -28,8 +28,9 @@ export default function App() {
           <Route path="/finanzas/balance-general" element={<BalanceGeneral />} />
           <Route path="/finanzas/analisis" element={<Analisis />} />
 
-          {/* Módulo Nómina (placeholder) */}
-          <Route path="/nomina" element={<Nomina />} />
+          {/* Módulo Nómina */}
+          <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
+          <Route path="/nomina/natillera" element={<Natillera />} />
 
           {/* Redirects de las rutas viejas */}
           <Route path="/cargas" element={<Navigate to="/finanzas/cargas" replace />} />

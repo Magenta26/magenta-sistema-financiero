@@ -428,5 +428,99 @@ export const en: Diccionario = {
     detalle:
       'This module is in the works. Once available, payroll runs, statutory contributions and workforce reports will live here.',
     proximamente: 'Coming Soon',
+    natillera: 'Savings Fund',
+  },
+
+  natillera: {
+    titulo: 'Employee Savings Fund',
+    descripcion:
+      'Employee savings fund: monthly contributions, total saved and withdrawals. An independent record, separate from the accounting.',
+    cargando: 'Loading the savings fund…',
+    error: (detalle: string) => `Could not load the savings fund: ${detalle}`,
+    sinEmpleados: 'No employees in the savings fund yet. Add the first one.',
+
+    // Employees
+    empleadosTitulo: 'Employees',
+    agregarEmpleado: 'Add employee',
+    editar: 'Edit',
+    editarAria: (nombre: string) => `Edit ${nombre}`,
+    nombre: 'Name',
+    nombrePlaceholder: 'Employee name',
+    cuotaMensual: 'Monthly contribution',
+    fechaIngreso: 'Join date',
+    activo: 'Active',
+    inactivo: 'Inactive',
+    activos: 'Active',
+    marcarInactivo: 'Mark inactive',
+    marcarActivo: 'Reactivate',
+    nuevoEmpleado: 'New employee',
+    editarEmpleadoTitulo: 'Edit employee',
+    empleadoGuardado: 'Employee saved.',
+    errorEmpleado: (detalle: string) => `Could not save the employee: ${detalle}`,
+    errorNombre: 'Enter the employee name.',
+    guardar: 'Save',
+    guardando: 'Saving…',
+
+    // Contributions table
+    aportesTitulo: 'Monthly contributions',
+    columnaEmpleado: 'Employee',
+    columnaCuota: 'Contribution',
+    columnaTotal: 'Total saved',
+    totalMes: 'Month total',
+    totalGeneral: 'Grand total',
+    aporteAria: (nombre: string, mes: string) => `${nombre}'s contribution for ${mes}`,
+    aporteGuardado: 'Contribution saved.',
+    errorAporte: (detalle: string) => `Could not save the contribution: ${detalle}`,
+    notaPie:
+      'Total saved is computed automatically by summing the year’s contributions; cells are pre-filled with the contribution but remain editable (a month may be lower or 0). Amounts in COP.',
+
+    // Withdrawn
+    retiradosTitulo: 'Withdrawn',
+    sinRetirados: 'No employees withdrew in this year.',
+    columnaFechaRetiro: 'Withdrawal date',
+    columnaMontoRetirado: 'Amount withdrawn',
+    columnaEstado: 'Status',
+    estados: { pendiente: 'Pending', pagado: 'Paid' } as Record<string, string>,
+    verComprobante: 'View receipt',
+    verComprobanteAria: (nombre: string) => `View ${nombre}'s withdrawal receipt`,
+    registrarRetiro: 'Record withdrawal',
+    registrarRetiroAria: (nombre: string) => `Record ${nombre}'s withdrawal`,
+    marcarPagado: 'Mark paid',
+
+    // Withdrawal modal
+    modalRetiroTitulo: (nombre: string) => `Record withdrawal — ${nombre}`,
+    fechaRetiro: 'Withdrawal date',
+    motivo: 'Reason',
+    motivoPlaceholder: 'Reason for the withdrawal (optional)',
+    totalAhorrado: 'Total saved',
+    avisoInactivo: 'Recording the withdrawal will mark the employee as inactive.',
+    confirmarRetiro: 'Record withdrawal',
+    retiroRegistrado: 'Withdrawal recorded.',
+    errorRetiro: (detalle: string) => `Could not record the withdrawal: ${detalle}`,
+
+    // Mark paid
+    modalPagoTitulo: 'Mark withdrawal as paid',
+    fechaPago: 'Payment date',
+    confirmarPago: 'Confirm payment',
+    pagoRegistrado: 'Payment recorded.',
+    errorPago: (detalle: string) => `Could not record the payment: ${detalle}`,
+
+    // Printable receipt
+    comprobante: {
+      empresa: 'Magenta Farms S.A.S. — Tax ID (NIT) 901.479.899-9',
+      titulo: 'Voluntary Withdrawal Receipt — Savings Fund',
+      numero: 'Receipt No.',
+      fecha: 'Date',
+      empleado: 'Employee',
+      montoNumeros: 'Total saved',
+      montoLetras: 'In words:',
+      motivo: 'Reason',
+      sinMotivo: '—',
+      estado: 'Status',
+      firmaEmpleado: 'Employee',
+      firmaRepresentante: 'Representative — Magenta Farms S.A.S.',
+      imprimir: 'Print',
+      cerrar: 'Close',
+    },
   },
 }

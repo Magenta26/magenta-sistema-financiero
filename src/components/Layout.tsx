@@ -52,9 +52,8 @@ const GRUPOS: GrupoNav[] = [
     icono: '👥',
     prefijo: '/nomina',
     abiertoPorDefecto: false,
-    badge: (t) => t.nav.proximamente,
     items: [
-      { ruta: '/nomina', etiqueta: (t) => t.nav.enConstruccion, icono: '🚧', deshabilitado: true },
+      { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷' },
     ],
   },
 ]

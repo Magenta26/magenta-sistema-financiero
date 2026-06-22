@@ -100,6 +100,13 @@ export function porcentaje(valor: number | null): string {
   return valor < 0 ? `(${texto}${sufijo})` : `${texto}${sufijo}`
 }
 
+/** Fecha sin hora: ES "22 jun 2026" · EN "Jun 22, 2026". */
+export function fecha(iso: string): string {
+  // Una fecha 'YYYY-MM-DD' se ancla a mediodía para evitar corrimiento por zona horaria.
+  const d = iso.length === 10 ? new Date(`${iso}T12:00:00`) : new Date(iso)
+  return d.toLocaleDateString(localeActual(), { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 export function fechaHora(iso: string): string {
   return new Date(iso).toLocaleString(localeActual(), {
     year: 'numeric',

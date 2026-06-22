@@ -432,6 +432,100 @@ export const es = {
     detalle:
       'Este módulo está en preparación. Cuando esté disponible, aquí se gestionarán las liquidaciones, los aportes y los reportes de personal.',
     proximamente: 'Próximamente',
+    natillera: 'Natillera',
+  },
+
+  natillera: {
+    titulo: 'Natillera',
+    descripcion:
+      'Caja de ahorro de los empleados: aportes mensuales, total ahorrado y retiros. Registro independiente de la contabilidad.',
+    cargando: 'Cargando la natillera…',
+    error: (detalle: string) => `Error consultando la natillera: ${detalle}`,
+    sinEmpleados: 'Aún no hay empleados en la natillera. Agrega el primero.',
+
+    // Empleados
+    empleadosTitulo: 'Empleados',
+    agregarEmpleado: 'Agregar empleado',
+    editar: 'Editar',
+    editarAria: (nombre: string) => `Editar a ${nombre}`,
+    nombre: 'Nombre',
+    nombrePlaceholder: 'Nombre del empleado',
+    cuotaMensual: 'Cuota mensual',
+    fechaIngreso: 'Fecha de ingreso',
+    activo: 'Activo',
+    inactivo: 'Inactivo',
+    activos: 'Activos',
+    marcarInactivo: 'Marcar inactivo',
+    marcarActivo: 'Reactivar',
+    nuevoEmpleado: 'Nuevo empleado',
+    editarEmpleadoTitulo: 'Editar empleado',
+    empleadoGuardado: 'Empleado guardado.',
+    errorEmpleado: (detalle: string) => `No se pudo guardar el empleado: ${detalle}`,
+    errorNombre: 'Ingresa el nombre del empleado.',
+    guardar: 'Guardar',
+    guardando: 'Guardando…',
+
+    // Tabla de aportes
+    aportesTitulo: 'Aportes mensuales',
+    columnaEmpleado: 'Empleado',
+    columnaCuota: 'Cuota',
+    columnaTotal: 'Total ahorrado',
+    totalMes: 'Total del mes',
+    totalGeneral: 'Total general',
+    aporteAria: (nombre: string, mes: string) => `Aporte de ${nombre} en ${mes}`,
+    aporteGuardado: 'Aporte guardado.',
+    errorAporte: (detalle: string) => `No se pudo guardar el aporte: ${detalle}`,
+    notaPie:
+      'El total ahorrado se calcula automáticamente sumando los aportes del año; las celdas se pre-llenan con la cuota pero son editables (un mes puede ser menor o 0). Cifras en COP.',
+
+    // Retirados
+    retiradosTitulo: 'Retirados',
+    sinRetirados: 'No hay empleados retirados en este año.',
+    columnaFechaRetiro: 'Fecha de retiro',
+    columnaMontoRetirado: 'Total retirado',
+    columnaEstado: 'Estado',
+    estados: { pendiente: 'Pendiente', pagado: 'Pagado' } as Record<string, string>,
+    verComprobante: 'Ver comprobante',
+    verComprobanteAria: (nombre: string) => `Ver el comprobante de retiro de ${nombre}`,
+    registrarRetiro: 'Registrar retiro',
+    registrarRetiroAria: (nombre: string) => `Registrar el retiro de ${nombre}`,
+    marcarPagado: 'Marcar pagado',
+
+    // Modal de retiro
+    modalRetiroTitulo: (nombre: string) => `Registrar retiro — ${nombre}`,
+    fechaRetiro: 'Fecha de retiro',
+    motivo: 'Motivo',
+    motivoPlaceholder: 'Motivo del retiro (opcional)',
+    totalAhorrado: 'Total ahorrado',
+    avisoInactivo: 'Al registrar el retiro, el empleado quedará marcado como inactivo.',
+    confirmarRetiro: 'Registrar retiro',
+    retiroRegistrado: 'Retiro registrado.',
+    errorRetiro: (detalle: string) => `No se pudo registrar el retiro: ${detalle}`,
+
+    // Marcar pagado
+    modalPagoTitulo: 'Marcar retiro como pagado',
+    fechaPago: 'Fecha de pago',
+    confirmarPago: 'Confirmar pago',
+    pagoRegistrado: 'Pago registrado.',
+    errorPago: (detalle: string) => `No se pudo registrar el pago: ${detalle}`,
+
+    // Comprobante imprimible
+    comprobante: {
+      empresa: 'Magenta Farms S.A.S. — NIT 901.479.899-9',
+      titulo: 'Comprobante de Retiro Voluntario — Natillera',
+      numero: 'Comprobante N.º',
+      fecha: 'Fecha',
+      empleado: 'Empleado',
+      montoNumeros: 'Total ahorrado',
+      montoLetras: 'Son:',
+      motivo: 'Motivo',
+      sinMotivo: '—',
+      estado: 'Estado',
+      firmaEmpleado: 'Empleado',
+      firmaRepresentante: 'Representante — Magenta Farms S.A.S.',
+      imprimir: 'Imprimir',
+      cerrar: 'Cerrar',
+    },
   },
 }
 

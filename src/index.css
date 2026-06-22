@@ -32,3 +32,31 @@ body,
 body {
   @apply bg-fondo text-tinta antialiased;
 }
+
+/*
+ * Impresión del comprobante de retiro (Natillera).
+ * Oculta toda la app (sidebar, menús, botones) y deja solo el comprobante,
+ * para que Ctrl+P salga limpio. El comprobante se marca con id="comprobante-print".
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #comprobante-print,
+  #comprobante-print * {
+    visibility: visible;
+  }
+  #comprobante-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+  .no-imprimir {
+    display: none !important;
+  }
+}
