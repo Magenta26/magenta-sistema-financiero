@@ -6,11 +6,15 @@
  * rosado del colibrí y verde de la hoja para los estados de éxito.
  */
 @theme {
+  /* Tipografía del sistema (Google Fonts cargada en index.html). */
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+
   /* Marca */
   --color-brand-900: #501040; /* ciruela profundo: títulos, alta jerarquía */
   --color-brand-700: #7a1b5c; /* magenta principal: botones, links, activos, focos */
   --color-brand-500: #a03080; /* magenta medio: hovers, acentos, gráficos */
   --color-brand-200: #d090b0; /* rosado colibrí: badges, fills suaves, seleccionados */
+  --color-brand-100: #f5e2ee; /* tinte magenta para ítem activo / seleccionado */
   --color-brand-50: #faf2f7; /* rosado casi blanco: hover de filas, paneles destacados */
 
   /* Neutros */
@@ -31,6 +35,23 @@ body,
 
 body {
   @apply bg-fondo text-tinta antialiased;
+  font-family: var(--font-sans);
+}
+
+/* Animación de entrada del panel de detalle al conmutar de sección (ficha de empleado). */
+@keyframes sectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.seccion-entra {
+  animation: sectionIn 0.22s ease;
 }
 
 /*

@@ -633,6 +633,32 @@ export const en: Diccionario = {
       irA: 'Go to Savings Fund →',
     },
 
+    ficha: {
+      secciones: 'Sections',
+      prueba: 'TEST',
+      pronto: 'SOON',
+      modulo: 'Payroll',
+      irNatillera: 'Go to Savings Fund',
+      metricas: {
+        salario: 'Monthly salary',
+        contrato: 'Contract type',
+        jornada: 'Work schedule',
+        eps: 'Health provider (EPS)',
+      },
+      subtitulos: {
+        basica: 'Personal and health information',
+        contrato: 'Working conditions and statutory benefits',
+        natillera: "Team's collaborative savings",
+        beneficios: 'Active additional benefits',
+      },
+      auxilioTransporte: 'Transport allowance',
+      aplica: 'Applies',
+      noAplica: 'Does not apply',
+      natilleraVaciaTitulo: 'No active enrollment',
+      natilleraVaciaTexto: 'This employee is not linked to the team savings fund.',
+      beneficioLentesDesc: 'Vision care benefit',
+    },
+
     foto: {
       subir: 'Upload photo',
       cambiar: 'Change photo',

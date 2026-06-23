@@ -637,6 +637,32 @@ export const es = {
       irA: 'Ir a Natillera →',
     },
 
+    ficha: {
+      secciones: 'Secciones',
+      prueba: 'PRUEBA',
+      pronto: 'PRONTO',
+      modulo: 'Nómina',
+      irNatillera: 'Ir a Natillera',
+      metricas: {
+        salario: 'Salario mensual',
+        contrato: 'Tipo de contrato',
+        jornada: 'Jornada laboral',
+        eps: 'EPS',
+      },
+      subtitulos: {
+        basica: 'Datos personales y de salud',
+        contrato: 'Condiciones laborales y beneficios legales',
+        natillera: 'Ahorro colaborativo del equipo',
+        beneficios: 'Beneficios adicionales vigentes',
+      },
+      auxilioTransporte: 'Auxilio de transporte',
+      aplica: 'Aplica',
+      noAplica: 'No aplica',
+      natilleraVaciaTitulo: 'Sin vinculación activa',
+      natilleraVaciaTexto: 'Este empleado no está vinculado a la natillera del equipo.',
+      beneficioLentesDesc: 'Beneficio de salud visual',
+    },
+
     foto: {
       subir: 'Subir foto',
       cambiar: 'Cambiar foto',
