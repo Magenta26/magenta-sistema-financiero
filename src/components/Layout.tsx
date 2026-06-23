@@ -53,6 +53,7 @@ const GRUPOS: GrupoNav[] = [
     prefijo: '/nomina',
     abiertoPorDefecto: false,
     items: [
+      { ruta: '/nomina/empleados', etiqueta: (t) => t.nomina.empleados, icono: '👤' },
       { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷' },
     ],
   },

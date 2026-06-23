@@ -6,6 +6,8 @@
 
 export interface EmpleadoNatillera {
   id: string
+  /** Vínculo con la ficha central `empleados` (la persona); null si no enlazado. */
+  empleado_id: string | null
   /** Código único del empleado (autosugerido EMP-### al crear, editable). */
   codigo: string | null
   nombre: string
