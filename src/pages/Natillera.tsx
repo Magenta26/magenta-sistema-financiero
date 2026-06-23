@@ -44,7 +44,7 @@ export default function Natillera() {
 
   // Modales
   const [modalEmpleado, setModalEmpleado] = useState<{ empleado: EmpleadoNatillera | null } | null>(null)
-  const [novedadPara, setNovedadPara] = useState<EmpleadoNatillera | null>(null)
+  const [novedadAbierta, setNovedadAbierta] = useState(false)
   const [panelPara, setPanelPara] = useState<EmpleadoNatillera | null>(null)
   const [pagoPara, setPagoPara] = useState<RetiroNatillera | null>(null)
   const [comprobante, setComprobante] = useState<RetiroNatillera | null>(null)
@@ -259,7 +259,7 @@ export default function Natillera() {
     },
     onError: (e) => avisar({ tipo: 'error', mensaje: t.natillera.novedades.error(e.message) }),
     onSuccess: (retiro) => {
-      setNovedadPara(null)
+      setNovedadAbierta(false)
       if (retiro) {
         avisar({ tipo: 'exito', mensaje: t.natillera.retiroRegistrado })
         setComprobante(retiro)
@@ -332,13 +332,23 @@ export default function Natillera() {
         <div className="flex flex-wrap items-center gap-3">
           <SelectorAnio anios={anios} anioSel={anio} onCambiar={setAnioElegido} />
           {esEditor && (
-            <button
-              type="button"
-              onClick={() => setModalEmpleado({ empleado: null })}
-              className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-brand-900"
-            >
-              + {t.natillera.agregarEmpleado}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setNovedadAbierta(true)}
+                disabled={activos.length === 0}
+                className="rounded-lg border border-brand-700 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors duration-150 hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                + {t.natillera.novedades.registrar}
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalEmpleado({ empleado: null })}
+                className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-brand-900"
+              >
+                + {t.natillera.agregarEmpleado}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -365,7 +375,6 @@ export default function Natillera() {
                   empleados={activos}
                   reportes={reportes}
                   esEditor={esEditor}
-                  onRegistrarNovedad={(empleado) => setNovedadPara(empleado)}
                   onVerNovedades={(empleado) => setPanelPara(empleado)}
                 />
                 <p className="mt-2 text-xs text-tinta-suave">{t.natillera.notaPie}</p>
@@ -400,15 +409,16 @@ export default function Natillera() {
         />
       )}
 
-      {novedadPara && (
+      {novedadAbierta && (
         <ModalNovedad
-          empleado={novedadPara}
+          empleados={activos}
+          empleadoInicial={null}
+          novedadesPorEmpleado={novedadesPorEmpleado}
           anio={anio}
           mesPorDefecto={mesPorDefectoNovedad}
-          novedades={novedadesPorEmpleado.get(novedadPara.id) ?? []}
           guardando={guardarNovedad.isPending}
-          onConfirmar={(datos) => guardarNovedad.mutate({ empleado: novedadPara, datos })}
-          onCerrar={() => setNovedadPara(null)}
+          onConfirmar={(empleado, datos) => guardarNovedad.mutate({ empleado, datos })}
+          onCerrar={() => setNovedadAbierta(false)}
         />
       )}
 
