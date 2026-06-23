@@ -444,6 +444,10 @@ export const en: Diccionario = {
     agregarEmpleado: 'Add employee',
     editar: 'Edit',
     editarAria: (nombre: string) => `Edit ${nombre}`,
+    codigo: 'Code',
+    codigoPlaceholder: 'EMP-001',
+    errorCodigoRequerido: 'Enter the employee code.',
+    errorCodigoDuplicado: (codigo: string) => `Code ${codigo} is already in use.`,
     nombre: 'Name',
     nombrePlaceholder: 'Employee name',
     cuotaMensual: 'Monthly contribution',
@@ -463,6 +467,7 @@ export const en: Diccionario = {
 
     // Contributions table
     aportesTitulo: 'Monthly contributions',
+    columnaCodigo: 'Code',
     columnaEmpleado: 'Employee',
     columnaCuota: 'Contribution',
     columnaSaldoInicial: 'Opening balance',
@@ -515,6 +520,7 @@ export const en: Diccionario = {
       titulo: 'Voluntary Withdrawal Receipt — Savings Fund',
       numero: 'Receipt No.',
       fecha: 'Date',
+      codigo: 'Code',
       empleado: 'Employee',
       montoNumeros: 'Total saved',
       montoLetras: 'In words:',

@@ -26,8 +26,8 @@ export function useEmpleadosNatillera() {
     queryFn: async (): Promise<EmpleadoNatillera[]> => {
       const { data, error } = await supabase
         .from('natillera_empleados')
-        .select('id, nombre, cuota_mensual, activo, fecha_ingreso, creado_en')
-        .order('nombre', { ascending: true })
+        .select('id, codigo, nombre, cuota_mensual, activo, fecha_ingreso, creado_en')
+        .order('codigo', { ascending: true })
       if (error) throw new Error(error.message)
       return (data ?? []).map((e) => ({
         ...e,

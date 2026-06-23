@@ -7,6 +7,7 @@ import logo from '../../assets/Logo.png'
 interface Props {
   retiro: RetiroNatillera
   nombreEmpleado: string
+  codigoEmpleado: string | null
   onCerrar: () => void
 }
 
@@ -15,7 +16,12 @@ interface Props {
  * el CSS @media print (index.css) oculta el resto de la app para que Ctrl+P /
  * "Imprimir" salgan limpios. Reimprimible desde el registro del retiro.
  */
-export default function ComprobanteRetiro({ retiro, nombreEmpleado, onCerrar }: Props) {
+export default function ComprobanteRetiro({
+  retiro,
+  nombreEmpleado,
+  codigoEmpleado,
+  onCerrar,
+}: Props) {
   const { t, idioma } = useTranslation()
   const c = t.natillera.comprobante
 
@@ -73,6 +79,12 @@ export default function ComprobanteRetiro({ retiro, nombreEmpleado, onCerrar }: 
               <dt className="font-semibold text-tinta-suave">{c.fecha}</dt>
               <dd className="text-right tabular-nums">{fecha(retiro.fecha_retiro)}</dd>
             </div>
+            {codigoEmpleado && (
+              <div className="flex justify-between gap-4 border-b border-dashed border-borde pb-2">
+                <dt className="font-semibold text-tinta-suave">{c.codigo}</dt>
+                <dd className="text-right font-mono">{codigoEmpleado}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-4 border-b border-dashed border-borde pb-2">
               <dt className="font-semibold text-tinta-suave">{c.empleado}</dt>
               <dd className="text-right font-medium">{nombreEmpleado}</dd>

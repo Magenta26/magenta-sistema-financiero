@@ -7,6 +7,7 @@ import {
   totalGeneralEmpleados,
   aniosNatillera,
   anioNatilleraPorDefecto,
+  siguienteCodigoEmpleado,
 } from './natillera'
 import type { AporteNatillera } from '../types/natillera'
 
@@ -97,6 +98,22 @@ describe('aniosNatillera', () => {
 
   it('no duplica el año en curso si ya tiene datos', () => {
     expect(aniosNatillera([{ anio: 2026 }], 2026)).toEqual([2026])
+  })
+})
+
+describe('siguienteCodigoEmpleado', () => {
+  it('sin códigos previos arranca en EMP-001', () => {
+    expect(siguienteCodigoEmpleado([])).toBe('EMP-001')
+    expect(siguienteCodigoEmpleado([null, undefined, ''])).toBe('EMP-001')
+  })
+  it('toma el mayor EMP-### y suma 1', () => {
+    expect(siguienteCodigoEmpleado(['EMP-001', 'EMP-007', 'EMP-003'])).toBe('EMP-008')
+  })
+  it('ignora formatos que no calzan con EMP-###', () => {
+    expect(siguienteCodigoEmpleado(['ABC', 'EMP-002', 'X-9'])).toBe('EMP-003')
+  })
+  it('conserva al menos 3 dígitos pero crece si hace falta', () => {
+    expect(siguienteCodigoEmpleado(['EMP-999'])).toBe('EMP-1000')
   })
 })
 

@@ -6,6 +6,8 @@
 
 export interface EmpleadoNatillera {
   id: string
+  /** Código único del empleado (autosugerido EMP-### al crear, editable). */
+  codigo: string | null
   nombre: string
   cuota_mensual: number
   activo: boolean

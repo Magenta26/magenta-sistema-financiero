@@ -89,7 +89,10 @@ export default function TablaAportes({
       <table className="w-full">
         <thead className="bg-gray-50 text-brand-900">
           <tr>
-            <th className="sticky left-0 z-10 min-w-44 bg-gray-50 px-3 py-2.5 text-left text-xs font-semibold">
+            <th className="sticky left-0 z-10 w-24 bg-gray-50 px-3 py-2.5 text-left text-xs font-semibold">
+              {t.natillera.columnaCodigo}
+            </th>
+            <th className="sticky left-24 z-10 min-w-44 bg-gray-50 px-3 py-2.5 text-left text-xs font-semibold">
               {t.natillera.columnaEmpleado}
             </th>
             <th className="px-2 py-2.5 text-right text-xs font-semibold">{t.natillera.columnaCuota}</th>
@@ -112,7 +115,10 @@ export default function TablaAportes({
             const total = totalAhorradoEmpleado(porMes, saldoInicial)
             return (
               <tr key={emp.id} className="border-t border-borde hover:bg-brand-50">
-                <td className="sticky left-0 z-10 min-w-44 bg-white px-3 py-2 text-xs font-medium text-tinta">
+                <td className="sticky left-0 z-10 w-24 bg-white px-3 py-2 font-mono text-xs text-tinta-suave">
+                  {emp.codigo ?? '—'}
+                </td>
+                <td className="sticky left-24 z-10 min-w-44 bg-white px-3 py-2 text-xs font-medium text-tinta">
                   {emp.nombre}
                 </td>
                 <td className="px-2 py-2 text-right text-xs tabular-nums text-tinta-suave">
@@ -175,7 +181,8 @@ export default function TablaAportes({
           {/* Total del mes (todos los empleados activos). El saldo inicial no es
               un mes: su columna en el pie muestra la suma de saldos iniciales. */}
           <tr className="border-t-2 border-brand-200 bg-brand-50">
-            <td className="sticky left-0 z-10 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-900">
+            <td className="sticky left-0 z-10 w-24 bg-brand-50 px-3 py-2" />
+            <td className="sticky left-24 z-10 min-w-44 bg-brand-50 px-3 py-2 text-xs font-bold text-brand-900">
               {t.natillera.totalMes}
             </td>
             <td className="px-2 py-2" />

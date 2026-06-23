@@ -448,6 +448,10 @@ export const es = {
     agregarEmpleado: 'Agregar empleado',
     editar: 'Editar',
     editarAria: (nombre: string) => `Editar a ${nombre}`,
+    codigo: 'Código',
+    codigoPlaceholder: 'EMP-001',
+    errorCodigoRequerido: 'Ingresa el código del empleado.',
+    errorCodigoDuplicado: (codigo: string) => `El código ${codigo} ya está en uso.`,
     nombre: 'Nombre',
     nombrePlaceholder: 'Nombre del empleado',
     cuotaMensual: 'Cuota mensual',
@@ -467,6 +471,7 @@ export const es = {
 
     // Tabla de aportes
     aportesTitulo: 'Aportes mensuales',
+    columnaCodigo: 'Código',
     columnaEmpleado: 'Empleado',
     columnaCuota: 'Cuota',
     columnaSaldoInicial: 'Saldo inicial',
@@ -519,6 +524,7 @@ export const es = {
       titulo: 'Comprobante de Retiro Voluntario — Natillera',
       numero: 'Comprobante N.º',
       fecha: 'Fecha',
+      codigo: 'Código',
       empleado: 'Empleado',
       montoNumeros: 'Total ahorrado',
       montoLetras: 'Son:',

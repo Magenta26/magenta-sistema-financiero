@@ -74,6 +74,21 @@ export function totalGeneralEmpleados(
 }
 
 /**
+ * Siguiente código de empleado con el patrón EMP-###: toma el mayor número con
+ * ese formato entre los códigos existentes y le suma 1, con relleno a 3 dígitos
+ * (mínimo). Si no hay ninguno con el patrón, arranca en EMP-001. Otros formatos
+ * de código se ignoran para el conteo (no rompen la sugerencia).
+ */
+export function siguienteCodigoEmpleado(codigos: (string | null | undefined)[]): string {
+  let max = 0
+  for (const c of codigos) {
+    const m = /^EMP-(\d+)$/.exec((c ?? '').trim())
+    if (m) max = Math.max(max, Number(m[1]))
+  }
+  return `EMP-${String(max + 1).padStart(3, '0')}`
+}
+
+/**
  * Años disponibles para el selector: los años con aportes registrados MÁS el
  * año en curso (aunque aún no tenga aportes), de mayor a menor, sin repetidos.
  */

@@ -81,6 +81,16 @@ export default function Natillera() {
     for (const e of listaEmpleados) m.set(e.id, e.nombre)
     return m
   }, [listaEmpleados])
+  const codigoPorId = useMemo(() => {
+    const m = new Map<string, string | null>()
+    for (const e of listaEmpleados) m.set(e.id, e.codigo)
+    return m
+  }, [listaEmpleados])
+  // Códigos de todos los empleados (para autosugerir el siguiente y validar unicidad).
+  const codigosExistentes = useMemo(
+    () => listaEmpleados.map((e) => e.codigo ?? '').filter((c) => c !== ''),
+    [listaEmpleados]
+  )
 
   // Índice limitado a empleados activos: los totales del pie cuadran con las filas.
   const indiceActivos = useMemo(() => {
@@ -107,6 +117,7 @@ export default function Natillera() {
         const { error } = await supabase
           .from('natillera_empleados')
           .update({
+            codigo: datos.codigo,
             nombre: datos.nombre,
             cuota_mensual: datos.cuota_mensual,
             fecha_ingreso: datos.fecha_ingreso,
@@ -116,6 +127,7 @@ export default function Natillera() {
         if (error) throw new Error(error.message)
       } else {
         const { error } = await supabase.from('natillera_empleados').insert({
+          codigo: datos.codigo,
           nombre: datos.nombre,
           cuota_mensual: datos.cuota_mensual,
           fecha_ingreso: datos.fecha_ingreso,
@@ -357,6 +369,7 @@ export default function Natillera() {
       {modalEmpleado && (
         <ModalEmpleado
           empleado={modalEmpleado.empleado}
+          codigosExistentes={codigosExistentes}
           guardando={guardarEmpleado.isPending}
           onGuardar={(datos) =>
             guardarEmpleado.mutate({ id: modalEmpleado.empleado?.id ?? null, datos })
@@ -397,6 +410,7 @@ export default function Natillera() {
         <ComprobanteRetiro
           retiro={comprobante}
           nombreEmpleado={nombrePorId.get(comprobante.empleado_id) ?? '—'}
+          codigoEmpleado={codigoPorId.get(comprobante.empleado_id) ?? null}
           onCerrar={() => setComprobante(null)}
         />
       )}

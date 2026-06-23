@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from '../../hooks/useTranslation'
 import { contable, parsearNumero } from '../../lib/formato'
+import { siguienteCodigoEmpleado } from '../../lib/natillera'
 import type { EmpleadoNatillera } from '../../types/natillera'
 
 export interface DatosEmpleado {
+  codigo: string
   nombre: string
   cuota_mensual: number
   fecha_ingreso: string | null
@@ -13,14 +15,26 @@ export interface DatosEmpleado {
 interface Props {
   /** null = nuevo empleado; con valor = edición. */
   empleado: EmpleadoNatillera | null
+  /** Códigos de TODOS los empleados (para autosugerir y validar unicidad). */
+  codigosExistentes: string[]
   guardando: boolean
   onGuardar: (datos: DatosEmpleado) => void
   onCerrar: () => void
 }
 
 /** Modal para crear o editar un empleado de la natillera. */
-export default function ModalEmpleado({ empleado, guardando, onGuardar, onCerrar }: Props) {
+export default function ModalEmpleado({
+  empleado,
+  codigosExistentes,
+  guardando,
+  onGuardar,
+  onCerrar,
+}: Props) {
   const { t } = useTranslation()
+  // Al crear, autosugiere el siguiente EMP-### (editable). Al editar, el actual.
+  const [codigo, setCodigo] = useState(
+    empleado?.codigo ?? siguienteCodigoEmpleado(codigosExistentes)
+  )
   const [nombre, setNombre] = useState(empleado?.nombre ?? '')
   const [cuota, setCuota] = useState(
     empleado && empleado.cuota_mensual !== 0 ? contable(empleado.cuota_mensual) : ''
@@ -28,14 +42,29 @@ export default function ModalEmpleado({ empleado, guardando, onGuardar, onCerrar
   const [fechaIngreso, setFechaIngreso] = useState(empleado?.fecha_ingreso ?? '')
   const [activo, setActivo] = useState(empleado?.activo ?? true)
   const [errorNombre, setErrorNombre] = useState(false)
+  const [errorCodigo, setErrorCodigo] = useState<'requerido' | 'duplicado' | null>(null)
 
   const enviar = () => {
+    const codigoLimpio = codigo.trim()
     const nombreLimpio = nombre.trim()
+    // Unicidad: comparar (sin distinguir mayúsculas) contra los OTROS empleados.
+    const otros = codigosExistentes.filter(
+      (c) => c.toLowerCase() !== (empleado?.codigo ?? '').toLowerCase()
+    )
+    if (codigoLimpio === '') {
+      setErrorCodigo('requerido')
+      return
+    }
+    if (otros.some((c) => c.toLowerCase() === codigoLimpio.toLowerCase())) {
+      setErrorCodigo('duplicado')
+      return
+    }
     if (nombreLimpio === '') {
       setErrorNombre(true)
       return
     }
     onGuardar({
+      codigo: codigoLimpio,
       nombre: nombreLimpio,
       cuota_mensual: parsearNumero(cuota) ?? 0,
       fecha_ingreso: fechaIngreso === '' ? null : fechaIngreso,
@@ -58,6 +87,31 @@ export default function ModalEmpleado({ empleado, guardando, onGuardar, onCerrar
 
         <div className="mt-4 space-y-4">
           <div>
+            <label className="block text-xs font-semibold text-tinta-suave" htmlFor="nat-codigo">
+              {t.natillera.codigo}
+            </label>
+            <input
+              id="nat-codigo"
+              type="text"
+              value={codigo}
+              onChange={(e) => {
+                setCodigo(e.target.value)
+                if (errorCodigo) setErrorCodigo(null)
+              }}
+              placeholder={t.natillera.codigoPlaceholder}
+              className="mt-1 block w-full rounded-lg border border-borde bg-white px-3 py-2 font-mono text-sm text-tinta placeholder-gray-400 transition-colors duration-150 focus:border-brand-700 focus:outline-none"
+            />
+            {errorCodigo === 'requerido' && (
+              <p className="mt-1 text-xs text-red-600">{t.natillera.errorCodigoRequerido}</p>
+            )}
+            {errorCodigo === 'duplicado' && (
+              <p className="mt-1 text-xs text-red-600">
+                {t.natillera.errorCodigoDuplicado(codigo.trim())}
+              </p>
+            )}
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold text-tinta-suave" htmlFor="nat-nombre">
               {t.natillera.nombre}
             </label>
@@ -65,7 +119,6 @@ export default function ModalEmpleado({ empleado, guardando, onGuardar, onCerrar
               id="nat-nombre"
               type="text"
               value={nombre}
-              autoFocus
               onChange={(e) => {
                 setNombre(e.target.value)
                 if (errorNombre) setErrorNombre(false)
