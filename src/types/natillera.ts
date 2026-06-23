@@ -21,6 +21,14 @@ export interface AporteNatillera {
   monto: number
 }
 
+export interface SaldoInicialNatillera {
+  id: string
+  empleado_id: string
+  anio: number
+  /** Lo que el empleado traía ahorrado al cierre del año anterior. */
+  saldo: number
+}
+
 export type EstadoRetiro = 'pendiente' | 'pagado'
 
 export interface RetiroNatillera {

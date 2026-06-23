@@ -10,6 +10,7 @@ import {
   useAportesNatillera,
   useEmpleadosNatillera,
   useRetirosNatillera,
+  useSaldosInicialesNatillera,
 } from '../hooks/useNatillera'
 import {
   anioNatilleraPorDefecto,
@@ -68,8 +69,10 @@ export default function Natillera() {
 
   const aportes = useAportesNatillera(anio)
   const retiros = useRetirosNatillera(anio)
+  const saldosQuery = useSaldosInicialesNatillera(anio)
 
   const indice = useMemo(() => indexarAportes(aportes.data ?? [], anio), [aportes.data, anio])
+  const saldos = useMemo(() => saldosQuery.data ?? new Map<string, number>(), [saldosQuery.data])
 
   const listaEmpleados = useMemo(() => empleados.data ?? [], [empleados.data])
   const activos = useMemo(() => listaEmpleados.filter((e) => e.activo), [listaEmpleados])
@@ -91,8 +94,11 @@ export default function Natillera() {
     const conRetiro = new Set(listaRetiros.map((r) => r.empleado_id))
     return listaEmpleados
       .filter((e) => !e.activo && !conRetiro.has(e.id))
-      .map((empleado) => ({ empleado, total: totalAhorradoEmpleado(indice.get(empleado.id)) }))
-  }, [listaEmpleados, listaRetiros, indice])
+      .map((empleado) => ({
+        empleado,
+        total: totalAhorradoEmpleado(indice.get(empleado.id), saldos.get(empleado.id) ?? 0),
+      }))
+  }, [listaEmpleados, listaRetiros, indice, saldos])
 
   // ── Mutaciones ───────────────────────────────────────────────
   const guardarEmpleado = useMutation({
@@ -160,6 +166,40 @@ export default function Natillera() {
     },
     onSuccess: () => avisar({ tipo: 'exito', mensaje: t.natillera.aporteGuardado }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['natillera_aportes', anio] }),
+  })
+
+  const guardarSaldo = useMutation({
+    mutationFn: async ({ empleadoId, saldo }: { empleadoId: string; saldo: number }) => {
+      const { error } = await supabase.from('natillera_saldos_iniciales').upsert(
+        {
+          empleado_id: empleadoId,
+          anio,
+          saldo,
+          actualizado_por: sesion?.user.id ?? null,
+          actualizado_en: new Date().toISOString(),
+        },
+        { onConflict: 'empleado_id,anio' }
+      )
+      if (error) throw new Error(error.message)
+    },
+    onMutate: async ({ empleadoId, saldo }) => {
+      await queryClient.cancelQueries({ queryKey: ['natillera_saldos_iniciales', anio] })
+      const previo = queryClient.getQueryData<Map<string, number>>(['natillera_saldos_iniciales', anio])
+      queryClient.setQueryData<Map<string, number>>(['natillera_saldos_iniciales', anio], (actual) => {
+        const copia = new Map(actual ?? [])
+        copia.set(empleadoId, saldo)
+        return copia
+      })
+      return { previo }
+    },
+    onError: (e, _v, contexto) => {
+      if (contexto?.previo)
+        queryClient.setQueryData(['natillera_saldos_iniciales', anio], contexto.previo)
+      avisar({ tipo: 'error', mensaje: t.natillera.errorSaldo(e.message) })
+    },
+    onSuccess: () => avisar({ tipo: 'exito', mensaje: t.natillera.saldoGuardado }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ['natillera_saldos_iniciales', anio] }),
   })
 
   const registrarRetiro = useMutation({
@@ -237,8 +277,9 @@ export default function Natillera() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['natillera_empleados'] }),
   })
 
-  const cargando = empleados.isLoading || aportes.isLoading || retiros.isLoading
-  const error = empleados.error ?? aportes.error ?? retiros.error
+  const cargando =
+    empleados.isLoading || aportes.isLoading || retiros.isLoading || saldosQuery.isLoading
+  const error = empleados.error ?? aportes.error ?? retiros.error ?? saldosQuery.error
 
   return (
     <div>
@@ -282,10 +323,12 @@ export default function Natillera() {
                 <TablaAportes
                   empleados={activos}
                   indice={indiceActivos}
+                  saldos={saldos}
                   esEditor={esEditor}
                   onGuardarAporte={(empleadoId, mes, monto) =>
                     guardarAporte.mutate({ empleadoId, mes, monto })
                   }
+                  onGuardarSaldo={(empleadoId, saldo) => guardarSaldo.mutate({ empleadoId, saldo })}
                   onEditar={(empleado) => setModalEmpleado({ empleado })}
                   onRetirar={(empleado) => setRetiroPara(empleado)}
                 />
@@ -325,12 +368,15 @@ export default function Natillera() {
       {retiroPara && (
         <ModalRetiro
           empleado={retiroPara}
-          totalAhorrado={totalAhorradoEmpleado(indice.get(retiroPara.id))}
+          totalAhorrado={totalAhorradoEmpleado(indice.get(retiroPara.id), saldos.get(retiroPara.id) ?? 0)}
           guardando={registrarRetiro.isPending}
           onConfirmar={(datos) =>
             registrarRetiro.mutate({
               empleado: retiroPara,
-              totalAhorrado: totalAhorradoEmpleado(indice.get(retiroPara.id)),
+              totalAhorrado: totalAhorradoEmpleado(
+                indice.get(retiroPara.id),
+                saldos.get(retiroPara.id) ?? 0
+              ),
               datos,
             })
           }

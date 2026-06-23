@@ -465,14 +465,18 @@ export const en: Diccionario = {
     aportesTitulo: 'Monthly contributions',
     columnaEmpleado: 'Employee',
     columnaCuota: 'Contribution',
+    columnaSaldoInicial: 'Opening balance',
     columnaTotal: 'Total saved',
+    saldoInicialAria: (nombre: string) => `${nombre}'s opening balance`,
+    saldoGuardado: 'Opening balance saved.',
+    errorSaldo: (detalle: string) => `Could not save the opening balance: ${detalle}`,
     totalMes: 'Month total',
     totalGeneral: 'Grand total',
     aporteAria: (nombre: string, mes: string) => `${nombre}'s contribution for ${mes}`,
     aporteGuardado: 'Contribution saved.',
     errorAporte: (detalle: string) => `Could not save the contribution: ${detalle}`,
     notaPie:
-      'Total saved is computed automatically by summing the year’s contributions; cells are pre-filled with the contribution but remain editable (a month may be lower or 0). Amounts in COP.',
+      'Total saved is computed automatically: opening balance (carried from the prior year) + the year’s contributions. Contribution cells are pre-filled with the monthly amount but remain editable (a month may be lower or 0). Amounts in COP.',
 
     // Withdrawn
     retiradosTitulo: 'Withdrawn',

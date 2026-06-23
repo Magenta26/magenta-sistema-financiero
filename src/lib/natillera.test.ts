@@ -4,6 +4,7 @@ import {
   totalAhorradoEmpleado,
   totalDelMes,
   totalGeneral,
+  totalGeneralEmpleados,
   aniosNatillera,
   anioNatilleraPorDefecto,
 } from './natillera'
@@ -46,6 +47,41 @@ describe('indexarAportes / total ahorrado', () => {
   it('total general = suma de todos los aportes del año', () => {
     const indice = indexarAportes(aportes, 2026)
     expect(totalGeneral(indice)).toBe(230_000)
+  })
+})
+
+describe('saldo inicial en el total ahorrado', () => {
+  const aportes: AporteNatillera[] = [
+    aporte('a', 1, 50_000),
+    aporte('a', 2, 50_000),
+    aporte('b', 1, 100_000),
+  ]
+
+  it('total ahorrado = saldo inicial + suma de aportes', () => {
+    const indice = indexarAportes(aportes, 2026)
+    expect(totalAhorradoEmpleado(indice.get('a'), 300_000)).toBe(400_000)
+  })
+
+  it('sin fila de saldo inicial, cuenta como 0 (default)', () => {
+    const indice = indexarAportes(aportes, 2026)
+    expect(totalAhorradoEmpleado(indice.get('a'))).toBe(100_000)
+    expect(totalAhorradoEmpleado(indice.get('b'), 0)).toBe(100_000)
+  })
+
+  it('empleado con saldo inicial pero sin aportes = solo el saldo', () => {
+    const indice = indexarAportes(aportes, 2026)
+    expect(totalAhorradoEmpleado(indice.get('sin-aportes'), 75_000)).toBe(75_000)
+  })
+
+  it('total general sobre empleados = suma de (saldo inicial + aportes)', () => {
+    const indice = indexarAportes(aportes, 2026)
+    const empleados = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+    const saldos = new Map<string, number>([
+      ['a', 300_000],
+      ['c', 75_000], // c no tiene aportes: aporta solo su saldo
+    ])
+    // a: 300k + 100k · b: 0 + 100k · c: 75k + 0  = 575k
+    expect(totalGeneralEmpleados(empleados, indice, saldos)).toBe(575_000)
   })
 })
 

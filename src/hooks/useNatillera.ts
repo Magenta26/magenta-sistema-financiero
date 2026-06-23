@@ -2,6 +2,23 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import type { AporteNatillera, EmpleadoNatillera, RetiroNatillera } from '../types/natillera'
 
+/** Saldos iniciales del año: mapa empleado_id -> saldo (lo traído del año anterior). */
+export function useSaldosInicialesNatillera(anio: number) {
+  return useQuery({
+    queryKey: ['natillera_saldos_iniciales', anio],
+    queryFn: async (): Promise<Map<string, number>> => {
+      const { data, error } = await supabase
+        .from('natillera_saldos_iniciales')
+        .select('empleado_id, saldo')
+        .eq('anio', anio)
+      if (error) throw new Error(error.message)
+      const mapa = new Map<string, number>()
+      for (const f of data ?? []) mapa.set(f.empleado_id as string, Number(f.saldo))
+      return mapa
+    },
+  })
+}
+
 /** Todos los empleados de la natillera (activos e inactivos), por nombre. */
 export function useEmpleadosNatillera() {
   return useQuery({

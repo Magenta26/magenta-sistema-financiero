@@ -469,14 +469,18 @@ export const es = {
     aportesTitulo: 'Aportes mensuales',
     columnaEmpleado: 'Empleado',
     columnaCuota: 'Cuota',
+    columnaSaldoInicial: 'Saldo inicial',
     columnaTotal: 'Total ahorrado',
+    saldoInicialAria: (nombre: string) => `Saldo inicial de ${nombre}`,
+    saldoGuardado: 'Saldo inicial guardado.',
+    errorSaldo: (detalle: string) => `No se pudo guardar el saldo inicial: ${detalle}`,
     totalMes: 'Total del mes',
     totalGeneral: 'Total general',
     aporteAria: (nombre: string, mes: string) => `Aporte de ${nombre} en ${mes}`,
     aporteGuardado: 'Aporte guardado.',
     errorAporte: (detalle: string) => `No se pudo guardar el aporte: ${detalle}`,
     notaPie:
-      'El total ahorrado se calcula automáticamente sumando los aportes del año; las celdas se pre-llenan con la cuota pero son editables (un mes puede ser menor o 0). Cifras en COP.',
+      'El total ahorrado se calcula automáticamente: saldo inicial (lo traído del año anterior) + aportes del año. Las celdas de aporte se pre-llenan con la cuota pero son editables (un mes puede ser menor o 0). Cifras en COP.',
 
     // Retirados
     retiradosTitulo: 'Retirados',

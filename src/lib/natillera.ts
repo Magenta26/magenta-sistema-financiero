@@ -29,11 +29,14 @@ export function indexarAportes(aportes: AporteNatillera[], anio: number): Map<st
   return indice
 }
 
-/** Total ahorrado por un empleado en el año = suma de sus 12 aportes. */
-export function totalAhorradoEmpleado(porMes: AportesMes | undefined): number {
-  if (!porMes) return 0
-  let total = 0
-  for (const monto of porMes.values()) total += monto
+/**
+ * Total ahorrado por un empleado en el año:
+ *   saldo inicial (lo que traía al cierre del año anterior) + suma de aportes.
+ * Si no hay saldo inicial, cuenta como 0 (default del parámetro).
+ */
+export function totalAhorradoEmpleado(porMes: AportesMes | undefined, saldoInicial = 0): number {
+  let total = saldoInicial
+  if (porMes) for (const monto of porMes.values()) total += monto
   return total
 }
 
@@ -49,6 +52,23 @@ export function totalGeneral(indice: Map<string, AportesMes>): number {
   let total = 0
   for (const porMes of indice.values()) {
     for (const monto of porMes.values()) total += monto
+  }
+  return total
+}
+
+/**
+ * Gran total ahorrado sobre un conjunto de empleados:
+ * suma de (saldo inicial + aportes del año) de cada uno. Coincide con la suma
+ * de la columna "Total ahorrado" de las filas mostradas.
+ */
+export function totalGeneralEmpleados(
+  empleados: { id: string }[],
+  indice: Map<string, AportesMes>,
+  saldos: Map<string, number>
+): number {
+  let total = 0
+  for (const e of empleados) {
+    total += totalAhorradoEmpleado(indice.get(e.id), saldos.get(e.id) ?? 0)
   }
   return total
 }
