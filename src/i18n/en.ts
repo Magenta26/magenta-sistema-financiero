@@ -465,23 +465,52 @@ export const en: Diccionario = {
     guardar: 'Save',
     guardando: 'Saving…',
 
-    // Contributions table
+    // Contributions table (READ-ONLY report, computed on read)
     aportesTitulo: 'Monthly contributions',
     columnaCodigo: 'Code',
     columnaEmpleado: 'Employee',
     columnaCuota: 'Contribution',
     columnaSaldoInicial: 'Opening balance',
     columnaTotal: 'Total saved',
-    saldoInicialAria: (nombre: string) => `${nombre}'s opening balance`,
-    saldoGuardado: 'Opening balance saved.',
-    errorSaldo: (detalle: string) => `Could not save the opening balance: ${detalle}`,
     totalMes: 'Month total',
     totalGeneral: 'Grand total',
-    aporteAria: (nombre: string, mes: string) => `${nombre}'s contribution for ${mes}`,
-    aporteGuardado: 'Contribution saved.',
-    errorAporte: (detalle: string) => `Could not save the contribution: ${detalle}`,
     notaPie:
-      'Total saved is computed automatically: opening balance (carried from the prior year) + the year’s contributions. Contribution cells are pre-filled with the monthly amount but remain editable (a month may be lower or 0). Amounts in COP.',
+      'Computed report: each month’s contribution is derived from the employee’s rate, their changes (activity log) and their join/withdrawal dates. Empty cell = month not applicable or not generated yet (future). Total saved = opening balance + the year’s contributions. Amounts in COP.',
+
+    // Activity log (per-employee changes)
+    novedades: {
+      registrar: 'Add change',
+      registrarAria: (nombre: string) => `Add a change for ${nombre}`,
+      titulo: 'Activity log',
+      tituloEmpleado: (nombre: string) => `${nombre} — activity log`,
+      ver: 'View log',
+      verAria: (nombre: string) => `View ${nombre}'s activity log`,
+      cerrar: 'Close',
+      modalTitulo: (nombre: string) => `Add change — ${nombre}`,
+      campoTipo: 'Change type',
+      campoMes: 'Month',
+      campoValor: 'Value',
+      campoNota: 'Note',
+      notaPlaceholder: 'Details (optional)',
+      guardada: 'Change recorded.',
+      error: (detalle: string) => `Could not record the change: ${detalle}`,
+      sin: 'No changes recorded for this employee.',
+      tipos: {
+        cambio_cuota: 'Rate change',
+        no_aporto: 'Did not contribute',
+        abono: 'Custom amount',
+        retiro: 'Withdrawal',
+      } as Record<string, string>,
+      etiquetaValor: {
+        cambio_cuota: 'New rate',
+        abono: 'Amount for the month',
+      } as Record<string, string>,
+      colTipo: 'Type',
+      colMes: 'Month',
+      colValor: 'Value',
+      colNota: 'Note',
+      colFecha: 'Recorded',
+    },
 
     // Withdrawn
     retiradosTitulo: 'Withdrawn',

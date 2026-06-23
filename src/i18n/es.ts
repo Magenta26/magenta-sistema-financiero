@@ -469,23 +469,52 @@ export const es = {
     guardar: 'Guardar',
     guardando: 'Guardando…',
 
-    // Tabla de aportes
+    // Tabla de aportes (reporte SOLO LECTURA, calculado al vuelo)
     aportesTitulo: 'Aportes mensuales',
     columnaCodigo: 'Código',
     columnaEmpleado: 'Empleado',
     columnaCuota: 'Cuota',
     columnaSaldoInicial: 'Saldo inicial',
     columnaTotal: 'Total ahorrado',
-    saldoInicialAria: (nombre: string) => `Saldo inicial de ${nombre}`,
-    saldoGuardado: 'Saldo inicial guardado.',
-    errorSaldo: (detalle: string) => `No se pudo guardar el saldo inicial: ${detalle}`,
     totalMes: 'Total del mes',
     totalGeneral: 'Total general',
-    aporteAria: (nombre: string, mes: string) => `Aporte de ${nombre} en ${mes}`,
-    aporteGuardado: 'Aporte guardado.',
-    errorAporte: (detalle: string) => `No se pudo guardar el aporte: ${detalle}`,
     notaPie:
-      'El total ahorrado se calcula automáticamente: saldo inicial (lo traído del año anterior) + aportes del año. Las celdas de aporte se pre-llenan con la cuota pero son editables (un mes puede ser menor o 0). Cifras en COP.',
+      'Reporte calculado: los aportes de cada mes se derivan de la cuota del empleado, sus novedades y sus fechas de ingreso/retiro. Celda vacía = mes no aplicable o aún no generado (futuro). Total ahorrado = saldo inicial + aportes del año. Cifras en COP.',
+
+    // Novedades (gestión por empleado)
+    novedades: {
+      registrar: 'Registrar novedad',
+      registrarAria: (nombre: string) => `Registrar novedad de ${nombre}`,
+      titulo: 'Novedades',
+      tituloEmpleado: (nombre: string) => `Novedades de ${nombre}`,
+      ver: 'Ver novedades',
+      verAria: (nombre: string) => `Ver novedades de ${nombre}`,
+      cerrar: 'Cerrar',
+      modalTitulo: (nombre: string) => `Registrar novedad — ${nombre}`,
+      campoTipo: 'Tipo de novedad',
+      campoMes: 'Mes',
+      campoValor: 'Valor',
+      campoNota: 'Nota',
+      notaPlaceholder: 'Detalle (opcional)',
+      guardada: 'Novedad registrada.',
+      error: (detalle: string) => `No se pudo registrar la novedad: ${detalle}`,
+      sin: 'Sin novedades registradas para este empleado.',
+      tipos: {
+        cambio_cuota: 'Cambio de cuota',
+        no_aporto: 'No aportó',
+        abono: 'Abono / monto distinto',
+        retiro: 'Retiro',
+      } as Record<string, string>,
+      etiquetaValor: {
+        cambio_cuota: 'Nueva cuota',
+        abono: 'Monto del mes',
+      } as Record<string, string>,
+      colTipo: 'Tipo',
+      colMes: 'Mes',
+      colValor: 'Valor',
+      colNota: 'Nota',
+      colFecha: 'Registrada',
+    },
 
     // Retirados
     retiradosTitulo: 'Retirados',

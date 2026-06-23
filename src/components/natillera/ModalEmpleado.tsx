@@ -9,7 +9,6 @@ export interface DatosEmpleado {
   nombre: string
   cuota_mensual: number
   fecha_ingreso: string | null
-  activo: boolean
 }
 
 interface Props {
@@ -40,7 +39,6 @@ export default function ModalEmpleado({
     empleado && empleado.cuota_mensual !== 0 ? contable(empleado.cuota_mensual) : ''
   )
   const [fechaIngreso, setFechaIngreso] = useState(empleado?.fecha_ingreso ?? '')
-  const [activo, setActivo] = useState(empleado?.activo ?? true)
   const [errorNombre, setErrorNombre] = useState(false)
   const [errorCodigo, setErrorCodigo] = useState<'requerido' | 'duplicado' | null>(null)
 
@@ -68,8 +66,6 @@ export default function ModalEmpleado({
       nombre: nombreLimpio,
       cuota_mensual: parsearNumero(cuota) ?? 0,
       fecha_ingreso: fechaIngreso === '' ? null : fechaIngreso,
-      // Empleado nuevo siempre nace activo; el toggle solo aplica al editar.
-      activo: empleado ? activo : true,
     })
   }
 
@@ -156,19 +152,6 @@ export default function ModalEmpleado({
               className="mt-1 block w-full rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta transition-colors duration-150 focus:border-brand-700 focus:outline-none"
             />
           </div>
-
-          {/* Activo/inactivo: solo al editar (un empleado nuevo nace activo). */}
-          {empleado && (
-            <label className="flex items-center gap-2 text-sm text-tinta">
-              <input
-                type="checkbox"
-                checked={activo}
-                onChange={(e) => setActivo(e.target.checked)}
-                className="h-4 w-4 rounded border-borde text-brand-700 focus:ring-brand-700"
-              />
-              {t.natillera.activo}
-            </label>
-          )}
         </div>
 
         <div className="mt-6 flex justify-end gap-2">

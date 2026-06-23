@@ -1,77 +1,9 @@
 /**
- * Lógica pura de la Natillera (caja de ahorro de empleados).
- *
- * El "total ahorrado" de un empleado es SIEMPRE la suma de sus aportes del año
- * (nunca un campo manual). Aquí viven los cálculos derivados de la tabla de
- * aportes y la lógica del selector de año.
+ * Helpers puros de la Natillera (selector de año, código de empleado, saldos).
+ * La resolución del reporte mensual (compute-on-read) vive en
+ * `natilleraReporte.ts`.
  */
-import type { AporteNatillera } from '../types/natillera'
-
-/** Mapa (mes -> monto) de los aportes de un empleado en el año. */
-export type AportesMes = Map<number, number>
-
-/**
- * Indexa los aportes por empleado y mes: empleado_id -> (mes -> monto).
- * Solo considera el año dado (los aportes ya vienen filtrados por año, pero se
- * vuelve a chequear por seguridad).
- */
-export function indexarAportes(aportes: AporteNatillera[], anio: number): Map<string, AportesMes> {
-  const indice = new Map<string, AportesMes>()
-  for (const a of aportes) {
-    if (a.anio !== anio) continue
-    let porMes = indice.get(a.empleado_id)
-    if (!porMes) {
-      porMes = new Map()
-      indice.set(a.empleado_id, porMes)
-    }
-    porMes.set(a.mes, Number(a.monto))
-  }
-  return indice
-}
-
-/**
- * Total ahorrado por un empleado en el año:
- *   saldo inicial (lo que traía al cierre del año anterior) + suma de aportes.
- * Si no hay saldo inicial, cuenta como 0 (default del parámetro).
- */
-export function totalAhorradoEmpleado(porMes: AportesMes | undefined, saldoInicial = 0): number {
-  let total = saldoInicial
-  if (porMes) for (const monto of porMes.values()) total += monto
-  return total
-}
-
-/** Total aportado por TODOS los empleados en un mes dado. */
-export function totalDelMes(indice: Map<string, AportesMes>, mes: number): number {
-  let total = 0
-  for (const porMes of indice.values()) total += porMes.get(mes) ?? 0
-  return total
-}
-
-/** Gran total: suma de todos los aportes del año (todos los empleados, 12 meses). */
-export function totalGeneral(indice: Map<string, AportesMes>): number {
-  let total = 0
-  for (const porMes of indice.values()) {
-    for (const monto of porMes.values()) total += monto
-  }
-  return total
-}
-
-/**
- * Gran total ahorrado sobre un conjunto de empleados:
- * suma de (saldo inicial + aportes del año) de cada uno. Coincide con la suma
- * de la columna "Total ahorrado" de las filas mostradas.
- */
-export function totalGeneralEmpleados(
-  empleados: { id: string }[],
-  indice: Map<string, AportesMes>,
-  saldos: Map<string, number>
-): number {
-  let total = 0
-  for (const e of empleados) {
-    total += totalAhorradoEmpleado(indice.get(e.id), saldos.get(e.id) ?? 0)
-  }
-  return total
-}
+import type { EmpleadoNatillera, NovedadNatillera, SaldoInicialNatillera } from '../types/natillera'
 
 /**
  * Siguiente código de empleado con el patrón EMP-###: toma el mayor número con
@@ -88,13 +20,33 @@ export function siguienteCodigoEmpleado(codigos: (string | null | undefined)[]):
   return `EMP-${String(max + 1).padStart(3, '0')}`
 }
 
+/** Año de una fecha 'YYYY-MM-DD'; null si vacía/ inválida. */
+function anioDeFecha(fecha: string | null | undefined): number | null {
+  if (!fecha) return null
+  const anio = Number(fecha.split('-')[0])
+  return Number.isFinite(anio) ? anio : null
+}
+
 /**
- * Años disponibles para el selector: los años con aportes registrados MÁS el
- * año en curso (aunque aún no tenga aportes), de mayor a menor, sin repetidos.
+ * Años disponibles para el selector (de mayor a menor, sin repetidos):
+ * el año en curso SIEMPRE, más los años con datos relevantes — ingreso/retiro de
+ * empleados, novedades y saldos iniciales.
  */
-export function aniosNatillera(aportes: { anio: number }[], anioEnCurso: number): number[] {
-  const set = new Set<number>(aportes.map((a) => a.anio))
-  set.add(anioEnCurso)
+export function aniosNatillera(
+  empleados: Pick<EmpleadoNatillera, 'fecha_ingreso' | 'fecha_retiro'>[],
+  novedades: Pick<NovedadNatillera, 'anio'>[],
+  saldos: Pick<SaldoInicialNatillera, 'anio'>[],
+  anioEnCurso: number
+): number[] {
+  const set = new Set<number>([anioEnCurso])
+  for (const e of empleados) {
+    const ing = anioDeFecha(e.fecha_ingreso)
+    if (ing != null) set.add(ing)
+    const ret = anioDeFecha(e.fecha_retiro)
+    if (ret != null) set.add(ret)
+  }
+  for (const n of novedades) set.add(n.anio)
+  for (const s of saldos) set.add(s.anio)
   return [...set].sort((a, b) => b - a)
 }
 
@@ -110,4 +62,9 @@ export function anioNatilleraPorDefecto(
   if (anioElegido != null && disponibles.includes(anioElegido)) return anioElegido
   if (anioPreferido != null && disponibles.includes(anioPreferido)) return anioPreferido
   return disponibles[0] ?? null
+}
+
+/** Saldo inicial de (empleado, año) desde el mapa keyed `${id}:${anio}`; 0 si no hay. */
+export function saldoInicialDe(saldos: Map<string, number>, empleadoId: string, anio: number): number {
+  return saldos.get(`${empleadoId}:${anio}`) ?? 0
 }
