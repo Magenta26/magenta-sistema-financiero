@@ -55,6 +55,7 @@ const GRUPOS: GrupoNav[] = [
     items: [
       { ruta: '/nomina/empleados', etiqueta: (t) => t.nomina.empleados, icono: '👤' },
       { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷' },
+      { ruta: '/nomina/vacaciones', etiqueta: (t) => t.nomina.vacaciones, icono: '🏖' },
     ],
   },
 ]

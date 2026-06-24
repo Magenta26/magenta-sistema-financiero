@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../../hooks/useTranslation'
-import { moneda } from '../../lib/formato'
+import { fecha as fechaFmt, moneda } from '../../lib/formato'
 import { iniciales } from '../../lib/empleados'
 import type { ResumenNatillera } from '../../lib/empleados'
 import type { Empleado } from '../../types/empleados'
@@ -366,6 +366,9 @@ export default function FichaEmpleado({
                   </Campo>
                   <Campo label={c.cajaCompensacion}>{texto(empleado.caja_compensacion)}</Campo>
                   <Campo label={c.fondoPension}>{texto(empleado.fondo_pension)}</Campo>
+                  <Campo label={c.fechaIngreso}>
+                    {empleado.fecha_ingreso ? fechaFmt(empleado.fecha_ingreso) : e.sinDato}
+                  </Campo>
                   <Divisor />
                   <Campo label={f.auxilioTransporte}>
                     <span className="flex items-center gap-1.5">

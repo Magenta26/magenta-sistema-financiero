@@ -23,6 +23,7 @@ export interface Empleado {
   fondo_pension: string | null
   tipo_contrato: string | null
   salario: number | null
+  fecha_ingreso: string | null
   aplica_auxilio_transporte: boolean
   jornada_inicio: string | null
   jornada_fin: string | null

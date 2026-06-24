@@ -10,6 +10,7 @@ import EstadoResultados from './pages/EstadoResultados'
 import Login from './pages/Login'
 import Natillera from './pages/Natillera'
 import Empleados from './pages/Empleados'
+import Vacaciones from './pages/Vacaciones'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
           <Route path="/nomina/natillera" element={<Natillera />} />
           <Route path="/nomina/empleados" element={<Empleados />} />
+          <Route path="/nomina/vacaciones" element={<Vacaciones />} />
 
           {/* Redirects de las rutas viejas */}
           <Route path="/cargas" element={<Navigate to="/finanzas/cargas" replace />} />

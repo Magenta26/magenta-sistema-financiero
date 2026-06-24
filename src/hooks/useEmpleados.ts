@@ -5,7 +5,7 @@ import type { Empleado } from '../types/empleados'
 const CAMPOS =
   'id, codigo, nombre_completo, foto_url, activo, estado_civil, es_padre, num_hijos, ' +
   'esta_estudiando, estudio, tipo_sangre, eps, caja_compensacion, fondo_pension, ' +
-  'tipo_contrato, salario, aplica_auxilio_transporte, jornada_inicio, jornada_fin, ' +
+  'tipo_contrato, salario, fecha_ingreso, aplica_auxilio_transporte, jornada_inicio, jornada_fin, ' +
   'equipo, beneficio_lentes'
 
 /** Todos los empleados (ficha central), ordenados por código. */

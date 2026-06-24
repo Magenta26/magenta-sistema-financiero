@@ -64,6 +64,7 @@ export default function ModalEmpleado({ empleado, codigosExistentes, guardando, 
   const [salario, setSalario] = useState(
     empleado?.salario != null ? contable(empleado.salario) : ''
   )
+  const [fechaIngreso, setFechaIngreso] = useState(empleado?.fecha_ingreso ?? '')
   const [auxilio, setAuxilio] = useState(empleado?.aplica_auxilio_transporte ?? false)
   const [jornadaIni, setJornadaIni] = useState((empleado?.jornada_inicio ?? '').slice(0, 5))
   const [jornadaFin, setJornadaFin] = useState((empleado?.jornada_fin ?? '').slice(0, 5))
@@ -101,6 +102,7 @@ export default function ModalEmpleado({ empleado, codigosExistentes, guardando, 
       fondo_pension: limpio(pension),
       tipo_contrato: limpio(tipoContrato),
       salario: parsearNumero(salario),
+      fecha_ingreso: fechaIngreso === '' ? null : fechaIngreso,
       aplica_auxilio_transporte: auxilio,
       jornada_inicio: jornadaIni === '' ? null : jornadaIni,
       jornada_fin: jornadaFin === '' ? null : jornadaFin,
@@ -198,6 +200,9 @@ export default function ModalEmpleado({ empleado, codigosExistentes, guardando, 
           </Campo>
           <Campo label={c.fondoPension} htmlFor="emp-pension">
             <input id="emp-pension" type="text" value={pension} onChange={(e) => setPension(e.target.value)} className={claseInput} />
+          </Campo>
+          <Campo label={c.fechaIngreso} htmlFor="emp-ingreso">
+            <input id="emp-ingreso" type="date" value={fechaIngreso} onChange={(e) => setFechaIngreso(e.target.value)} className={claseInput} />
           </Campo>
           <Campo label={c.jornadaInicio} htmlFor="emp-jini">
             <input id="emp-jini" type="time" value={jornadaIni} onChange={(e) => setJornadaIni(e.target.value)} className={claseInput} />
