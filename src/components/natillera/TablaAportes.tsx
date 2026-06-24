@@ -18,6 +18,11 @@ interface Props {
 const COD_W = 72
 const NOM_LEFT = COD_W
 
+// En esta tabla los montos van SIN decimales (redondeo al peso) para ahorrar
+// espacio. El resto del sistema (ER/BG/comprobante) sigue con centavos.
+const SIN_DECIMALES = { decimales: 0 }
+const contable0 = (valor: number) => contable(valor, SIN_DECIMALES)
+
 /** Icono lineal de historial (reloj con flecha) para "Ver novedades". */
 function IconoHistorial() {
   return (
@@ -44,7 +49,7 @@ function IconoHistorial() {
 function CeldaMonto({ valor }: { valor: number | null }) {
   return (
     <td className="px-1.5 py-1.5 text-right text-xs tabular-nums text-tinta">
-      {valor == null ? <span className="text-gray-300">—</span> : contable(valor)}
+      {valor == null ? <span className="text-gray-300">—</span> : contable0(valor)}
     </td>
   )
 }
@@ -112,16 +117,16 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
                   {emp.nombre}
                 </td>
                 <td className="px-2 py-1.5 text-right text-xs tabular-nums text-tinta-suave">
-                  {r.cuotaVigente === 0 ? '—' : contable(r.cuotaVigente)}
+                  {r.cuotaVigente === 0 ? '—' : contable0(r.cuotaVigente)}
                 </td>
                 <td className="px-2 py-1.5 text-right text-xs tabular-nums text-tinta-suave">
-                  {r.saldoInicial === 0 ? '—' : contable(r.saldoInicial)}
+                  {r.saldoInicial === 0 ? '—' : contable0(r.saldoInicial)}
                 </td>
                 {meses.map((mes) => (
                   <CeldaMonto key={mes} valor={r.meses[mes - 1]} />
                 ))}
                 <td className="px-3 py-1.5 text-right text-xs font-bold tabular-nums text-brand-900">
-                  {contable(r.total)}
+                  {contable0(r.total)}
                 </td>
                 {esEditor && (
                   <td className="px-2 py-1.5 text-center">
@@ -154,15 +159,15 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
             </td>
             <td className="px-2 py-1.5" />
             <td className="px-2 py-1.5 text-right text-xs font-semibold tabular-nums text-brand-900">
-              {contable(totalSaldos)}
+              {contable0(totalSaldos)}
             </td>
             {meses.map((mes) => (
               <td key={mes} className="px-1.5 py-1.5 text-right text-xs font-semibold tabular-nums text-brand-900">
-                {contable(totalMesReporte(listaReportes, mes - 1))}
+                {contable0(totalMesReporte(listaReportes, mes - 1))}
               </td>
             ))}
             <td className="whitespace-nowrap px-3 py-1.5 text-right text-xs font-bold tabular-nums text-brand-900">
-              {moneda(totalGeneralReporte(listaReportes))}
+              {moneda(totalGeneralReporte(listaReportes), SIN_DECIMALES)}
             </td>
             {esEditor && <td className="w-10 px-2 py-1.5" />}
           </tr>

@@ -20,12 +20,15 @@ function formato(opciones: Intl.NumberFormatOptions & { clave: string }): Intl.N
   return f
 }
 
-const decimales = () =>
-  formato({ clave: 'dec', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const decimales = (dec = 2) =>
+  formato({ clave: `dec${dec}`, minimumFractionDigits: dec, maximumFractionDigits: dec })
 
-/** Monto con moneda explícita: "COP $1.234,56" / "COP $1,234.56". */
-export function moneda(valor: number): string {
-  return `COP $${decimales().format(valor)}`
+/**
+ * Monto con moneda explícita: "COP $1.234,56" / "COP $1,234.56".
+ * `decimales` por defecto 2 (centavos); pasar 0 para redondear al peso entero.
+ */
+export function moneda(valor: number, opciones?: { decimales?: number }): string {
+  return `COP $${decimales(opciones?.decimales ?? 2).format(valor)}`
 }
 
 export function entero(valor: number): string {
@@ -62,9 +65,12 @@ export function monedaMillones(valor: number): string {
   return `${signo}COP $${num} M`
 }
 
-/** Formato contable sin moneda (tablas): negativos entre paréntesis. */
-export function contable(valor: number): string {
-  const absoluto = decimales().format(Math.abs(valor))
+/**
+ * Formato contable sin moneda (tablas): negativos entre paréntesis.
+ * `decimales` por defecto 2 (centavos); pasar 0 para redondear al peso entero.
+ */
+export function contable(valor: number, opciones?: { decimales?: number }): string {
+  const absoluto = decimales(opciones?.decimales ?? 2).format(Math.abs(valor))
   return valor < 0 ? `(${absoluto})` : absoluto
 }
 
