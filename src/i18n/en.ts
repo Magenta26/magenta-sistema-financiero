@@ -513,6 +513,8 @@ export const en: Diccionario = {
     cargando: 'Loading the savings fund…',
     error: (detalle: string) => `Could not load the savings fund: ${detalle}`,
     sinEmpleados: 'No employees in the savings fund yet. Add the first one.',
+    buscarPlaceholder: 'Search by code or name',
+    sinResultados: 'No employee matches the search.',
 
     // Employees
     empleadosTitulo: 'Employees',

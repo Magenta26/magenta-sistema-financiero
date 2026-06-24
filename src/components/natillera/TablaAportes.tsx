@@ -1,5 +1,6 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from '../../hooks/useTranslation'
-import { contable, moneda } from '../../lib/formato'
+import { contable, fecha, moneda } from '../../lib/formato'
 import { nombreMes } from '../../types/balance'
 import { totalGeneralReporte, totalMesReporte } from '../../lib/natilleraReporte'
 import type { ReporteEmpleado } from '../../lib/natilleraReporte'
@@ -7,10 +8,14 @@ import type { EmpleadoNatillera } from '../../types/natillera'
 
 interface Props {
   empleados: EmpleadoNatillera[]
-  /** Reporte calculado por empleado (id -> reporte del año activo). */
+  /** Reporte calculado por empleado (id -> reporte del año mostrado). */
   reportes: Map<string, ReporteEmpleado>
   esEditor: boolean
   onVerNovedades: (empleado: EmpleadoNatillera) => void
+  /** Agrega la columna "Fecha de retiro" (para la tabla de retirados). */
+  mostrarFechaRetiro?: boolean
+  /** Botones de acción extra por fila (p. ej. comprobante / pagado / reactivar). */
+  renderAccionesExtra?: (empleado: EmpleadoNatillera) => ReactNode
 }
 
 // Anchos fijos de las dos columnas fijas (sticky). El offset de Empleado debe
@@ -18,8 +23,8 @@ interface Props {
 const COD_W = 72
 const NOM_LEFT = COD_W
 
-// En esta tabla los montos van SIN decimales (redondeo al peso) para ahorrar
-// espacio. El resto del sistema (ER/BG/comprobante) sigue con centavos.
+// Los montos van SIN decimales (redondeo al peso) para ahorrar espacio. El resto
+// del sistema (ER/BG/comprobante) sigue con centavos.
 const SIN_DECIMALES = { decimales: 0 }
 const contable0 = (valor: number) => contable(valor, SIN_DECIMALES)
 
@@ -55,14 +60,27 @@ function CeldaMonto({ valor }: { valor: number | null }) {
 }
 
 /**
- * Reporte mensual de la natillera (SOLO LECTURA). Los montos se calculan al
- * vuelo (ver natilleraReporte). Sin edición de celdas.
+ * Tabla mensual de la natillera (SOLO LECTURA). Reutilizable para activos y
+ * retirados: los montos se calculan al vuelo (ver natilleraReporte). Sin edición
+ * de celdas. Para retirados se activa la columna "Fecha de retiro" y se pasan
+ * acciones extra (comprobante / pagado / reactivar).
  */
-export default function TablaAportes({ empleados, reportes, esEditor, onVerNovedades }: Props) {
+export default function TablaAportes({
+  empleados,
+  reportes,
+  esEditor,
+  onVerNovedades,
+  mostrarFechaRetiro = false,
+  renderAccionesExtra,
+}: Props) {
   const { t } = useTranslation()
   const meses = Array.from({ length: 12 }, (_, i) => i + 1)
   const listaReportes = empleados.map((e) => reportes.get(e.id)).filter(Boolean) as ReporteEmpleado[]
   const totalSaldos = listaReportes.reduce((acc, r) => acc + r.saldoInicial, 0)
+
+  // La columna de acciones aparece si hay edición o acciones extra (los retirados
+  // muestran "Ver comprobante" incluso a no editores).
+  const mostrarAcciones = esEditor || !!renderAccionesExtra
 
   return (
     <div className="overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
@@ -81,6 +99,11 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
             >
               {t.natillera.columnaEmpleado}
             </th>
+            {mostrarFechaRetiro && (
+              <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold">
+                {t.natillera.columnaFechaRetiro}
+              </th>
+            )}
             <th className="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold">
               {t.natillera.columnaCuota}
             </th>
@@ -95,7 +118,7 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
             <th className="whitespace-nowrap px-3 py-2 text-right text-xs font-bold">
               {t.natillera.columnaTotal}
             </th>
-            {esEditor && <th className="w-10 px-2 py-2" />}
+            {mostrarAcciones && <th className={renderAccionesExtra ? 'px-2 py-2' : 'w-10 px-2 py-2'} />}
           </tr>
         </thead>
         <tbody>
@@ -116,6 +139,11 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
                 >
                   {emp.nombre}
                 </td>
+                {mostrarFechaRetiro && (
+                  <td className="whitespace-nowrap px-3 py-1.5 text-xs tabular-nums text-tinta-suave">
+                    {emp.fecha_retiro ? fecha(emp.fecha_retiro) : '—'}
+                  </td>
+                )}
                 <td className="px-2 py-1.5 text-right text-xs tabular-nums text-tinta-suave">
                   {r.cuotaVigente === 0 ? '—' : contable0(r.cuotaVigente)}
                 </td>
@@ -128,17 +156,24 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
                 <td className="px-3 py-1.5 text-right text-xs font-bold tabular-nums text-brand-900">
                   {contable0(r.total)}
                 </td>
-                {esEditor && (
-                  <td className="px-2 py-1.5 text-center">
-                    <button
-                      type="button"
-                      onClick={() => onVerNovedades(emp)}
-                      aria-label={t.natillera.novedades.verAria(emp.nombre)}
-                      title={t.natillera.novedades.ver}
-                      className="inline-flex items-center justify-center rounded-md p-1 text-tinta-suave transition-colors duration-150 hover:bg-brand-100 hover:text-brand-700"
+                {mostrarAcciones && (
+                  <td className="px-2 py-1.5">
+                    <div
+                      className={`flex items-center gap-2 whitespace-nowrap ${
+                        renderAccionesExtra ? 'justify-end' : 'justify-center'
+                      }`}
                     >
-                      <IconoHistorial />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => onVerNovedades(emp)}
+                        aria-label={t.natillera.novedades.verAria(emp.nombre)}
+                        title={t.natillera.novedades.ver}
+                        className="inline-flex items-center justify-center rounded-md p-1 text-tinta-suave transition-colors duration-150 hover:bg-brand-100 hover:text-brand-700"
+                      >
+                        <IconoHistorial />
+                      </button>
+                      {renderAccionesExtra?.(emp)}
+                    </div>
                   </td>
                 )}
               </tr>
@@ -157,6 +192,7 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
             >
               {t.natillera.totalMes}
             </td>
+            {mostrarFechaRetiro && <td className="px-3 py-1.5" />}
             <td className="px-2 py-1.5" />
             <td className="px-2 py-1.5 text-right text-xs font-semibold tabular-nums text-brand-900">
               {contable0(totalSaldos)}
@@ -169,7 +205,7 @@ export default function TablaAportes({ empleados, reportes, esEditor, onVerNoved
             <td className="whitespace-nowrap px-3 py-1.5 text-right text-xs font-bold tabular-nums text-brand-900">
               {moneda(totalGeneralReporte(listaReportes), SIN_DECIMALES)}
             </td>
-            {esEditor && <td className="w-10 px-2 py-1.5" />}
+            {mostrarAcciones && <td className="px-2 py-1.5" />}
           </tr>
         </tfoot>
       </table>

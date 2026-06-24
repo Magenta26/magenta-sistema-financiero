@@ -39,6 +39,7 @@ export default function Natillera() {
   const periodoActual = usePeriodoActual()
 
   const [anioElegido, setAnioElegido] = useState<number | null>(null)
+  const [busqueda, setBusqueda] = useState('')
   const [toast, setToast] = useState<DatosToast | null>(null)
   const temporizadorToast = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -135,9 +136,22 @@ export default function Natillera() {
           anioRetiro,
           hoy
         )
-        return { empleado, total: rep.total, retiro: retiroPorEmpleado.get(empleado.id) ?? null }
+        return { empleado, reporte: rep, retiro: retiroPorEmpleado.get(empleado.id) ?? null }
       })
   }, [listaEmpleados, novedadesPorEmpleado, saldos, anio, hoy, retiroPorEmpleado])
+
+  // Buscador por código o nombre (case-insensitive, parcial). Filtra ambas secciones.
+  const coincide = (emp: EmpleadoNatillera, q: string) =>
+    emp.nombre.toLowerCase().includes(q) || (emp.codigo ?? '').toLowerCase().includes(q)
+  const q = busqueda.trim().toLowerCase()
+  const activosFiltrados = useMemo(
+    () => (q === '' ? activos : activos.filter((e) => coincide(e, q))),
+    [activos, q]
+  )
+  const filasRetiradosFiltradas = useMemo(
+    () => (q === '' ? filasRetirados : filasRetirados.filter((f) => coincide(f.empleado, q))),
+    [filasRetirados, q]
+  )
 
   const codigosExistentes = useMemo(
     () => listaEmpleados.map((e) => e.codigo ?? '').filter((c) => c !== ''),
@@ -362,6 +376,35 @@ export default function Natillera() {
 
       {!cargando && !error && (
         <>
+          {/* Buscador por código o nombre (filtra activos y retirados) */}
+          {listaEmpleados.length > 0 && (
+            <div className="relative mt-6 max-w-sm">
+              <span aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tinta-suave">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={16}
+                  height={16}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder={t.natillera.buscarPlaceholder}
+                className="block w-full rounded-lg border border-borde bg-white py-2 pl-9 pr-3 text-sm text-tinta placeholder-gray-400 transition-colors duration-150 focus:border-brand-700 focus:outline-none"
+              />
+            </div>
+          )}
+
           {/* Reporte mensual (empleados activos) — SOLO LECTURA, calculado */}
           <section className="mt-6">
             <h2 className="mb-3 text-lg font-semibold text-brand-900">{t.natillera.aportesTitulo}</h2>
@@ -369,10 +412,14 @@ export default function Natillera() {
               <p className="rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
                 {t.natillera.sinEmpleados}
               </p>
+            ) : activosFiltrados.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
+                {t.natillera.sinResultados}
+              </p>
             ) : (
               <>
                 <TablaAportes
-                  empleados={activos}
+                  empleados={activosFiltrados}
                   reportes={reportes}
                   esEditor={esEditor}
                   onVerNovedades={(empleado) => setPanelPara(empleado)}
@@ -386,11 +433,12 @@ export default function Natillera() {
           <section className="mt-8">
             <h2 className="text-lg font-semibold text-brand-900">{t.natillera.retiradosTitulo}</h2>
             <SeccionRetirados
-              filas={filasRetirados}
+              filas={filasRetiradosFiltradas}
               esEditor={esEditor}
               onVerComprobante={(retiro) => setComprobante(retiro)}
               onMarcarPagado={(retiro) => setPagoPara(retiro)}
               onReactivar={(empleadoId) => reactivar.mutate(empleadoId)}
+              onVerNovedades={(empleado) => setPanelPara(empleado)}
             />
           </section>
         </>

@@ -517,6 +517,8 @@ export const es = {
     cargando: 'Cargando la natillera…',
     error: (detalle: string) => `Error consultando la natillera: ${detalle}`,
     sinEmpleados: 'Aún no hay empleados en la natillera. Agrega el primero.',
+    buscarPlaceholder: 'Buscar por código o nombre',
+    sinResultados: 'Ningún empleado coincide con la búsqueda.',
 
     // Empleados
     empleadosTitulo: 'Empleados',

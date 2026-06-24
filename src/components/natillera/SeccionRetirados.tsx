@@ -1,12 +1,14 @@
+import { useMemo } from 'react'
 import { useTranslation } from '../../hooks/useTranslation'
-import { contable, fecha } from '../../lib/formato'
+import type { ReporteEmpleado } from '../../lib/natilleraReporte'
 import type { EmpleadoNatillera, RetiroNatillera } from '../../types/natillera'
+import TablaAportes from './TablaAportes'
 
-/** Fila de un empleado retirado (activo=false) con su total congelado y snapshot. */
+/** Fila de un empleado retirado (activo=false) con su reporte congelado y snapshot. */
 export interface RetiradoFila {
   empleado: EmpleadoNatillera
-  /** Total ahorrado congelado al mes de retiro (calculado). */
-  total: number
+  /** Reporte calculado al año de retiro (meses resueltos hasta el retiro, total congelado). */
+  reporte: ReporteEmpleado
   /** Snapshot de natillera_retiros (para comprobante/estado); null si no hay. */
   retiro: RetiroNatillera | null
 }
@@ -17,6 +19,7 @@ interface Props {
   onVerComprobante: (retiro: RetiroNatillera) => void
   onMarcarPagado: (retiro: RetiroNatillera) => void
   onReactivar: (empleadoId: string) => void
+  onVerNovedades: (empleado: EmpleadoNatillera) => void
 }
 
 function BadgeEstado({ estado }: { estado: 'pendiente' | 'pagado' }) {
@@ -32,15 +35,31 @@ function BadgeEstado({ estado }: { estado: 'pendiente' | 'pagado' }) {
   )
 }
 
-/** Sección "Retirados": empleados con activo=false, total congelado y comprobante. */
+/**
+ * Sección "Retirados": misma tabla mensual que los activos (vía TablaAportes) con
+ * la columna "Fecha de retiro" y las acciones de comprobante / pagado / reactivar.
+ */
 export default function SeccionRetirados({
   filas,
   esEditor,
   onVerComprobante,
   onMarcarPagado,
   onReactivar,
+  onVerNovedades,
 }: Props) {
   const { t } = useTranslation()
+
+  const empleados = useMemo(() => filas.map((f) => f.empleado), [filas])
+  const reportes = useMemo(() => {
+    const m = new Map<string, ReporteEmpleado>()
+    for (const f of filas) m.set(f.empleado.id, f.reporte)
+    return m
+  }, [filas])
+  const retiroPorEmpleado = useMemo(() => {
+    const m = new Map<string, RetiroNatillera | null>()
+    for (const f of filas) m.set(f.empleado.id, f.retiro)
+    return m
+  }, [filas])
 
   if (filas.length === 0) {
     return (
@@ -51,72 +70,56 @@ export default function SeccionRetirados({
   }
 
   return (
-    <div className="mt-3 overflow-x-auto rounded-xl border border-borde bg-white shadow-sm">
-      <table className="w-full">
-        <thead className="bg-gray-50 text-brand-900">
-          <tr>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold">{t.natillera.columnaCodigo}</th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold">{t.natillera.columnaEmpleado}</th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold">{t.natillera.columnaFechaRetiro}</th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold">{t.natillera.columnaMontoRetirado}</th>
-            <th className="px-3 py-2.5 text-center text-xs font-semibold">{t.natillera.columnaEstado}</th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold" />
-          </tr>
-        </thead>
-        <tbody>
-          {filas.map(({ empleado, total, retiro }) => (
-            <tr key={empleado.id} className="border-t border-borde hover:bg-brand-50">
-              <td className="px-3 py-2 font-mono text-xs text-tinta-suave">{empleado.codigo ?? '—'}</td>
-              <td className="px-3 py-2 text-xs font-medium text-tinta">{empleado.nombre}</td>
-              <td className="px-3 py-2 text-xs tabular-nums text-tinta-suave">
-                {empleado.fecha_retiro ? fecha(empleado.fecha_retiro) : '—'}
-              </td>
-              <td className="px-3 py-2 text-right text-xs font-bold tabular-nums text-brand-900">
-                {contable(total)}
-              </td>
-              <td className="px-3 py-2 text-center">
-                {retiro ? (
-                  <BadgeEstado estado={retiro.estado} />
-                ) : (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-tinta-suave">
-                    {t.natillera.inactivo}
-                  </span>
-                )}
-              </td>
-              <td className="whitespace-nowrap px-3 py-2 text-right">
-                {retiro && (
-                  <button
-                    type="button"
-                    onClick={() => onVerComprobante(retiro)}
-                    aria-label={t.natillera.verComprobanteAria(empleado.nombre)}
-                    className="mr-3 text-xs font-semibold text-brand-700 transition-colors duration-150 hover:text-brand-900"
-                  >
-                    {t.natillera.verComprobante}
-                  </button>
-                )}
-                {esEditor && retiro && retiro.estado === 'pendiente' && (
-                  <button
-                    type="button"
-                    onClick={() => onMarcarPagado(retiro)}
-                    className="mr-3 text-xs font-semibold text-exito transition-colors duration-150 hover:underline"
-                  >
-                    {t.natillera.marcarPagado}
-                  </button>
-                )}
-                {esEditor && (
-                  <button
-                    type="button"
-                    onClick={() => onReactivar(empleado.id)}
-                    className="text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:text-brand-700"
-                  >
-                    {t.natillera.marcarActivo}
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="mt-3">
+      <TablaAportes
+        empleados={empleados}
+        reportes={reportes}
+        esEditor={esEditor}
+        onVerNovedades={onVerNovedades}
+        mostrarFechaRetiro
+        renderAccionesExtra={(emp) => {
+          const retiro = retiroPorEmpleado.get(emp.id) ?? null
+          return (
+            <>
+              {retiro ? (
+                <BadgeEstado estado={retiro.estado} />
+              ) : (
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-tinta-suave">
+                  {t.natillera.inactivo}
+                </span>
+              )}
+              {retiro && (
+                <button
+                  type="button"
+                  onClick={() => onVerComprobante(retiro)}
+                  aria-label={t.natillera.verComprobanteAria(emp.nombre)}
+                  className="text-xs font-semibold text-brand-700 transition-colors duration-150 hover:text-brand-900"
+                >
+                  {t.natillera.verComprobante}
+                </button>
+              )}
+              {esEditor && retiro && retiro.estado === 'pendiente' && (
+                <button
+                  type="button"
+                  onClick={() => onMarcarPagado(retiro)}
+                  className="text-xs font-semibold text-exito transition-colors duration-150 hover:underline"
+                >
+                  {t.natillera.marcarPagado}
+                </button>
+              )}
+              {esEditor && (
+                <button
+                  type="button"
+                  onClick={() => onReactivar(emp.id)}
+                  className="text-xs font-semibold text-tinta-suave transition-colors duration-150 hover:text-brand-700"
+                >
+                  {t.natillera.marcarActivo}
+                </button>
+              )}
+            </>
+          )
+        }}
+      />
     </div>
   )
 }
