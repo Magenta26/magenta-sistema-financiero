@@ -27,6 +27,8 @@ export const es = {
     estadoResultados: 'Estado de Resultados',
     balanceGeneral: 'Balance General',
     analisis: 'Análisis',
+    administracion: 'Administración',
+    usuarios: 'Usuarios',
     cerrarSesion: 'Cerrar sesión',
     idioma: 'Idioma',
   },
@@ -423,6 +425,39 @@ export const es = {
     bgCuadreVariacion: 'CUADRE: var. Activo − (var. Pasivo + var. Patrimonio + utilidad del mes)',
     notasTitulo: 'NOTAS FINANCIERAS',
     notaMes: (mes: string) => `Notas — ${mes}`,
+  },
+
+  usuarios: {
+    titulo: 'Usuarios y accesos',
+    descripcion:
+      'Gestiona quién entra al sistema y a qué módulos. El rol define lo que cada persona puede ver.',
+    columnaCorreo: 'Correo',
+    columnaRol: 'Rol',
+    columnaEstado: 'Estado',
+    debeCambiar: 'Debe cambiar contraseña',
+    activo: 'Al día',
+    tuUsuario: 'Tú',
+    roles: { admin: 'Administrador', contadora: 'Contadora', nomina: 'Nómina (solo)' },
+    descripcionRoles:
+      'Administrador: todo + usuarios · Contadora: finanzas + nómina · Nómina: solo el módulo de nómina.',
+    rolGuardado: 'Rol actualizado.',
+    errorRol: (detalle: string) => `No se pudo cambiar el rol: ${detalle}`,
+    cargando: 'Cargando usuarios…',
+    error: (detalle: string) => `Error consultando usuarios: ${detalle}`,
+    sinUsuarios: 'No hay usuarios registrados.',
+    // Crear usuario (vía Edge Function)
+    crearTitulo: 'Crear usuario',
+    correoNuevo: 'Correo del nuevo usuario',
+    correoPlaceholder: 'nombre@empresa.com',
+    rolNuevo: 'Rol',
+    crear: 'Crear usuario',
+    creando: 'Creando…',
+    creado: (email: string) =>
+      `Usuario ${email} creado con la contraseña temporal "Magenta26". Deberá cambiarla al ingresar.`,
+    errorCrear: (detalle: string) => `No se pudo crear el usuario: ${detalle}`,
+    errorCorreo: 'Ingresa un correo válido.',
+    notaFuncion:
+      'La creación usa una Edge Function segura (la service_role vive en el servidor, nunca en el navegador). Si aún no está desplegada, este botón fallará.',
   },
 
   nomina: {

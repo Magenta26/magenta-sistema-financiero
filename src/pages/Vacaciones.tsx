@@ -20,7 +20,7 @@ import DetalleVacaciones from '../components/vacaciones/DetalleVacaciones'
 export default function Vacaciones() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const { esEditor } = useRol()
+  const { esEditorNomina: esEditor } = useRol()
   const { sesion } = useAuth()
 
   const [seleccionId, setSeleccionId] = useState<string | null>(null)

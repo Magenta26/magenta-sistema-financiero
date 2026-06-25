@@ -28,6 +28,8 @@ export const en: Diccionario = {
     estadoResultados: 'Income Statement',
     balanceGeneral: 'Balance Sheet',
     analisis: 'Analytics',
+    administracion: 'Administration',
+    usuarios: 'Users',
     cerrarSesion: 'Sign out',
     idioma: 'Language',
   },
@@ -419,6 +421,39 @@ export const en: Diccionario = {
     bgCuadreVariacion: 'TIE-OUT: Δ Assets − (Δ Liabilities + Δ Equity + monthly net income)',
     notasTitulo: 'FINANCIAL NOTES',
     notaMes: (mes: string) => `Notes — ${mes}`,
+  },
+
+  usuarios: {
+    titulo: 'Users & access',
+    descripcion:
+      'Manage who can sign in and which modules they see. The role defines what each person can access.',
+    columnaCorreo: 'Email',
+    columnaRol: 'Role',
+    columnaEstado: 'Status',
+    debeCambiar: 'Must change password',
+    activo: 'Up to date',
+    tuUsuario: 'You',
+    roles: { admin: 'Administrator', contadora: 'Accountant', nomina: 'Payroll (only)' },
+    descripcionRoles:
+      'Administrator: everything + users · Accountant: finance + payroll · Payroll: payroll module only.',
+    rolGuardado: 'Role updated.',
+    errorRol: (detalle: string) => `Could not change the role: ${detalle}`,
+    cargando: 'Loading users…',
+    error: (detalle: string) => `Error loading users: ${detalle}`,
+    sinUsuarios: 'No users registered.',
+    // Create user (via Edge Function)
+    crearTitulo: 'Create user',
+    correoNuevo: 'New user email',
+    correoPlaceholder: 'name@company.com',
+    rolNuevo: 'Role',
+    crear: 'Create user',
+    creando: 'Creating…',
+    creado: (email: string) =>
+      `User ${email} created with the temporary password "Magenta26". They must change it on first sign-in.`,
+    errorCrear: (detalle: string) => `Could not create the user: ${detalle}`,
+    errorCorreo: 'Enter a valid email.',
+    notaFuncion:
+      'Creation uses a secure Edge Function (the service_role lives on the server, never in the browser). If it is not deployed yet, this button will fail.',
   },
 
   nomina: {

@@ -27,7 +27,7 @@ const BUCKET = 'empleados-fotos'
 export default function Empleados() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const { esEditor } = useRol()
+  const { esEditorNomina: esEditor } = useRol()
   const { sesion } = useAuth()
 
   const empleados = useEmpleados()

@@ -1,8 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
+import {
+  esAdmin as esAdminRol,
+  puedeEditarNomina,
+  puedeVerFinanzas,
+  puedeVerNomina,
+  type Rol,
+} from '../lib/acceso'
 
-export type Rol = 'admin' | 'contadora'
+export type { Rol }
 
 interface Perfil {
   rol: Rol | null
@@ -34,7 +41,13 @@ export function useRol() {
   const rol = query.data?.rol ?? null
   return {
     rol,
-    esEditor: rol === 'admin' || rol === 'contadora',
+    // Editor financiero (admin/contadora): gobierna la edición en Finanzas.
+    esEditor: puedeVerFinanzas(rol),
+    // Editor de nómina (admin/contadora/nomina): edición en el módulo Nómina.
+    esEditorNomina: puedeEditarNomina(rol),
+    esAdmin: esAdminRol(rol),
+    puedeFinanzas: puedeVerFinanzas(rol),
+    puedeNomina: puedeVerNomina(rol),
     debeCambiarPassword: query.data?.debeCambiarPassword ?? false,
     ...query,
   }

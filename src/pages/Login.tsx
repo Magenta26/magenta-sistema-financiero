@@ -28,7 +28,7 @@ export default function Login() {
   const [enviando, setEnviando] = useState(false)
 
   if (!cargando && sesion) {
-    return <Navigate to="/finanzas/cargas" replace />
+    return <Navigate to="/" replace />
   }
 
   const manejarEnvio = async (evento: FormEvent) => {
@@ -52,7 +52,8 @@ export default function Login() {
       return
     }
 
-    navigate('/finanzas/cargas', { replace: true })
+    // A "/" → Inicio redirige al módulo que corresponde al rol.
+    navigate('/', { replace: true })
   }
 
   return (

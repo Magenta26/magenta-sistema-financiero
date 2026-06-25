@@ -52,7 +52,8 @@ export default function CambiarPassword() {
 
     setToast({ tipo: 'exito', mensaje: t.cambiarPassword.exito })
     setListo(true)
-    setTimeout(() => navigate('/finanzas/cargas', { replace: true }), 900)
+    // A "/" → Inicio aterriza en el módulo según el rol (nómina ≠ finanzas).
+    setTimeout(() => navigate('/', { replace: true }), 900)
   }
 
   return (

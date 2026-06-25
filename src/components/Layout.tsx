@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useRol } from '../hooks/useRol'
 import { useTranslation } from '../hooks/useTranslation'
 import type { Diccionario } from '../i18n/es'
 import type { Idioma } from '../i18n/idioma'
@@ -24,6 +25,8 @@ interface GrupoNav {
   prefijo: string
   abiertoPorDefecto: boolean
   badge?: (t: Diccionario) => string
+  /** Acceso requerido para ver el grupo (undefined = todos los roles). */
+  requiere?: 'finanzas' | 'admin'
   items: ItemNav[]
 }
 
@@ -38,6 +41,7 @@ const GRUPOS: GrupoNav[] = [
     icono: '🏦',
     prefijo: '/finanzas',
     abiertoPorDefecto: true,
+    requiere: 'finanzas',
     items: [
       { ruta: '/finanzas/cargas', etiqueta: (t) => t.nav.cargas, icono: '⬆' },
       { ruta: '/finanzas/consolidado', etiqueta: (t) => t.nav.consolidado, icono: '▤' },
@@ -57,6 +61,15 @@ const GRUPOS: GrupoNav[] = [
       { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷' },
       { ruta: '/nomina/vacaciones', etiqueta: (t) => t.nomina.vacaciones, icono: '🏖' },
     ],
+  },
+  {
+    clave: 'admin',
+    etiqueta: (t) => t.nav.administracion,
+    icono: '⚙',
+    prefijo: '/admin',
+    abiertoPorDefecto: false,
+    requiere: 'admin',
+    items: [{ ruta: '/admin/usuarios', etiqueta: (t) => t.nav.usuarios, icono: '🔑' }],
   },
 ]
 
@@ -81,16 +94,28 @@ function guardarAbiertos(claves: Set<string>): void {
 
 export default function Layout() {
   const { sesion, cerrarSesion } = useAuth()
+  const { puedeFinanzas, esAdmin } = useRol()
   const { t, idioma, cambiarIdioma } = useTranslation()
   const location = useLocation()
+
+  // Grupos visibles según el rol (un 'nomina' no ve Finanzas ni Administración).
+  const grupos = useMemo(
+    () =>
+      GRUPOS.filter((g) => {
+        if (g.requiere === 'finanzas') return puedeFinanzas
+        if (g.requiere === 'admin') return esAdmin
+        return true
+      }),
+    [puedeFinanzas, esAdmin]
+  )
 
   const [abiertos, setAbiertos] = useState<Set<string>>(() => {
     const guardado = abiertosGuardados()
     const iniciales = guardado
       ? new Set(guardado)
-      : new Set(GRUPOS.filter((g) => g.abiertoPorDefecto).map((g) => g.clave))
+      : new Set(grupos.filter((g) => g.abiertoPorDefecto).map((g) => g.clave))
     // Si se entra directo por URL a un grupo colapsado, arranca expandido.
-    const grupoActivo = GRUPOS.find((g) => location.pathname.startsWith(g.prefijo))
+    const grupoActivo = grupos.find((g) => location.pathname.startsWith(g.prefijo))
     if (grupoActivo) iniciales.add(grupoActivo.clave)
     return iniciales
   })
@@ -105,7 +130,7 @@ export default function Layout() {
   const [rutaPrevia, setRutaPrevia] = useState(location.pathname)
   if (rutaPrevia !== location.pathname) {
     setRutaPrevia(location.pathname)
-    const grupoActivo = GRUPOS.find((g) => location.pathname.startsWith(g.prefijo))
+    const grupoActivo = grupos.find((g) => location.pathname.startsWith(g.prefijo))
     if (grupoActivo && !abiertos.has(grupoActivo.clave)) {
       actualizarAbiertos(new Set([...abiertos, grupoActivo.clave]))
     }
@@ -130,7 +155,7 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
-          {GRUPOS.map((grupo) => {
+          {grupos.map((grupo) => {
             const abierto = abiertos.has(grupo.clave)
             return (
               <div key={grupo.clave}>

@@ -35,7 +35,7 @@ const dosDigitos = (n: number) => String(n).padStart(2, '0')
 export default function Natillera() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const { esEditor } = useRol()
+  const { esEditorNomina: esEditor } = useRol()
   const { sesion } = useAuth()
   const periodoActual = usePeriodoActual()
 
