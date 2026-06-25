@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   siguienteCodigoEmpleado,
+  siguienteCodigoExterno,
   aniosNatillera,
   anioNatilleraPorDefecto,
   saldoInicialDe,
@@ -19,6 +20,15 @@ describe('siguienteCodigoEmpleado', () => {
   })
   it('conserva al menos 3 dígitos pero crece si hace falta', () => {
     expect(siguienteCodigoEmpleado(['EMP-999'])).toBe('EMP-1000')
+  })
+})
+
+describe('siguienteCodigoExterno', () => {
+  it('sin códigos previos arranca en EXT-001', () => {
+    expect(siguienteCodigoExterno([])).toBe('EXT-001')
+  })
+  it('toma el mayor EXT-### y suma 1, ignorando los EMP-###', () => {
+    expect(siguienteCodigoExterno(['EMP-009', 'EXT-002', 'EXT-005'])).toBe('EXT-006')
   })
 })
 

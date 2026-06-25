@@ -6,18 +6,35 @@
 import type { EmpleadoNatillera, NovedadNatillera, SaldoInicialNatillera } from '../types/natillera'
 
 /**
- * Siguiente código de empleado con el patrón EMP-###: toma el mayor número con
- * ese formato entre los códigos existentes y le suma 1, con relleno a 3 dígitos
- * (mínimo). Si no hay ninguno con el patrón, arranca en EMP-001. Otros formatos
- * de código se ignoran para el conteo (no rompen la sugerencia).
+ * Siguiente código con el patrón `${prefijo}-###`: toma el mayor número con ese
+ * formato entre los códigos existentes y le suma 1, con relleno a 3 dígitos
+ * (mínimo). Si no hay ninguno con el patrón, arranca en `${prefijo}-001`. Otros
+ * formatos (incluido otro prefijo) se ignoran para el conteo.
  */
-export function siguienteCodigoEmpleado(codigos: (string | null | undefined)[]): string {
+export function siguienteCodigoConPrefijo(
+  codigos: (string | null | undefined)[],
+  prefijo: string
+): string {
+  const re = new RegExp(`^${prefijo}-(\\d+)$`)
   let max = 0
   for (const c of codigos) {
-    const m = /^EMP-(\d+)$/.exec((c ?? '').trim())
+    const m = re.exec((c ?? '').trim())
     if (m) max = Math.max(max, Number(m[1]))
   }
-  return `EMP-${String(max + 1).padStart(3, '0')}`
+  return `${prefijo}-${String(max + 1).padStart(3, '0')}`
+}
+
+/** Siguiente código de empleado de planta (EMP-###). */
+export function siguienteCodigoEmpleado(codigos: (string | null | undefined)[]): string {
+  return siguienteCodigoConPrefijo(codigos, 'EMP')
+}
+
+/**
+ * Siguiente código de externo (EXT-###): prefijo distinto al de planta para que
+ * los dos correlativos no choquen.
+ */
+export function siguienteCodigoExterno(codigos: (string | null | undefined)[]): string {
+  return siguienteCodigoConPrefijo(codigos, 'EXT')
 }
 
 /** Año de una fecha 'YYYY-MM-DD'; null si vacía/ inválida. */

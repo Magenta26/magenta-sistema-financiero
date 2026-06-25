@@ -542,6 +542,21 @@ export const en: Diccionario = {
     guardar: 'Save',
     guardando: 'Saving…',
 
+    // Add: plant employee (from list) vs external (manual)
+    alta: {
+      tipo: 'Type',
+      tipoEmpleado: 'Employee',
+      tipoExterno: 'External',
+      empleadoLabel: 'Employee',
+      seleccionaEmpleado: 'Select an employee',
+      sinDisponibles: 'All employees are already in the savings fund.',
+      codigoVinculado: (codigo: string) => `Code ${codigo} will be used (same as in Employees).`,
+      fechaIngresoNatillera: 'Savings start date',
+      errorEmpleadoRequerido: 'Select an employee.',
+      errorYaVinculado: 'This employee is already in the savings fund.',
+      errorCuota: 'Enter a contribution greater than 0.',
+    },
+
     // Contributions table (READ-ONLY report, computed on read)
     aportesTitulo: 'Monthly contributions',
     columnaCodigo: 'Code',

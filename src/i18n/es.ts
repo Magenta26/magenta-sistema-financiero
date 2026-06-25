@@ -546,6 +546,21 @@ export const es = {
     guardar: 'Guardar',
     guardando: 'Guardando…',
 
+    // Alta: empleado de planta (de la lista) vs externo (manual)
+    alta: {
+      tipo: 'Tipo',
+      tipoEmpleado: 'Empleado',
+      tipoExterno: 'Externo',
+      empleadoLabel: 'Empleado',
+      seleccionaEmpleado: 'Selecciona un empleado',
+      sinDisponibles: 'Todos los empleados ya están en la natillera.',
+      codigoVinculado: (codigo: string) => `Se usará el código ${codigo} (mismo que en Empleados).`,
+      fechaIngresoNatillera: 'Fecha de ingreso a la natillera',
+      errorEmpleadoRequerido: 'Selecciona un empleado.',
+      errorYaVinculado: 'Este empleado ya está en la natillera.',
+      errorCuota: 'Ingresa una cuota mayor a 0.',
+    },
+
     // Tabla de aportes (reporte SOLO LECTURA, calculado al vuelo)
     aportesTitulo: 'Aportes mensuales',
     columnaCodigo: 'Código',

@@ -11,6 +11,7 @@ import {
   useRetirosNatillera,
   useSaldosInicialesNatillera,
 } from '../hooks/useNatillera'
+import { useEmpleados } from '../hooks/useEmpleados'
 import { anioNatilleraPorDefecto, aniosNatillera, nombreMostrado, saldoInicialDe } from '../lib/natillera'
 import { resolverReporteEmpleado } from '../lib/natilleraReporte'
 import type { ReporteEmpleado } from '../lib/natilleraReporte'
@@ -60,6 +61,7 @@ export default function Natillera() {
   const novedades = useNovedadesNatillera()
   const retiros = useRetirosNatillera()
   const saldosQuery = useSaldosInicialesNatillera()
+  const empleadosFichaQuery = useEmpleados()
 
   const listaEmpleados = useMemo(() => empleados.data ?? [], [empleados.data])
   const listaNovedades = useMemo(() => novedades.data ?? [], [novedades.data])
@@ -159,6 +161,15 @@ export default function Natillera() {
     () => listaEmpleados.map((e) => e.codigo ?? '').filter((c) => c !== ''),
     [listaEmpleados]
   )
+  const empleadosFicha = useMemo(
+    () => empleadosFichaQuery.data ?? [],
+    [empleadosFichaQuery.data]
+  )
+  // Empleados de planta ya vinculados (para no agregarlos dos veces).
+  const empleadoIdsEnNatillera = useMemo(
+    () => listaEmpleados.map((e) => e.empleado_id).filter((id): id is string => id != null),
+    [listaEmpleados]
+  )
   const nombrePorId = useMemo(() => {
     const m = new Map<string, string>()
     for (const e of listaEmpleados) m.set(e.id, nombreMostrado(e))
@@ -186,6 +197,7 @@ export default function Natillera() {
         if (error) throw new Error(error.message)
       } else {
         const { error } = await supabase.from('natillera_empleados').insert({
+          empleado_id: datos.empleado_id,
           codigo: datos.codigo,
           nombre: datos.nombre,
           cuota_mensual: datos.cuota_mensual,
@@ -450,6 +462,8 @@ export default function Natillera() {
       {modalEmpleado && (
         <ModalEmpleado
           empleado={modalEmpleado.empleado}
+          empleadosFicha={empleadosFicha}
+          empleadoIdsEnNatillera={empleadoIdsEnNatillera}
           codigosExistentes={codigosExistentes}
           guardando={guardarEmpleado.isPending}
           onGuardar={(datos) =>
