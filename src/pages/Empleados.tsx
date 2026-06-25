@@ -18,9 +18,9 @@ import type { NovedadNatillera } from '../types/natillera'
 import type { DatosEmpleado, Empleado } from '../types/empleados'
 import Toast from '../components/Toast'
 import type { DatosToast } from '../components/Toast'
-import Avatar from '../components/empleados/Avatar'
 import ModalEmpleado from '../components/empleados/ModalEmpleado'
 import FichaEmpleado from '../components/empleados/FichaEmpleado'
+import ListaEmpleados from '../components/empleados/ListaEmpleados'
 
 const BUCKET = 'empleados-fotos'
 
@@ -33,7 +33,6 @@ export default function Empleados() {
   const empleados = useEmpleados()
   const lista = useMemo(() => empleados.data ?? [], [empleados.data])
 
-  const [busqueda, setBusqueda] = useState('')
   const [seleccionId, setSeleccionId] = useState<string | null>(null)
   const [modal, setModal] = useState<{ empleado: Empleado | null } | null>(null)
   const [toast, setToast] = useState<DatosToast | null>(null)
@@ -83,12 +82,6 @@ export default function Empleados() {
   }, [natEmps.data, novedades.data, saldosQuery.data, hoy])
 
   const codigosExistentes = useMemo(() => lista.map((e) => e.codigo), [lista])
-
-  const filtrados = useMemo(() => {
-    const q = busqueda.trim().toLowerCase()
-    if (q === '') return lista
-    return lista.filter((e) => e.nombre_completo.toLowerCase().includes(q))
-  }, [lista, busqueda])
 
   const seleccionado = seleccionId ? lista.find((e) => e.id === seleccionId) ?? null : null
 
@@ -181,74 +174,31 @@ export default function Empleados() {
   // ── Vista lista ──
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-brand-900">{t.empleados.titulo}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-tinta-suave">{t.empleados.descripcion}</p>
-        </div>
-        {esEditor && (
-          <button
-            type="button"
-            onClick={() => setModal({ empleado: null })}
-            className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-brand-900"
-          >
-            + {t.empleados.agregar}
-          </button>
-        )}
-      </div>
-
-      <input
-        type="search"
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        placeholder={t.empleados.buscar}
-        className="mt-5 block w-full max-w-sm rounded-lg border border-borde bg-white px-3 py-2 text-sm text-tinta placeholder-gray-400 transition-colors duration-150 focus:border-brand-700 focus:outline-none"
-      />
-
       {empleados.error && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {t.empleados.error(empleados.error.message)}
         </p>
       )}
-      {empleados.isLoading && <p className="mt-6 text-sm text-tinta-suave">{t.empleados.cargando}</p>}
 
-      {!empleados.isLoading && !empleados.error && lista.length === 0 && (
-        <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
-          {t.empleados.sinEmpleados}
-        </p>
-      )}
-
-      {filtrados.length > 0 && (
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtrados.map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              onClick={() => setSeleccionId(e.id)}
-              className="flex items-center gap-3 rounded-xl border border-borde bg-white p-4 text-left shadow-sm transition-colors duration-150 hover:border-brand-700 hover:bg-brand-50"
-            >
-              <Avatar nombre={e.nombre_completo} fotoUrl={fotoUrlDe(e)} tamano={48} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-brand-900">{e.nombre_completo}</p>
-                <p className="truncate text-xs text-tinta-suave">
-                  <span className="font-mono">{e.codigo}</span>
-                  {e.equipo ? ` · ${e.equipo}` : ''}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                  e.activo ? 'bg-green-100 text-exito' : 'bg-gray-100 text-tinta-suave'
-                }`}
-              >
-                {e.activo ? t.empleados.activo : t.empleados.inactivo}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {!empleados.isLoading && lista.length > 0 && filtrados.length === 0 && (
-        <p className="mt-6 text-sm text-tinta-suave">{t.empleados.sinResultados}</p>
+      {!empleados.isLoading && !empleados.error && lista.length === 0 ? (
+        <>
+          <div>
+            <h1 className="text-2xl font-bold text-brand-900">{t.empleados.titulo}</h1>
+            <p className="mt-1 max-w-2xl text-sm text-tinta-suave">{t.empleados.descripcion}</p>
+          </div>
+          <p className="mt-6 rounded-xl border border-dashed border-borde bg-white p-6 text-center text-sm text-tinta-suave">
+            {t.empleados.sinEmpleados}
+          </p>
+        </>
+      ) : (
+        <ListaEmpleados
+          empleados={lista}
+          fotoUrlDe={fotoUrlDe}
+          esEditor={esEditor}
+          cargando={empleados.isLoading}
+          onAgregar={() => setModal({ empleado: null })}
+          onAbrir={(id) => setSeleccionId(id)}
+        />
       )}
 
       {modal && (

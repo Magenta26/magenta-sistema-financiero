@@ -54,6 +54,22 @@ body {
   animation: sectionIn 0.22s ease;
 }
 
+/* Entrada sutil de cada fila de la lista de empleados (escalonada por inline delay). */
+@keyframes filaEntra {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fila-entra {
+  animation: filaEntra 0.24s ease-out both;
+}
+
 /*
  * Impresión del comprobante de retiro (Natillera).
  * Oculta toda la app (sidebar, menús, botones) y deja solo el comprobante,

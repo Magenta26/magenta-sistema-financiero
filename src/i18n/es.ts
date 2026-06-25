@@ -802,6 +802,58 @@ export const es = {
       error: (detalle: string) => `No se pudo subir la foto: ${detalle}`,
       noImagen: 'Selecciona un archivo de imagen.',
     },
+
+    lista: {
+      // Migas + buscador
+      migaNomina: 'Nómina',
+      migaEmpleados: 'Empleados',
+      buscar: 'Buscar por nombre o código…',
+      // KPIs
+      kpiTotal: 'Total empleados',
+      kpiTotalNota: 'en la ficha',
+      kpiActivos: 'Empleados activos',
+      kpiActivosNota: (inactivos: number) =>
+        inactivos === 0 ? 'todos al día' : `${inactivos} inactivo${inactivos === 1 ? '' : 's'}`,
+      kpiExternos: 'Empleados externos',
+      kpiExternosNota: 'por definir',
+      kpiAntiguedad: 'Antigüedad promedio',
+      kpiAntiguedadNota: (conFecha: number, total: number) =>
+        conFecha === 0 ? 'sin fechas de ingreso' : `${conFecha} de ${total} con fecha`,
+      promedioAnios: (texto: string) => `${texto} años`,
+      // Chips de área
+      chipTodas: 'Todas',
+      sinArea: 'Sin área',
+      // Columnas
+      colEmpleado: 'Empleado',
+      colArea: 'Cargo / Área',
+      colContrato: 'Contrato',
+      colAntiguedad: 'Ingreso / Antigüedad',
+      colEstado: 'Estado',
+      // Antigüedad
+      desde: (fecha: string) => `desde ${fecha}`,
+      antiguedad: (anios: number, meses: number) => {
+        const a = anios === 1 ? '1 año' : `${anios} años`
+        const m = meses === 1 ? '1 mes' : `${meses} meses`
+        if (anios === 0) return m
+        if (meses === 0) return a
+        return `${a} ${m}`
+      },
+      // Estado vacío
+      sinResultadosTitulo: 'Sin resultados',
+      sinResultadosTexto: 'No hay empleados que coincidan con tu búsqueda o filtro.',
+      // Pie
+      conteo: (n: number, total: number) => `Mostrando ${n} de ${total} empleados`,
+      ordenadoPor: (campo: string) => `Ordenado por ${campo}`,
+      // Etiquetas de orden
+      ordenes: {
+        nombre: 'Nombre',
+        area: 'Área',
+        contrato: 'Contrato',
+        antiguedad: 'Antigüedad',
+        codigo: 'Código',
+      },
+      sinContrato: 'Sin contrato',
+    },
   },
 }
 

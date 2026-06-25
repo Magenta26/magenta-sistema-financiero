@@ -798,5 +798,57 @@ export const en: Diccionario = {
       error: (detalle: string) => `Could not upload the photo: ${detalle}`,
       noImagen: 'Select an image file.',
     },
+
+    lista: {
+      // Breadcrumb + search
+      migaNomina: 'Payroll',
+      migaEmpleados: 'Employees',
+      buscar: 'Search by name or code…',
+      // KPIs
+      kpiTotal: 'Total employees',
+      kpiTotalNota: 'on file',
+      kpiActivos: 'Active employees',
+      kpiActivosNota: (inactivos: number) =>
+        inactivos === 0 ? 'all up to date' : `${inactivos} inactive`,
+      kpiExternos: 'External employees',
+      kpiExternosNota: 'to be defined',
+      kpiAntiguedad: 'Average tenure',
+      kpiAntiguedadNota: (conFecha: number, total: number) =>
+        conFecha === 0 ? 'no join dates yet' : `${conFecha} of ${total} with date`,
+      promedioAnios: (texto: string) => `${texto} years`,
+      // Area chips
+      chipTodas: 'All',
+      sinArea: 'No area',
+      // Columns
+      colEmpleado: 'Employee',
+      colArea: 'Role / Area',
+      colContrato: 'Contract',
+      colAntiguedad: 'Joined / Tenure',
+      colEstado: 'Status',
+      // Tenure
+      desde: (fecha: string) => `since ${fecha}`,
+      antiguedad: (anios: number, meses: number) => {
+        const a = anios === 1 ? '1 year' : `${anios} years`
+        const m = meses === 1 ? '1 month' : `${meses} months`
+        if (anios === 0) return m
+        if (meses === 0) return a
+        return `${a} ${m}`
+      },
+      // Empty state
+      sinResultadosTitulo: 'No results',
+      sinResultadosTexto: 'No employees match your search or filter.',
+      // Footer
+      conteo: (n: number, total: number) => `Showing ${n} of ${total} employees`,
+      ordenadoPor: (campo: string) => `Sorted by ${campo}`,
+      // Sort labels
+      ordenes: {
+        nombre: 'Name',
+        area: 'Area',
+        contrato: 'Contract',
+        antiguedad: 'Tenure',
+        codigo: 'Code',
+      },
+      sinContrato: 'No contract',
+    },
   },
 }
