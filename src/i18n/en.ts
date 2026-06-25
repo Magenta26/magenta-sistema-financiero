@@ -546,6 +546,7 @@ export const en: Diccionario = {
     aportesTitulo: 'Monthly contributions',
     columnaCodigo: 'Code',
     columnaEmpleado: 'Employee',
+    externo: 'External',
     columnaCuota: 'Contribution',
     columnaSaldoInicial: 'Opening balance',
     columnaTotal: 'Total saved',

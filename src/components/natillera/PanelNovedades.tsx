@@ -1,5 +1,6 @@
 import { useTranslation } from '../../hooks/useTranslation'
 import { contable, fechaHora } from '../../lib/formato'
+import { nombreMostrado } from '../../lib/natillera'
 import { nombreMes } from '../../types/balance'
 import type { EmpleadoNatillera, NovedadNatillera } from '../../types/natillera'
 
@@ -13,6 +14,7 @@ interface Props {
 export default function PanelNovedades({ empleado, novedades, onCerrar }: Props) {
   const { t } = useTranslation()
   const nv = t.natillera.novedades
+  const nombre = nombreMostrado(empleado)
 
   // Más recientes primero (por período y luego por fecha de registro).
   const ordenadas = [...novedades].sort((a, b) => {
@@ -27,13 +29,13 @@ export default function PanelNovedades({ empleado, novedades, onCerrar }: Props)
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={nv.tituloEmpleado(empleado.nombre)}
+      aria-label={nv.tituloEmpleado(nombre)}
     >
       <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-xl border border-borde bg-white shadow-lg">
         <div className="flex items-center justify-between border-b border-borde px-5 py-3">
           <h2 className="text-base font-semibold text-brand-900">
             <span className="font-mono text-sm text-tinta-suave">{empleado.codigo ?? '—'}</span>{' '}
-            {nv.tituloEmpleado(empleado.nombre)}
+            {nv.tituloEmpleado(nombre)}
           </h2>
           <button
             type="button"

@@ -26,17 +26,25 @@ export function useEmpleadosNatillera() {
   return useQuery({
     queryKey: ['natillera_empleados'],
     queryFn: async (): Promise<EmpleadoNatillera[]> => {
+      // Join con la ficha central `empleados` por empleado_id para traer el
+      // nombre_completo de los vinculados (los externos no tienen vínculo → null).
       const { data, error } = await supabase
         .from('natillera_empleados')
         .select(
-          'id, empleado_id, codigo, nombre, cuota_mensual, activo, fecha_ingreso, fecha_retiro, creado_en'
+          'id, empleado_id, codigo, nombre, cuota_mensual, activo, fecha_ingreso, fecha_retiro, creado_en, empleados:empleado_id(nombre_completo)'
         )
         .order('codigo', { ascending: true })
       if (error) throw new Error(error.message)
-      return (data ?? []).map((e) => ({
-        ...e,
-        cuota_mensual: Number(e.cuota_mensual),
-      })) as EmpleadoNatillera[]
+      return (data ?? []).map((e) => {
+        const { empleados, ...resto } = e as typeof e & {
+          empleados: { nombre_completo: string | null } | null
+        }
+        return {
+          ...resto,
+          cuota_mensual: Number(resto.cuota_mensual),
+          nombre_completo: empleados?.nombre_completo ?? null,
+        }
+      }) as EmpleadoNatillera[]
     },
   })
 }

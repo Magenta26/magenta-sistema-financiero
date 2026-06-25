@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from '../../hooks/useTranslation'
+import { nombreMostrado } from '../../lib/natillera'
 import type { ReporteEmpleado } from '../../lib/natilleraReporte'
 import type { EmpleadoNatillera, RetiroNatillera } from '../../types/natillera'
 import TablaAportes from './TablaAportes'
@@ -92,7 +93,7 @@ export default function SeccionRetirados({
                 <button
                   type="button"
                   onClick={() => onVerComprobante(retiro)}
-                  aria-label={t.natillera.verComprobanteAria(emp.nombre)}
+                  aria-label={t.natillera.verComprobanteAria(nombreMostrado(emp))}
                   className="text-xs font-semibold text-brand-700 transition-colors duration-150 hover:text-brand-900"
                 >
                   {t.natillera.verComprobante}

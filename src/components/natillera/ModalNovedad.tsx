@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation'
 import { contable, parsearNumero } from '../../lib/formato'
 import { nombreMes } from '../../types/balance'
 import { cuotaVigenteEn } from '../../lib/natilleraReporte'
+import { nombreMostrado } from '../../lib/natillera'
 import type { EmpleadoNatillera, NovedadNatillera, TipoNovedad } from '../../types/natillera'
 
 export interface DatosNovedad {
@@ -84,7 +85,7 @@ export default function ModalNovedad({
     })
   }
 
-  const titulo = empleado ? nv.modalTitulo(empleado.nombre) : nv.modalTituloGeneral
+  const titulo = empleado ? nv.modalTitulo(nombreMostrado(empleado)) : nv.modalTituloGeneral
 
   return (
     <div
@@ -112,7 +113,7 @@ export default function ModalNovedad({
                 <option value="">{nv.placeholderEmpleado}</option>
                 {empleados.map((e) => (
                   <option key={e.id} value={e.id}>
-                    {e.codigo ? `${e.codigo} · ${e.nombre}` : e.nombre}
+                    {e.codigo ? `${e.codigo} · ${nombreMostrado(e)}` : nombreMostrado(e)}
                   </option>
                 ))}
               </select>

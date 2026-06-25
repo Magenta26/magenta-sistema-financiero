@@ -11,7 +11,7 @@ import {
   useRetirosNatillera,
   useSaldosInicialesNatillera,
 } from '../hooks/useNatillera'
-import { anioNatilleraPorDefecto, aniosNatillera, saldoInicialDe } from '../lib/natillera'
+import { anioNatilleraPorDefecto, aniosNatillera, nombreMostrado, saldoInicialDe } from '../lib/natillera'
 import { resolverReporteEmpleado } from '../lib/natilleraReporte'
 import type { ReporteEmpleado } from '../lib/natilleraReporte'
 import type { EmpleadoNatillera, NovedadNatillera, RetiroNatillera } from '../types/natillera'
@@ -142,7 +142,9 @@ export default function Natillera() {
 
   // Buscador por código o nombre (case-insensitive, parcial). Filtra ambas secciones.
   const coincide = (emp: EmpleadoNatillera, q: string) =>
-    emp.nombre.toLowerCase().includes(q) || (emp.codigo ?? '').toLowerCase().includes(q)
+    nombreMostrado(emp).toLowerCase().includes(q) ||
+    emp.nombre.toLowerCase().includes(q) ||
+    (emp.codigo ?? '').toLowerCase().includes(q)
   const q = busqueda.trim().toLowerCase()
   const activosFiltrados = useMemo(
     () => (q === '' ? activos : activos.filter((e) => coincide(e, q))),
@@ -159,7 +161,7 @@ export default function Natillera() {
   )
   const nombrePorId = useMemo(() => {
     const m = new Map<string, string>()
-    for (const e of listaEmpleados) m.set(e.id, e.nombre)
+    for (const e of listaEmpleados) m.set(e.id, nombreMostrado(e))
     return m
   }, [listaEmpleados])
   const codigoPorId = useMemo(() => {

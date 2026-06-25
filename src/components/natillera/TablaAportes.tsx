@@ -4,6 +4,7 @@ import { contable, fecha, moneda } from '../../lib/formato'
 import { nombreMes } from '../../types/balance'
 import { totalGeneralReporte, totalMesReporte } from '../../lib/natilleraReporte'
 import type { ReporteEmpleado } from '../../lib/natilleraReporte'
+import { esExterno, nombreMostrado } from '../../lib/natillera'
 import type { EmpleadoNatillera } from '../../types/natillera'
 
 interface Props {
@@ -137,7 +138,14 @@ export default function TablaAportes({
                   className="sticky z-10 bg-white px-3 py-1.5 text-xs font-medium text-tinta"
                   style={{ left: NOM_LEFT, minWidth: 150 }}
                 >
-                  {emp.nombre}
+                  <span className="inline-flex items-center gap-1.5">
+                    {nombreMostrado(emp)}
+                    {esExterno(emp) && (
+                      <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-tinta-suave">
+                        {t.natillera.externo}
+                      </span>
+                    )}
+                  </span>
                 </td>
                 {mostrarFechaRetiro && (
                   <td className="whitespace-nowrap px-3 py-1.5 text-xs tabular-nums text-tinta-suave">
@@ -166,7 +174,7 @@ export default function TablaAportes({
                       <button
                         type="button"
                         onClick={() => onVerNovedades(emp)}
-                        aria-label={t.natillera.novedades.verAria(emp.nombre)}
+                        aria-label={t.natillera.novedades.verAria(nombreMostrado(emp))}
                         title={t.natillera.novedades.ver}
                         className="inline-flex items-center justify-center rounded-md p-1 text-tinta-suave transition-colors duration-150 hover:bg-brand-100 hover:text-brand-700"
                       >

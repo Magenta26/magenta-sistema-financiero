@@ -11,6 +11,12 @@ export interface EmpleadoNatillera {
   /** Código único del empleado (autosugerido EMP-### al crear, editable). */
   codigo: string | null
   nombre: string
+  /**
+   * Nombre completo traído de la ficha central `empleados` vía join por
+   * `empleado_id`; null si la fila es un externo (sin vínculo) o no se resolvió.
+   * Se usa solo para mostrar (ver `nombreMostrado`); no cambia la tabla.
+   */
+  nombre_completo?: string | null
   /** Cuota base/inicial al ingreso (las variaciones se hacen con novedades). */
   cuota_mensual: number
   /** true = Activo · false = Retirado. */

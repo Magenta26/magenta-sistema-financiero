@@ -550,6 +550,7 @@ export const es = {
     aportesTitulo: 'Aportes mensuales',
     columnaCodigo: 'Código',
     columnaEmpleado: 'Empleado',
+    externo: 'Externo',
     columnaCuota: 'Cuota',
     columnaSaldoInicial: 'Saldo inicial',
     columnaTotal: 'Total ahorrado',

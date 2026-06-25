@@ -68,3 +68,19 @@ export function anioNatilleraPorDefecto(
 export function saldoInicialDe(saldos: Map<string, number>, empleadoId: string, anio: number): number {
   return saldos.get(`${empleadoId}:${anio}`) ?? 0
 }
+
+/**
+ * Nombre a mostrar de un empleado de la natillera: el `nombre_completo` de la
+ * ficha central `empleados` si está vinculado; si no (externo), el `nombre`
+ * local. No cambia la lógica de aportes; solo de dónde sale el texto.
+ */
+export function nombreMostrado(
+  emp: Pick<EmpleadoNatillera, 'nombre' | 'nombre_completo'>
+): string {
+  return emp.nombre_completo?.trim() ? emp.nombre_completo : emp.nombre
+}
+
+/** true si la fila no está vinculada a la ficha central `empleados` (externo). */
+export function esExterno(emp: Pick<EmpleadoNatillera, 'empleado_id'>): boolean {
+  return emp.empleado_id == null
+}
