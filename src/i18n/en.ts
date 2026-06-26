@@ -465,7 +465,60 @@ export const en: Diccionario = {
     proximamente: 'Coming Soon',
     natillera: 'Savings Fund',
     empleados: 'Employees',
+    externos: 'Contractors',
     vacaciones: 'Vacation',
+  },
+
+  externos: {
+    titulo: 'Contractor Payments',
+    descripcion:
+      'Catalog of external workers paid biweekly for stems (maquillada and hydratada) and hours. Independent of the accounting records.',
+    cargando: 'Loading contractors…',
+    error: (detalle: string) => `Error loading contractors: ${detalle}`,
+    sinExternos: 'No contractors registered yet.',
+    sinResultados: 'No contractors match your search.',
+    buscarPlaceholder: 'Search by name, code or ID…',
+    agregar: 'Add contractor',
+    notaPie:
+      'Stem/hour capture and biweekly settlement will be enabled in an upcoming release.',
+
+    // Table
+    colCodigo: 'Code',
+    colNombre: 'Name',
+    colCedula: 'ID',
+    colNatillera: 'Savings Fund',
+    colEstado: 'Status',
+    colAcciones: 'Actions',
+    ahorraBadge: 'Saves in fund',
+    activo: 'Active',
+    inactivo: 'Inactive',
+    editar: 'Edit',
+    activar: 'Activate',
+    desactivar: 'Deactivate',
+    errorGuardar: (detalle: string) => `Could not save: ${detalle}`,
+    guardado: 'Contractor saved.',
+
+    // Modal
+    modal: {
+      nuevoTitulo: 'New contractor',
+      editarTitulo: 'Edit contractor',
+      codigo: 'Code',
+      errorCodigoRequerido: 'Code is required.',
+      errorCodigoDuplicado: (codigo: string) => `A contractor with code ${codigo} already exists.`,
+      nombre: 'Full name',
+      nombrePlaceholder: 'First and last name',
+      errorNombre: 'Name is required.',
+      cedula: 'ID (optional)',
+      cedulaPlaceholder: 'Document number',
+      ahorra: 'Saves in the savings fund?',
+      vinculoLabel: 'Linked savings-fund record',
+      seleccionaNatillera: 'Select the person in the savings fund…',
+      sinNatillera: 'No active savings-fund members to link.',
+      errorNatillera: 'Select the savings-fund record or turn off saving.',
+      activo: 'Active',
+      guardar: 'Save',
+      guardando: 'Saving…',
+    },
   },
 
   vacaciones: {

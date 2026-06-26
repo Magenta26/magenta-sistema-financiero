@@ -12,6 +12,7 @@ import EstadoResultados from './pages/EstadoResultados'
 import Login from './pages/Login'
 import Natillera from './pages/Natillera'
 import Empleados from './pages/Empleados'
+import Externos from './pages/Externos'
 import Vacaciones from './pages/Vacaciones'
 import Usuarios from './pages/Usuarios'
 
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
           <Route path="/nomina/natillera" element={<Natillera />} />
           <Route path="/nomina/empleados" element={<Empleados />} />
+          <Route path="/nomina/externos" element={<Externos />} />
           <Route path="/nomina/vacaciones" element={<Vacaciones />} />
 
           {/* Administración — solo admin */}

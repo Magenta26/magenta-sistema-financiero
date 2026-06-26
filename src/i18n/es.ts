@@ -469,7 +469,60 @@ export const es = {
     proximamente: 'Próximamente',
     natillera: 'Natillera',
     empleados: 'Empleados',
+    externos: 'Externos',
     vacaciones: 'Vacaciones',
+  },
+
+  externos: {
+    titulo: 'Pago a externos',
+    descripcion:
+      'Catálogo de personas externas a las que se les paga quincenalmente por tallos (maquillada e hydratada) y horas. Independiente de la contabilidad.',
+    cargando: 'Cargando externos…',
+    error: (detalle: string) => `Error consultando externos: ${detalle}`,
+    sinExternos: 'Aún no hay externos registrados.',
+    sinResultados: 'No hay externos que coincidan con tu búsqueda.',
+    buscarPlaceholder: 'Buscar por nombre, código o cédula…',
+    agregar: 'Agregar externo',
+    notaPie:
+      'La captura de tallos/horas y la liquidación quincenal se habilitarán en una próxima entrega.',
+
+    // Tabla
+    colCodigo: 'Código',
+    colNombre: 'Nombre',
+    colCedula: 'Cédula',
+    colNatillera: 'Natillera',
+    colEstado: 'Estado',
+    colAcciones: 'Acciones',
+    ahorraBadge: 'Ahorra en natillera',
+    activo: 'Activo',
+    inactivo: 'Inactivo',
+    editar: 'Editar',
+    activar: 'Activar',
+    desactivar: 'Desactivar',
+    errorGuardar: (detalle: string) => `No se pudo guardar: ${detalle}`,
+    guardado: 'Externo guardado.',
+
+    // Modal
+    modal: {
+      nuevoTitulo: 'Nuevo externo',
+      editarTitulo: 'Editar externo',
+      codigo: 'Código',
+      errorCodigoRequerido: 'El código es obligatorio.',
+      errorCodigoDuplicado: (codigo: string) => `Ya existe un externo con el código ${codigo}.`,
+      nombre: 'Nombre completo',
+      nombrePlaceholder: 'Nombre y apellidos',
+      errorNombre: 'El nombre es obligatorio.',
+      cedula: 'Cédula (opcional)',
+      cedulaPlaceholder: 'Número de documento',
+      ahorra: '¿Ahorra en la natillera?',
+      vinculoLabel: 'Registro de natillera vinculado',
+      seleccionaNatillera: 'Selecciona a la persona en la natillera…',
+      sinNatillera: 'No hay personas activas en la natillera para vincular.',
+      errorNatillera: 'Selecciona el registro de natillera o desactiva el ahorro.',
+      activo: 'Activo',
+      guardar: 'Guardar',
+      guardando: 'Guardando…',
+    },
   },
 
   vacaciones: {
