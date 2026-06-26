@@ -13,6 +13,9 @@ import Login from './pages/Login'
 import Natillera from './pages/Natillera'
 import Empleados from './pages/Empleados'
 import Externos from './pages/Externos'
+import CatalogoExternos from './pages/externos/CatalogoExternos'
+import RegistroExternos from './pages/externos/RegistroExternos'
+import LiquidacionExternos from './pages/externos/LiquidacionExternos'
 import Vacaciones from './pages/Vacaciones'
 import Usuarios from './pages/Usuarios'
 
@@ -54,7 +57,11 @@ export default function App() {
           <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
           <Route path="/nomina/natillera" element={<Natillera />} />
           <Route path="/nomina/empleados" element={<Empleados />} />
-          <Route path="/nomina/externos" element={<Externos />} />
+          <Route path="/nomina/externos" element={<Externos />}>
+            <Route index element={<CatalogoExternos />} />
+            <Route path="registro" element={<RegistroExternos />} />
+            <Route path="liquidacion" element={<LiquidacionExternos />} />
+          </Route>
           <Route path="/nomina/vacaciones" element={<Vacaciones />} />
 
           {/* Administración — solo admin */}

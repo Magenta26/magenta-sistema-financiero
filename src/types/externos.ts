@@ -39,9 +39,18 @@ export interface TarifasExternos {
   hora_valor: number
 }
 
-/** Producción diaria de un externo (se captura en la Entrega 2). */
+/** Producción diaria de un externo. */
 export interface RegistroExterno {
   id: string
+  externo_id: string
+  fecha: string
+  maquillada_tallos: number
+  hydratada_tallos: number
+  horas: number
+}
+
+/** Datos del formulario de captura de producción. */
+export interface DatosRegistro {
   externo_id: string
   fecha: string
   maquillada_tallos: number
@@ -52,13 +61,23 @@ export interface RegistroExterno {
 /** Quincena: 1 = días 1–15 · 2 = días 16–fin de mes. */
 export type Quincena = 1 | 2
 
-/** Deducción manual por quincena (se usa en la Entrega 2). */
+/** Tipo de deducción manual. */
+export type TipoDeduccion = 'prestamo' | 'otro'
+
+/** Deducción manual por quincena. */
 export interface DeduccionExterno {
   id: string
   externo_id: string
   anio: number
   quincena: Quincena
   tipo: string
+  valor: number
+  nota: string | null
+}
+
+/** Datos del formulario de deducción manual (la quincena la fija el período activo). */
+export interface DatosDeduccion {
+  tipo: TipoDeduccion
   valor: number
   nota: string | null
 }

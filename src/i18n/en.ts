@@ -519,6 +519,106 @@ export const en: Diccionario = {
       guardar: 'Save',
       guardando: 'Saving…',
     },
+
+    // Tabs
+    tabs: {
+      catalogo: 'Catalog',
+      registro: 'Production Log',
+      liquidacion: 'Biweekly Settlement',
+    },
+
+    // Pay-period selector
+    quincena: {
+      mes: 'Month',
+      label: 'Pay period',
+      primera: 'P1 (1–15)',
+      segunda: 'P2 (16–end)',
+    },
+
+    // Tab A — Production log
+    registro: {
+      titulo: 'Production Log',
+      descripcion:
+        'Daily capture of stems (maquillada and hydratada) and hours per contractor. Shows the gross value; deductions appear in the settlement.',
+      nuevoTitulo: 'Log production',
+      editarTitulo: 'Edit entry',
+      externo: 'Contractor',
+      seleccionaExterno: 'Select a contractor…',
+      fecha: 'Date',
+      maquillada: 'Maquillada (stems)',
+      hydratada: 'Hydratada (stems)',
+      horas: 'Hours',
+      bruto: 'Gross',
+      subtotalForm: 'Value of this entry:',
+      subtotalPeriodo: 'Period subtotal',
+      filtroExterno: 'Filter by contractor',
+      todos: 'All',
+      sinRegistros: 'No entries in this pay period.',
+      guardar: 'Save',
+      guardando: 'Saving…',
+      guardado: 'Entry saved.',
+      borrar: 'Delete',
+      borrado: 'Entry deleted.',
+      confirmarBorrar: 'Delete this production entry?',
+      errorGuardar: (detalle: string) => `Could not save: ${detalle}`,
+      errorExterno: 'Select a contractor.',
+      errorVacio: 'Enter at least one quantity (stems or hours).',
+      notaPie: (mes: string, anio: number) =>
+        `Showing the ${mes} ${anio} entries for the selected pay period. The lead can fill this in on any day.`,
+    },
+
+    // Manual deductions (panel)
+    deducciones: {
+      titulo: 'Manual Deductions',
+      tipo: 'Type',
+      tipoPrestamo: 'Loan',
+      tipoOtro: 'Other',
+      valor: 'Amount',
+      nota: 'Note',
+      notaPlaceholder: 'Detail (optional)',
+      sinDeducciones: 'No manual deductions in this pay period.',
+      agregarTitulo: 'Add deduction',
+      editarTitulo: 'Edit deduction',
+      agregar: 'Add',
+      guardarEdicion: 'Save',
+      borrar: 'Delete',
+      cerrar: 'Close',
+      errorValor: 'Enter an amount greater than zero.',
+      confirmarBorrar: 'Delete this deduction?',
+      error: (detalle: string) => `Could not save the deduction: ${detalle}`,
+      guardada: 'Deduction saved.',
+      borrada: 'Deduction deleted.',
+      notaPrestamo:
+        'The loan deduction is manual; the savings-fund loan module is still pending.',
+    },
+
+    // Tab B — Biweekly settlement
+    liq: {
+      titulo: 'Biweekly Settlement',
+      descripcion:
+        'Pay per contractor for the period: gross production minus deductions (automatic savings fund + manual).',
+      maquilladaTallos: 'Maq. (stems)',
+      maquilladaValor: 'Maq. ($)',
+      hydratadaTallos: 'Hyd. (stems)',
+      hydratadaValor: 'Hyd. ($)',
+      horasCant: 'Hours',
+      horasValor: 'Hours ($)',
+      bruto: 'Gross',
+      dedNatillera: 'Fund ded.',
+      dedManuales: 'Manual ded.',
+      totalPagar: 'Total to pay',
+      gestionar: 'Manage',
+      totalesFila: 'Totals',
+      sinProduccion: 'No contractor has production in this pay period.',
+      notaPrestamo:
+        'The loan deduction is manual; the savings-fund loan module is still pending.',
+      notaTarifas: (maq: number, hyd: number, hora: number) =>
+        `Current rates: maquillada COP $${maq}/stem · hydratada COP $${hyd}/stem · hour COP $${hora}. The savings-fund deduction is 50% of the monthly contribution for those who save. Amounts in COP.`,
+      exportTitulo: 'Contractor Biweekly Settlement',
+      exportHoja: 'Settlement',
+      exportArchivo: (anio: number, mes: number, quincena: number) =>
+        `contractor_settlement_${anio}-${String(mes).padStart(2, '0')}_p${quincena}.xlsx`,
+    },
   },
 
   vacaciones: {

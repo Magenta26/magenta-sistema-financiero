@@ -8,6 +8,8 @@ import { localeActual } from '../i18n/idioma'
 import type { Diccionario } from '../i18n/es'
 import { nombreCuentaTexto } from './nombreCuenta'
 import type { MapaTraducciones } from './nombreCuenta'
+import type { LineaLiquidacion, TotalesLiquidacion } from './externos'
+import type { Quincena } from '../types/externos'
 
 /** Exports a Excel en el idioma activo: encabezados y nombres de línea del diccionario. */
 
@@ -180,4 +182,77 @@ export function exportarBg(
   const libro = utils.book_new()
   utils.book_append_sheet(libro, hoja, t.exportar.bgHoja(modelo.anio))
   writeFileXLSX(libro, t.exportar.bgArchivo(modelo.anio, modo))
+}
+
+/** Exporta la liquidación quincenal de externos a un .xlsx (descarga). */
+export function exportarLiquidacionExternos(
+  lineas: LineaLiquidacion[],
+  totales: TotalesLiquidacion,
+  periodo: { anio: number; mes: number; quincena: Quincena },
+  t: Diccionario
+): void {
+  const x = t.externos
+  const subtitulo = `${nombreMes(periodo.mes)} ${periodo.anio} — ${
+    periodo.quincena === 1 ? x.quincena.primera : x.quincena.segunda
+  }`
+
+  const cabecera = [
+    x.colCodigo,
+    x.colNombre,
+    `${x.liq.maquilladaTallos}`,
+    `${x.liq.maquilladaValor}`,
+    `${x.liq.hydratadaTallos}`,
+    `${x.liq.hydratadaValor}`,
+    `${x.liq.horasCant}`,
+    `${x.liq.horasValor}`,
+    x.liq.bruto,
+    x.liq.dedNatillera,
+    x.liq.dedManuales,
+    x.liq.totalPagar,
+  ]
+
+  const filas: unknown[][] = [cabecera]
+  for (const l of lineas) {
+    filas.push([
+      l.externo.codigo,
+      l.externo.nombre_completo,
+      l.produccion.maquillada_tallos,
+      l.produccion.maquillada_valor,
+      l.produccion.hydratada_tallos,
+      l.produccion.hydratada_valor,
+      l.produccion.horas,
+      l.produccion.horas_valor,
+      l.produccion.bruto,
+      l.deduccionNatillera,
+      l.deduccionesManuales,
+      l.totalAPagar,
+    ])
+  }
+  filas.push([
+    x.liq.totalesFila,
+    '',
+    totales.maquillada_tallos,
+    totales.maquillada_valor,
+    totales.hydratada_tallos,
+    totales.hydratada_valor,
+    totales.horas,
+    totales.horas_valor,
+    totales.bruto,
+    totales.deduccionNatillera,
+    totales.deduccionesManuales,
+    totales.totalAPagar,
+  ])
+
+  const hoja = utils.aoa_to_sheet([
+    ...encabezado(t, x.liq.exportTitulo, subtitulo),
+    ...filas,
+  ])
+  hoja['!cols'] = [
+    { wch: 12 },
+    { wch: 28 },
+    ...Array.from({ length: 10 }, () => ({ wch: 14 })),
+  ]
+  const libro = utils.book_new()
+  utils.book_append_sheet(libro, hoja, x.liq.exportHoja)
+  writeFileXLSX(libro, x.liq.exportArchivo(periodo.anio, periodo.mes, periodo.quincena))
 }

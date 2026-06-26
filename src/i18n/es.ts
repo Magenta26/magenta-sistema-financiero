@@ -523,6 +523,106 @@ export const es = {
       guardar: 'Guardar',
       guardando: 'Guardando…',
     },
+
+    // Pestañas
+    tabs: {
+      catalogo: 'Catálogo',
+      registro: 'Registro de producción',
+      liquidacion: 'Liquidación quincenal',
+    },
+
+    // Selector de quincena
+    quincena: {
+      mes: 'Mes',
+      label: 'Quincena',
+      primera: 'Q1 (1–15)',
+      segunda: 'Q2 (16–fin)',
+    },
+
+    // Pestaña A — Registro de producción
+    registro: {
+      titulo: 'Registro de producción',
+      descripcion:
+        'Captura diaria de tallos (maquillada e hydratada) y horas por externo. Muestra el valor bruto; las deducciones se ven en la liquidación.',
+      nuevoTitulo: 'Registrar producción',
+      editarTitulo: 'Editar registro',
+      externo: 'Externo',
+      seleccionaExterno: 'Selecciona un externo…',
+      fecha: 'Fecha',
+      maquillada: 'Maquillada (tallos)',
+      hydratada: 'Hydratada (tallos)',
+      horas: 'Horas',
+      bruto: 'Bruto',
+      subtotalForm: 'Valor de este registro:',
+      subtotalPeriodo: 'Subtotal del período',
+      filtroExterno: 'Filtrar por externo',
+      todos: 'Todos',
+      sinRegistros: 'No hay registros en esta quincena.',
+      guardar: 'Guardar',
+      guardando: 'Guardando…',
+      guardado: 'Registro guardado.',
+      borrar: 'Borrar',
+      borrado: 'Registro borrado.',
+      confirmarBorrar: '¿Borrar este registro de producción?',
+      errorGuardar: (detalle: string) => `No se pudo guardar: ${detalle}`,
+      errorExterno: 'Selecciona un externo.',
+      errorVacio: 'Ingresa al menos una cantidad (tallos u horas).',
+      notaPie: (mes: string, anio: number) =>
+        `Mostrando los registros de ${mes} ${anio} de la quincena seleccionada. El líder puede ir llenando cualquier día.`,
+    },
+
+    // Deducciones manuales (panel)
+    deducciones: {
+      titulo: 'Deducciones manuales',
+      tipo: 'Tipo',
+      tipoPrestamo: 'Préstamo',
+      tipoOtro: 'Otro',
+      valor: 'Valor',
+      nota: 'Nota',
+      notaPlaceholder: 'Detalle (opcional)',
+      sinDeducciones: 'Sin deducciones manuales en esta quincena.',
+      agregarTitulo: 'Agregar deducción',
+      editarTitulo: 'Editar deducción',
+      agregar: 'Agregar',
+      guardarEdicion: 'Guardar',
+      borrar: 'Borrar',
+      cerrar: 'Cerrar',
+      errorValor: 'Ingresa un valor mayor que cero.',
+      confirmarBorrar: '¿Borrar esta deducción?',
+      error: (detalle: string) => `No se pudo guardar la deducción: ${detalle}`,
+      guardada: 'Deducción guardada.',
+      borrada: 'Deducción borrada.',
+      notaPrestamo:
+        'La deducción de préstamo es manual; el módulo de préstamos de natillera está pendiente.',
+    },
+
+    // Pestaña B — Liquidación quincenal
+    liq: {
+      titulo: 'Liquidación quincenal',
+      descripcion:
+        'Pago por externo en la quincena: bruto por producción menos deducciones (natillera automática + manuales).',
+      maquilladaTallos: 'Maq. (tallos)',
+      maquilladaValor: 'Maq. ($)',
+      hydratadaTallos: 'Hyd. (tallos)',
+      hydratadaValor: 'Hyd. ($)',
+      horasCant: 'Horas',
+      horasValor: 'Horas ($)',
+      bruto: 'Bruto',
+      dedNatillera: 'Ded. natillera',
+      dedManuales: 'Ded. manuales',
+      totalPagar: 'Total a pagar',
+      gestionar: 'Gestionar',
+      totalesFila: 'Totales',
+      sinProduccion: 'Ningún externo tiene producción en esta quincena.',
+      notaPrestamo:
+        'La deducción de préstamo es manual; el módulo de préstamos de natillera está pendiente.',
+      notaTarifas: (maq: number, hyd: number, hora: number) =>
+        `Tarifas vigentes: maquillada COP $${maq}/tallo · hydratada COP $${hyd}/tallo · hora COP $${hora}. La deducción de natillera es el 50% de la cuota mensual de quien ahorra. Cifras en COP.`,
+      exportTitulo: 'Liquidación quincenal de externos',
+      exportHoja: 'Liquidación',
+      exportArchivo: (anio: number, mes: number, quincena: number) =>
+        `liquidacion_externos_${anio}-${String(mes).padStart(2, '0')}_q${quincena}.xlsx`,
+    },
   },
 
   vacaciones: {
