@@ -26,7 +26,7 @@ export default function LiquidacionExternos() {
   const { t } = useTranslation()
   const x = t.externos
   const queryClient = useQueryClient()
-  const { esEditorNomina: esEditor } = useRol()
+  const { esEditorExternos: esEditor } = useRol()
   const { sesion } = useAuth()
 
   const externosQuery = useExternos()

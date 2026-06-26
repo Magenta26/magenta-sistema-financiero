@@ -40,7 +40,7 @@ export default function RegistroExternos() {
   const { t } = useTranslation()
   const r = t.externos.registro
   const queryClient = useQueryClient()
-  const { esEditorNomina: esEditor } = useRol()
+  const { esEditorExternos: esEditor } = useRol()
   const { sesion } = useAuth()
 
   const externosQuery = useExternos()

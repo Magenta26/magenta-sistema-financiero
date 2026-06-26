@@ -437,9 +437,14 @@ export const es = {
     debeCambiar: 'Debe cambiar contraseña',
     activo: 'Al día',
     tuUsuario: 'Tú',
-    roles: { admin: 'Administrador', contadora: 'Contadora', nomina: 'Nómina (solo)' },
+    roles: {
+      admin: 'Administrador',
+      contadora: 'Contadora',
+      nomina: 'Nómina (solo)',
+      lider_campo: 'Líder de campo (solo Externos)',
+    },
     descripcionRoles:
-      'Administrador: todo + usuarios · Contadora: finanzas + nómina · Nómina: solo el módulo de nómina.',
+      'Administrador: todo + usuarios · Contadora: finanzas + nómina + externos · Nómina: nómina + externos · Líder de campo: solo el módulo de Externos.',
     rolGuardado: 'Rol actualizado.',
     errorRol: (detalle: string) => `No se pudo cambiar el rol: ${detalle}`,
     cargando: 'Cargando usuarios…',

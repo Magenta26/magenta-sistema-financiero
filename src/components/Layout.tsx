@@ -15,6 +15,8 @@ interface ItemNav {
   icono: string
   /** Ítem visible pero no navegable (módulos en construcción). */
   deshabilitado?: boolean
+  /** Acceso requerido para ver el ítem (undefined = visible si el grupo lo es). */
+  requiere?: 'nomina' | 'externos'
 }
 
 interface GrupoNav {
@@ -25,7 +27,7 @@ interface GrupoNav {
   prefijo: string
   abiertoPorDefecto: boolean
   badge?: (t: Diccionario) => string
-  /** Acceso requerido para ver el grupo (undefined = todos los roles). */
+  /** Acceso requerido para ver el grupo (undefined = se evalúa por sus ítems). */
   requiere?: 'finanzas' | 'admin'
   items: ItemNav[]
 }
@@ -57,10 +59,10 @@ const GRUPOS: GrupoNav[] = [
     prefijo: '/nomina',
     abiertoPorDefecto: false,
     items: [
-      { ruta: '/nomina/empleados', etiqueta: (t) => t.nomina.empleados, icono: '👤' },
-      { ruta: '/nomina/externos', etiqueta: (t) => t.nomina.externos, icono: '🌹' },
-      { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷' },
-      { ruta: '/nomina/vacaciones', etiqueta: (t) => t.nomina.vacaciones, icono: '🏖' },
+      { ruta: '/nomina/empleados', etiqueta: (t) => t.nomina.empleados, icono: '👤', requiere: 'nomina' },
+      { ruta: '/nomina/externos', etiqueta: (t) => t.nomina.externos, icono: '🌹', requiere: 'externos' },
+      { ruta: '/nomina/natillera', etiqueta: (t) => t.nomina.natillera, icono: '🐷', requiere: 'nomina' },
+      { ruta: '/nomina/vacaciones', etiqueta: (t) => t.nomina.vacaciones, icono: '🏖', requiere: 'nomina' },
     ],
   },
   {
@@ -95,20 +97,28 @@ function guardarAbiertos(claves: Set<string>): void {
 
 export default function Layout() {
   const { sesion, cerrarSesion } = useAuth()
-  const { puedeFinanzas, esAdmin } = useRol()
+  const { puedeFinanzas, puedeNomina, puedeExternos, esAdmin } = useRol()
   const { t, idioma, cambiarIdioma } = useTranslation()
   const location = useLocation()
 
-  // Grupos visibles según el rol (un 'nomina' no ve Finanzas ni Administración).
-  const grupos = useMemo(
-    () =>
-      GRUPOS.filter((g) => {
-        if (g.requiere === 'finanzas') return puedeFinanzas
-        if (g.requiere === 'admin') return esAdmin
-        return true
-      }),
-    [puedeFinanzas, esAdmin]
-  )
+  // Grupos e ítems visibles según el rol: se filtran los ítems por su acceso y
+  // luego se ocultan los grupos sin ítems visibles. Así un 'lider_campo' solo ve
+  // Externos (sin el resto de Nómina, ni Finanzas, ni Administración).
+  const grupos = useMemo(() => {
+    const itemVisible = (it: ItemNav): boolean => {
+      if (it.requiere === 'nomina') return puedeNomina
+      if (it.requiere === 'externos') return puedeExternos
+      return true
+    }
+    const grupoVisible = (g: GrupoNav): boolean => {
+      if (g.requiere === 'finanzas') return puedeFinanzas
+      if (g.requiere === 'admin') return esAdmin
+      return true
+    }
+    return GRUPOS.map((g) => ({ ...g, items: g.items.filter(itemVisible) })).filter(
+      (g) => grupoVisible(g) && g.items.length > 0
+    )
+  }, [puedeFinanzas, puedeNomina, puedeExternos, esAdmin])
 
   const [abiertos, setAbiertos] = useState<Set<string>>(() => {
     const guardado = abiertosGuardados()

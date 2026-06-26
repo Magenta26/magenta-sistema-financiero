@@ -3,7 +3,9 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 import {
   esAdmin as esAdminRol,
+  puedeEditarExternos,
   puedeEditarNomina,
+  puedeVerExternos,
   puedeVerFinanzas,
   puedeVerNomina,
   type Rol,
@@ -43,11 +45,14 @@ export function useRol() {
     rol,
     // Editor financiero (admin/contadora): gobierna la edición en Finanzas.
     esEditor: puedeVerFinanzas(rol),
-    // Editor de nómina (admin/contadora/nomina): edición en el módulo Nómina.
+    // Editor del núcleo de Nómina (admin/contadora/nomina).
     esEditorNomina: puedeEditarNomina(rol),
+    // Editor de Externos (admin/contadora/nomina/lider_campo).
+    esEditorExternos: puedeEditarExternos(rol),
     esAdmin: esAdminRol(rol),
     puedeFinanzas: puedeVerFinanzas(rol),
     puedeNomina: puedeVerNomina(rol),
+    puedeExternos: puedeVerExternos(rol),
     debeCambiarPassword: query.data?.debeCambiarPassword ?? false,
     ...query,
   }

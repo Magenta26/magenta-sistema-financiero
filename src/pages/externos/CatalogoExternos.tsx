@@ -17,7 +17,7 @@ import { IconoBuscar, IconoLapiz } from '../../components/empleados/iconos'
 export default function CatalogoExternos() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const { esEditorNomina: esEditor } = useRol()
+  const { esEditorExternos: esEditor } = useRol()
 
   const externosQuery = useExternos()
   const natEmpsQuery = useEmpleadosNatillera()

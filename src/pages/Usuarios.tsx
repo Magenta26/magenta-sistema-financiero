@@ -9,7 +9,7 @@ import { fecha } from '../lib/formato'
 import Toast from '../components/Toast'
 import type { DatosToast } from '../components/Toast'
 
-const ROLES: Rol[] = ['admin', 'contadora', 'nomina']
+const ROLES: Rol[] = ['admin', 'contadora', 'nomina', 'lider_campo']
 const CORREO_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**

@@ -53,16 +53,22 @@ export default function App() {
             <Route path="/analisis" element={<Navigate to="/finanzas/analisis" replace />} />
           </Route>
 
-          {/* Módulo Nómina — los tres roles */}
-          <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
-          <Route path="/nomina/natillera" element={<Natillera />} />
-          <Route path="/nomina/empleados" element={<Empleados />} />
-          <Route path="/nomina/externos" element={<Externos />}>
-            <Route index element={<CatalogoExternos />} />
-            <Route path="registro" element={<RegistroExternos />} />
-            <Route path="liquidacion" element={<LiquidacionExternos />} />
+          {/* Externos — admin/contadora/nomina/lider_campo */}
+          <Route element={<GuardAcceso requiere="externos" />}>
+            <Route path="/nomina/externos" element={<Externos />}>
+              <Route index element={<CatalogoExternos />} />
+              <Route path="registro" element={<RegistroExternos />} />
+              <Route path="liquidacion" element={<LiquidacionExternos />} />
+            </Route>
           </Route>
-          <Route path="/nomina/vacaciones" element={<Vacaciones />} />
+
+          {/* Núcleo de Nómina — admin/contadora/nomina (sin lider_campo) */}
+          <Route element={<GuardAcceso requiere="nomina" />}>
+            <Route path="/nomina" element={<Navigate to="/nomina/natillera" replace />} />
+            <Route path="/nomina/natillera" element={<Natillera />} />
+            <Route path="/nomina/empleados" element={<Empleados />} />
+            <Route path="/nomina/vacaciones" element={<Vacaciones />} />
+          </Route>
 
           {/* Administración — solo admin */}
           <Route element={<GuardAcceso requiere="admin" />}>

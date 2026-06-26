@@ -433,9 +433,14 @@ export const en: Diccionario = {
     debeCambiar: 'Must change password',
     activo: 'Up to date',
     tuUsuario: 'You',
-    roles: { admin: 'Administrator', contadora: 'Accountant', nomina: 'Payroll (only)' },
+    roles: {
+      admin: 'Administrator',
+      contadora: 'Accountant',
+      nomina: 'Payroll (only)',
+      lider_campo: 'Field leader (Externos only)',
+    },
     descripcionRoles:
-      'Administrator: everything + users · Accountant: finance + payroll · Payroll: payroll module only.',
+      'Administrator: everything + users · Accountant: finance + payroll + contractors · Payroll: payroll + contractors · Field leader: contractors module only.',
     rolGuardado: 'Role updated.',
     errorRol: (detalle: string) => `Could not change the role: ${detalle}`,
     cargando: 'Loading users…',
