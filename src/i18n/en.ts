@@ -32,6 +32,8 @@ export const en: Diccionario = {
     usuarios: 'Users',
     cerrarSesion: 'Sign out',
     idioma: 'Language',
+    colapsar: 'Collapse menu',
+    expandir: 'Expand menu',
   },
 
   login: {

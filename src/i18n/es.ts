@@ -31,6 +31,8 @@ export const es = {
     usuarios: 'Usuarios',
     cerrarSesion: 'Cerrar sesión',
     idioma: 'Idioma',
+    colapsar: 'Colapsar menú',
+    expandir: 'Expandir menú',
   },
 
   login: {
